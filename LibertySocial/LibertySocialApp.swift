@@ -26,7 +26,7 @@ struct LibertySocialApp: App {
     var body: some Scene {
         WindowGroup {
             // ContentView()
-            LoginPage()
+            LoginView()
         }
         .modelContainer(sharedModelContainer)
     }
