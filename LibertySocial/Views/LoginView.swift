@@ -24,6 +24,15 @@ struct LoginView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
+                HStack(spacing:1) {
+                    Image("liberty_bell")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 70, height: 70)
+                    Text("Liberty Social")
+                        .font(.largeTitle.bold())
+                    Spacer()
+                }
 
                 // MARK: - Header (top of the screen)
                 VStack(alignment: .leading, spacing: 6) {
@@ -94,7 +103,6 @@ struct LoginView: View {
                 Spacer(minLength: 0)
             }
             .padding(24)
-            .navigationTitle("Sign in")
 
             // MARK: - Alerts & Keyboard Toolbar
             .alert(isPresented: .constant(vm.errorMessage != nil)) {
