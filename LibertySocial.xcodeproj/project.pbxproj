@@ -29,9 +29,30 @@
 		15913F7E2E8EB4B800A015C7 /* LibertySocialUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LibertySocialUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		15064F492E942D56000E0D11 /* Exceptions for "LibertySocial" folder in "LibertySocialTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ViewModels/LoginViewModel.swift,
+			);
+			target = 15913F732E8EB4B800A015C7 /* LibertySocialTests */;
+		};
+		15064F502E9430ED000E0D11 /* Exceptions for "LibertySocial" folder in "LibertySocialUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Views/LoginView.swift,
+			);
+			target = 15913F7D2E8EB4B800A015C7 /* LibertySocialUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		15913F672E8EB4B600A015C7 /* LibertySocial */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				15064F492E942D56000E0D11 /* Exceptions for "LibertySocial" folder in "LibertySocialTests" target */,
+				15064F502E9430ED000E0D11 /* Exceptions for "LibertySocial" folder in "LibertySocialUITests" target */,
+			);
 			path = LibertySocial;
 			sourceTree = "<group>";
 		};
