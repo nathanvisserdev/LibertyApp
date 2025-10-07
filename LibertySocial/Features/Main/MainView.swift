@@ -21,6 +21,15 @@ struct MainView: View {
                 Text("You’re signed in successfully.")
                     .foregroundStyle(.secondary)
 
+                Button("Fetch /me") {
+                    Task { await vm.loadMe() }
+                }
+                .buttonStyle(.bordered)
+
+                if let me = vm.meResult {
+                    Text(me).font(.callout).monospaced().padding(.top, 4)
+                }
+
                 Button("Log out") {
                     vm.logout(using: session)
                 }
