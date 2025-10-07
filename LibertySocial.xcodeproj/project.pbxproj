@@ -33,6 +33,7 @@
 		15064F492E942D56000E0D11 /* Exceptions for "LibertySocial" folder in "LibertySocialTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Services/AuthService.swift,
 				ViewModels/LoginViewModel.swift,
 			);
 			target = 15913F732E8EB4B800A015C7 /* LibertySocialTests */;

@@ -11,6 +11,10 @@ import Combine
 // MARK: - LoginViewModel
 @MainActor
 final class LoginViewModel: ObservableObject {
+    
+    init() {
+        print("Login view model initialized")
+    }
     // MARK: - Published Properties
     @Published var email: String = ""
     @Published var password: String = ""
