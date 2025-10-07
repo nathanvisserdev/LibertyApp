@@ -9,11 +9,16 @@ import SwiftUI
 
 struct LoginView: View {
     @StateObject private var vm = LoginViewModel()
+    @EnvironmentObject private var session: SessionStore
 
-    var onLogin: (String, String) async throws -> Void = { email, password in
-        let token = try await AuthService.login(email: email, password: password)
-        try? KeychainHelper.save(token: token)
-        print("🔐 Saved token to Keychain")
+    // Computed so it can capture `session`
+    var onLogin: (String, String) async throws -> Void {
+        { email, password in
+            let token = try await AuthService.login(email: email, password: password)
+            try? KeychainHelper.save(token: token)
+            session.refresh() // trigger UI switch to MainView
+            print("🔐 Saved token to Keychain")
+        }
     }
 
     var body: some View {
@@ -108,3 +113,4 @@ extension View {
 #endif
 
 #Preview { LoginView().tint(.blue) }
+

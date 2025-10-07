@@ -33,15 +33,18 @@
 		15064F492E942D56000E0D11 /* Exceptions for "LibertySocial" folder in "LibertySocialTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Features/Login/LoginViewModel.swift,
+				Features/Main/MainViewModel.swift,
 				Services/AuthService.swift,
-				ViewModels/LoginViewModel.swift,
 			);
 			target = 15913F732E8EB4B800A015C7 /* LibertySocialTests */;
 		};
 		15064F502E9430ED000E0D11 /* Exceptions for "LibertySocial" folder in "LibertySocialUITests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Views/LoginView.swift,
+				Features/Login/LoginView.swift,
+				Features/Main/MainView.swift,
+				Features/Main/MainViewModel.swift,
 			);
 			target = 15913F7D2E8EB4B800A015C7 /* LibertySocialUITests */;
 		};
