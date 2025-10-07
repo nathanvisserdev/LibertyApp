@@ -11,8 +11,9 @@ struct LoginView: View {
     @StateObject private var vm = LoginViewModel()
 
     var onLogin: (String, String) async throws -> Void = { email, password in
-        _ = try await AuthService.login(email: email, password: password)
-        // TODO: store token in Keychain next
+        let token = try await AuthService.login(email: email, password: password)
+        try? KeychainHelper.save(token: token)
+        print("🔐 Saved token to Keychain")
     }
 
     var body: some View {
