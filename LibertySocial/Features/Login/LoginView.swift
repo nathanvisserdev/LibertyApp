@@ -6,39 +6,35 @@
 //
 
 import SwiftUI
+import Combine
 
 struct LoginView: View {
     @StateObject private var vm = LoginViewModel()
     @EnvironmentObject private var session: SessionStore
 
-    // Computed so it can capture `session`
-    var onLogin: (String, String) async throws -> Void {
-        { email, password in
-            let token = try await AuthService.login(email: email, password: password)
-            try? KeychainHelper.save(token: token)
-            session.refresh() // trigger UI switch to MainView
-            print("🔐 Saved token to Keychain")
-        }
-    }
-
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
+                // MARK: - Header
                 HStack(spacing: 1) {
                     Image("liberty_bell")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 70, height: 70)
-                    Text("Liberty Social").font(.largeTitle.bold())
+                    Text("Liberty Social")
+                        .font(.largeTitle.bold())
                     Spacer()
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Welcome back").font(.largeTitle.bold())
-                    Text("Sign in with your email").foregroundStyle(.secondary)
+                    Text("Welcome back")
+                        .font(.largeTitle.bold())
+                    Text("Sign in with your email")
+                        .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
+                // MARK: - Input Fields
                 VStack(spacing: 14) {
                     TextField("you@example.com", text: $vm.email)
                         .textContentType(.username)
@@ -59,16 +55,34 @@ struct LoginView: View {
                                     .textContentType(.password)
                             }
                         }
-                        Button { withAnimation(.snappy) { vm.isSecure.toggle() } } label: {
-                            Image(systemName: vm.isSecure ? "eye" : "eye.slash").imageScale(.medium)
+                        Button { withAnimation(.snappy) { vm.toggleSecure() } } label: {
+                            Image(systemName: vm.isSecure ? "eye" : "eye.slash")
+                                .imageScale(.medium)
                         }
                     }
                     .padding(14)
                     .background(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
 
+                    // MARK: - Signup and Forgot Password
                     HStack {
                         Button("Create account") {
-                            Task { try? await AuthService.signup(email: vm.email, password: vm.password) }
+                            Task {
+                                do {
+                                    let req = SignupRequest(
+                                        firstName: "Nathan",
+                                        lastName: "Visser",
+                                        email: vm.email,
+                                        username: vm.email.components(separatedBy: "@").first ?? "user",
+                                        password: vm.password,
+                                        dateOfBirth: "1990-01-01",
+                                        gender: true
+                                    )
+                                    try await AuthService.signup(req)
+                                    vm.errorMessage = "Account created! Please sign in."
+                                } catch {
+                                    vm.errorMessage = error.localizedDescription
+                                }
+                            }
                         }
                         Spacer()
                         Button("Forgot password?") {}
@@ -76,7 +90,15 @@ struct LoginView: View {
                     .font(.callout)
                 }
 
-                Button(action: { Task { await vm.submit(authenticate: onLogin) } }) {
+                // MARK: - Sign-in Button
+                Button {
+                    Task {
+                        await vm.login()
+                        if vm.me != nil {
+                            session.refresh() // Move user to main app view
+                        }
+                    }
+                } label: {
                     if vm.isLoading { ProgressView().controlSize(.small) }
                     else { Text("Sign in").font(.headline) }
                 }
@@ -89,9 +111,11 @@ struct LoginView: View {
             }
             .padding(24)
             .alert(isPresented: .constant(vm.errorMessage != nil)) {
-                Alert(title: Text("Sign-in failed"),
-                      message: Text(vm.errorMessage ?? ""),
-                      dismissButton: .default(Text("OK")) { vm.errorMessage = nil })
+                Alert(
+                    title: Text("Sign-in"),
+                    message: Text(vm.errorMessage ?? ""),
+                    dismissButton: .default(Text("OK")) { vm.errorMessage = nil }
+                )
             }
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
@@ -106,11 +130,17 @@ struct LoginView: View {
 #if canImport(UIKit)
 extension View {
     func hideKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
-                                        to: nil, from: nil, for: nil)
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
     }
 }
 #endif
 
-#Preview { LoginView().tint(.blue) }
+#Preview {
+    LoginView().tint(.blue)
+}
 

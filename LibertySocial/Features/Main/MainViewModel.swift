@@ -23,8 +23,10 @@ final class MainViewModel: ObservableObject {
 
     func loadMe() async {
         do {
-            let me = try await AuthService.getMe()
-            meResult = "id=\(me.id)" + (me.email != nil ? ", email=\(me.email!)" : "")
+            let me = try await AuthService.fetchCurrentUser()
+            let id = me["id"] as? String ?? "unknown"
+            let email = me["email"] as? String ?? "unknown"
+            meResult = "id=\(id), email=\(email)"
         } catch {
             meResult = "Error: \((error as NSError).localizedDescription)"
         }

@@ -8,39 +8,43 @@
 import Foundation
 import Combine
 
-// MARK: - LoginViewModel
 @MainActor
 final class LoginViewModel: ObservableObject {
-    
-    init() {
-        print("Login view model initialized")
-    }
-    // MARK: - Published Properties
+
+    // MARK: - Published
     @Published var email: String = ""
     @Published var password: String = ""
     @Published var isSecure: Bool = true
     @Published var isLoading: Bool = false
-    @Published var errorMessage: String? = nil
+    @Published var errorMessage: String?
+    @Published var me: [String: Any]?    // now a dictionary instead of MeResponse
 
-    // MARK: - Computed Properties
+    // MARK: - Computed
     var canSubmit: Bool {
         isValidEmail(email) && password.count >= 6 && !isLoading
     }
 
     // MARK: - Actions
-    func submit(authenticate: @escaping (String, String) async throws -> Void) async {
+    func login() async {
         guard canSubmit else { return }
-
         isLoading = true
         errorMessage = nil
-
         do {
-            try await authenticate(email.trimmingCharacters(in: .whitespacesAndNewlines), password)
+            _ = try await AuthService.login(email: email.trimmed, password: password)
+            me = try await AuthService.fetchCurrentUser()
         } catch {
-            errorMessage = (error as NSError).localizedDescription
+            errorMessage = error.localizedDescription
         }
-
         isLoading = false
+    }
+
+    func logout() {
+        AuthService.logout()
+        me = nil
+    }
+
+    func toggleSecure() {
+        isSecure.toggle()
     }
 
     // MARK: - Validation
@@ -51,3 +55,6 @@ final class LoginViewModel: ObservableObject {
     }
 }
 
+private extension String {
+    var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
+}

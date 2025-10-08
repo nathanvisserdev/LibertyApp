@@ -7,82 +7,97 @@
 
 import Foundation
 
-struct AuthResponse: Decodable { let accessToken: String }
+enum APIError: Error {
+    case badURL
+    case server(String)
+    case unauthorized
+    case unknown(Error?)
+}
 
-struct AuthService {
+struct LoginResponse: Decodable {
+    let accessToken: String
+}
+
+struct SignupRequest: Encodable {
+    let firstName: String
+    let lastName: String
+    let email: String
+    let username: String
+    let password: String
+    let dateOfBirth: String
+    let gender: Bool
+}
+
+struct SignupResponse: Decodable {
+    let id: String
+    let email: String
+}
+
+@MainActor
+final class AuthService {
     static let baseURL = URL(string: "http://127.0.0.1:3000")!
-    enum AuthError: Error { case noToken }
 
-    /// Builds a URLRequest and (optionally) attaches `Authorization: Bearer <token>`
-    private static func makeRequest(path: String,
-                                    method: String = "GET",
-                                    body: Encodable? = nil,
-                                    authenticated: Bool = true) throws -> URLRequest {
-        var req = URLRequest(url: baseURL.appendingPathComponent(path))
-        req.httpMethod = method
-        req.setValue("application/json", forHTTPHeaderField: "Accept")
-        if let body = body {
-            req.httpBody = try JSONEncoder().encode(AnyEncodable(body))
-            req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        }
-        if authenticated {
-            guard let token = KeychainHelper.read() else { throw AuthError.noToken }
-            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
-        return req
-    }
-
-    /// Example of an authenticated call that uses the attached token
-    struct Me: Decodable { let id: String; let email: String? }
-    static func getMe() async throws -> Me {
-        let req = try makeRequest(path: "/me", method: "GET", authenticated: true)
-        let (data, response) = try await URLSession.shared.data(for: req)
-        guard let http = response as? HTTPURLResponse, 200..<300 ~= http.statusCode else {
-            let msg = String(data: data, encoding: .utf8) ?? "Request failed"
-            throw NSError(domain: "AuthService", code: (response as? HTTPURLResponse)?.statusCode ?? -1,
-                          userInfo: [NSLocalizedDescriptionKey: msg])
-        }
-        return try JSONDecoder().decode(Me.self, from: data)
-    }
-
-    static func signup(email: String, password: String) async throws {
-        var req = URLRequest(url: baseURL.appendingPathComponent("/signup"))
+    // MARK: - Signup
+    static func signup(_ request: SignupRequest) async throws {
+        let url = baseURL.appendingPathComponent("/signup")
+        var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.httpBody = try JSONEncoder().encode(["email": email, "password": password])
+        req.httpBody = try JSONEncoder().encode(request)
 
-        let (data, response) = try await URLSession.shared.data(for: req)
+        let (_, response) = try await URLSession.shared.data(for: req)
         guard let http = response as? HTTPURLResponse, http.statusCode == 201 else {
-            let msg = String(data: data, encoding: .utf8) ?? "Signup failed"
-            throw NSError(domain: "AuthService", code: (response as? HTTPURLResponse)?.statusCode ?? -1,
-                          userInfo: [NSLocalizedDescriptionKey: msg])
+            throw APIError.server("Signup failed")
         }
-        print("✅ Signup success")
     }
 
+
+    // MARK: - Login
     static func login(email: String, password: String) async throws -> String {
+        let payload = ["email": email, "password": password]
+        let data = try JSONSerialization.data(withJSONObject: payload)
         var req = URLRequest(url: baseURL.appendingPathComponent("/login"))
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.httpBody = try JSONEncoder().encode(["email": email, "password": password])
+        req.httpBody = data
+
+        let (respData, response) = try await URLSession.shared.data(for: req)
+        guard let http = response as? HTTPURLResponse else {
+            throw APIError.unknown(nil)
+        }
+
+        guard (200..<300).contains(http.statusCode) else {
+            let msg = String(data: respData, encoding: .utf8) ?? "Server error"
+            throw APIError.server(msg)
+        }
+
+        let decoded = try JSONDecoder().decode(LoginResponse.self, from: respData)
+        try? KeychainHelper.save(token: decoded.accessToken)
+        return decoded.accessToken
+    }
+
+    // MARK: - Fetch /me
+    static func fetchCurrentUser() async throws -> [String: Any] {
+        guard let token = KeychainHelper.read() else {
+            throw APIError.unauthorized
+        }
+
+        var req = URLRequest(url: baseURL.appendingPathComponent("/me"))
+        req.httpMethod = "GET"
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         let (data, response) = try await URLSession.shared.data(for: req)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
-            let msg = String(data: data, encoding: .utf8) ?? "Login failed"
-            throw NSError(domain: "AuthService", code: (response as? HTTPURLResponse)?.statusCode ?? -1,
-                          userInfo: [NSLocalizedDescriptionKey: msg])
+            throw APIError.unauthorized
         }
-        let auth = try JSONDecoder().decode(AuthResponse.self, from: data)
-        print("✅ Login success, token:", auth.accessToken)
-        return auth.accessToken
+
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        return json ?? [:]
+    }
+
+    // MARK: - Logout
+    static func logout() {
+        KeychainHelper.delete()
     }
 }
-
-// Helper to encode any Encodable without generics at the call site
-private struct AnyEncodable: Encodable {
-    private let encodeFunc: (Encoder) throws -> Void
-    init(_ wrapped: Encodable) { self.encodeFunc = wrapped.encode }
-    func encode(to encoder: Encoder) throws { try encodeFunc(encoder) }
-}
-
 
