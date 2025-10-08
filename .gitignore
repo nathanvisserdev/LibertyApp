@@ -46,3 +46,13 @@ Thumbs.db
 # -------------------------------------------------------
 tmp/
 temp/
+
+/src/generated/prisma
+
+
+# Prisma local artifacts
+prisma/dev.db
+prisma/dev.db-journal
+src/generated/
+node_modules/.cache/prisma/
+

@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  // Required fields
+  firstName   String
+  lastName    String
+  email       String   @unique
+  username    String   @unique
+  password    String
+  dateOfBirth DateTime
+  gender      Boolean                     // 1 = male, 0 = female (required)
+
+  // Optional fields
+  phoneNumber String?
+  zipCode     String?
+  photo       String?                     // e.g., URL to avatar
+  about       String?    
+
+  createdAt   DateTime @default(now())
+
+  posts Post[]
+  memberships Membership[]
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  posts       Post[]
+  members     Membership[]
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  content   String   // removed @db.Text
+  createdAt DateTime @default(now())
+  userId    String
+  groupId   String
+
+  user      User   @relation(fields: [userId], references: [id])
+  group     Group  @relation(fields: [groupId], references: [id])
+}
+
+model Membership {
+  id        String   @id @default(cuid())
+  userId    String
+  groupId   String
+  joinedAt  DateTime @default(now())
+
+  user      User   @relation(fields: [userId], references: [id])
+  group     Group  @relation(fields: [groupId], references: [id])
+
+  @@unique([userId, groupId])
+}
