@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -11,58 +8,129 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id          String   @id @default(cuid())
-  // Required fields
-  firstName   String
-  lastName    String
-  email       String   @unique
-  username    String   @unique
-  password    String
-  dateOfBirth DateTime
-  gender      Boolean                     // 1 = male, 0 = female (required)
-
-  // Optional fields
-  phoneNumber String?
-  zipCode     String?
-  photo       String?                     // e.g., URL to avatar
-  about       String?    
-
-  createdAt   DateTime @default(now())
-
-  posts Post[]
-  memberships Membership[]
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELED
 }
 
-model Group {
+enum ConnectionType {
+  ACQUAINTANCE
+  STRANGER
+  FOLLOW
+}
+
+model Users {
+  id          String    @id @default(cuid())
+  email       String    @unique
+  password    String
+  firstName   String?
+  lastName    String?
+  username    String?   @unique
+  dateOfBirth DateTime?
+  gender      Boolean?
+  phoneNumber String?
+  zipCode     String?
+  photo       String?
+  about       String?
+  createdAt   DateTime  @default(now())
+
+  // creator flag
+  isCreator Boolean @default(false)
+
+  // content
+  posts Posts[]
+
+  // groups this user belongs to (roster entries)
+  groups GroupRoster[]
+
+  // requests
+  outgoingRequests ConnectionRequest[] @relation("req_outgoing")
+  incomingRequests ConnectionRequest[] @relation("req_incoming")
+
+  // connections (finalized)
+  following Connections[] @relation("conn_outgoing")
+  followers Connections[] @relation("conn_incoming")
+
+  // optional 1:1 creator profile
+  creator Creator?
+
+  // groups this user administers (back-relation to Groups.admin)
+  adminGroups Groups[] @relation("GroupAdmin")
+}
+
+model Creator {
+  userId                   String  @id
+  user                     Users   @relation(fields: [userId], references: [id])
+  acceptsAllFollowRequests Boolean @default(false)
+}
+
+model Groups {
   id          String   @id @default(cuid())
   name        String   @unique
   description String?
   createdAt   DateTime @default(now())
 
-  posts       Post[]
-  members     Membership[]
+  // visibility & admin
+  isPrivate Boolean @default(false)
+  adminId   String
+  admin     Users   @relation("GroupAdmin", fields: [adminId], references: [id])
+
+  // content
+  posts Posts[]
+
+  // roster entries (who belongs to this group)
+  members GroupRoster[]
 }
 
-model Post {
+model Posts {
   id        String   @id @default(cuid())
-  content   String   // removed @db.Text
+  content   String
   createdAt DateTime @default(now())
   userId    String
-  groupId   String
+  groupId   String?
 
-  user      User   @relation(fields: [userId], references: [id])
-  group     Group  @relation(fields: [groupId], references: [id])
+  user  Users   @relation(fields: [userId], references: [id])
+  group Groups? @relation(fields: [groupId], references: [id])
 }
 
-model Membership {
-  id        String   @id @default(cuid())
-  userId    String
-  groupId   String
-  joinedAt  DateTime @default(now())
+model GroupRoster {
+  membershipId String   @id @default(cuid())
+  userId       String
+  groupId      String
+  joinedAt     DateTime @default(now())
 
-  user      User   @relation(fields: [userId], references: [id])
-  group     Group  @relation(fields: [groupId], references: [id])
+  user  Users  @relation(fields: [userId], references: [id])
+  group Groups @relation(fields: [groupId], references: [id])
 
   @@unique([userId, groupId])
+}
+
+model ConnectionRequest {
+  id          String         @id @default(cuid())
+  requesterId String
+  requestedId String
+  type        ConnectionType
+  status      RequestStatus  @default(PENDING)
+  createdAt   DateTime       @default(now())
+  decidedAt   DateTime?
+
+  requester Users @relation("req_outgoing", fields: [requesterId], references: [id])
+  requested Users @relation("req_incoming", fields: [requestedId], references: [id])
+
+  @@index([requesterId, requestedId, type, status])
+}
+
+model Connections {
+  id          String         @id @default(cuid())
+  requesterId String // FOLLOW: followerId; others: min(userA,userB)
+  requestedId String // FOLLOW: creatorId;  others: max(userA,userB)
+  type        ConnectionType
+  since       DateTime       @default(now())
+
+  requester Users @relation("conn_outgoing", fields: [requesterId], references: [id])
+  requested Users @relation("conn_incoming", fields: [requestedId], references: [id])
+
+  @@unique([requesterId, requestedId, type])
 }

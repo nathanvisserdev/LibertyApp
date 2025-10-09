@@ -36,24 +36,14 @@ function auth(req: express.Request, res: express.Response, next: express.NextFun
   }
 }
 
-// --- Signup ---
+// --- Signup (email + password only) ---
 app.post("/signup", async (req, res) => {
-  const { firstName, lastName, email, username, password, dateOfBirth, gender } = req.body ?? {};
-  if (!email || !password || !username || !firstName || !lastName || !dateOfBirth)
-    return res.status(400).send("missing required fields");
-
+  const { email, password } = req.body ?? {};
+  if (!email || !password) return res.status(400).send("missing required fields");
   try {
-    const hash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-    const user = await prisma.user.create({
-      data: {
-        firstName,
-        lastName,
-        email: email.toLowerCase(),
-        username: username.toLowerCase(),
-        password: hash,
-        dateOfBirth: new Date(dateOfBirth),
-        gender: Boolean(gender),
-      },
+    const hash = await bcrypt.hash(String(password), BCRYPT_ROUNDS);
+    const user = await prisma.users.create({
+      data: { email: String(email).toLowerCase(), password: hash },
     });
     res.status(201).json({ id: user.id, email: user.email });
   } catch (err: any) {
@@ -66,70 +56,33 @@ app.post("/login", async (req, res) => {
   const { email, password } = req.body ?? {};
   if (!email || !password) return res.status(400).send("missing fields");
 
-  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+  const user = await prisma.users.findUnique({ where: { email: String(email).toLowerCase() } });
   if (!user) return res.status(401).send("invalid credentials");
 
-  const ok = await bcrypt.compare(password, user.password);
+  const ok = await bcrypt.compare(String(password), user.password);
   if (!ok) return res.status(401).send("invalid credentials");
 
   const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "1h" });
   return res.status(200).json({ accessToken: token });
 });
 
-// --- Authenticated user info ---
-app.get("/me", auth, async (req, res) => {
+// --- Current user ---
+app.get("/user", auth, async (req, res) => {
   const payload = (req as any).user as jwt.JwtPayload;
-  const user = await prisma.user.findUnique({ where: { id: payload.id } });
+  const user = await prisma.users.findUnique({ where: { id: payload.id } });
   if (!user) return res.status(404).send("User not found");
   res.json(user);
 });
 
-// --- User list ---
-app.get("/users", async (_req, res) => {
-  const users = await prisma.user.findMany();
-  res.json(users);
-});
-
-// --- Create Group ---
-app.post("/groups", auth, async (req, res) => {
-  const { name, description } = req.body;
-  if (!name) return res.status(400).send("Missing name");
-  try {
-    const group = await prisma.group.create({ data: { name, description } });
-    res.json(group);
-  } catch (e: any) {
-    res.status(400).json({ error: e.message });
-  }
-});
-
-// --- List Groups ---
-app.get("/groups", async (_req, res) => {
-  const groups = await prisma.group.findMany();
-  res.json(groups);
-});
-
-// --- Join Group ---
-app.post("/groups/:groupId/join", auth, async (req, res) => {
-  const payload = (req as any).user as jwt.JwtPayload;
-  const { groupId } = req.params;
-  try {
-    const membership = await prisma.membership.create({
-      data: { userId: payload.id, groupId },
-    });
-    res.json(membership);
-  } catch (e: any) {
-    res.status(400).json({ error: e.message });
-  }
-});
-
-// --- Create Post ---
+// --- Create Post (≤500 chars) ---
 app.post("/posts", auth, async (req, res) => {
   const payload = (req as any).user as jwt.JwtPayload;
-  const { groupId, content } = req.body;
-  if (!groupId || !content) return res.status(400).send("Missing fields");
+  const { content, groupId } = req.body ?? {};
+  if (!content || String(content).length > 500) return res.status(400).send("Invalid content");
+
   try {
-    const post = await prisma.post.create({
-      data: { userId: payload.id, groupId, content },
+    const post = await prisma.posts.create({
+      data: { userId: payload.id, content: String(content), groupId: groupId ?? null },
     });
     res.json(post);
   } catch (e: any) {
@@ -137,16 +90,309 @@ app.post("/posts", auth, async (req, res) => {
   }
 });
 
-// --- Get Posts ---
+// --- Get Posts (optionally by group) ---
 app.get("/posts", auth, async (req, res) => {
-  const groupId = req.query.groupId as string | undefined;
-  const posts = await prisma.post.findMany({
+  const groupId = (req.query.groupId as string | undefined) || undefined;
+  const posts = await prisma.posts.findMany({
     where: groupId ? { groupId } : undefined,
     include: { user: true, group: true },
     orderBy: { createdAt: "desc" },
   });
   res.json(posts);
 });
+
+// --- Groups (create/list) ---
+app.post("/groups", auth, async (req, res) => {
+  const { name, description, isPrivate } = req.body ?? {};
+  if (!name) return res.status(400).send("Missing name");
+  const me = (req as any).user as jwt.JwtPayload;
+  try {
+    const group = await prisma.groups.create({
+      data: {
+        name: String(name),
+        description: description ?? null,
+        isPrivate: Boolean(isPrivate ?? false),
+        adminId: me.id,
+      },
+    });
+    res.json(group);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.get("/groups", auth, async (_req, res) => {
+  const groups = await prisma.groups.findMany({ include: { admin: true } });
+  res.json(groups);
+});
+
+// ========== Connections: requests (create + list incoming) ==========
+
+type ConnectionType = "ACQUAINTANCE" | "STRANGER" | "FOLLOW";
+
+// Helper: normalize unordered pair for ACQUAINTANCE/STRANGER
+function normalizePair(u1: string, u2: string): [string, string] {
+  return u1 < u2 ? [u1, u2] : [u2, u1];
+}
+
+// Send a connection request
+app.post("/connections/requests", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const { requestedId, type } = req.body ?? {};
+
+  if (!requestedId || !type) return res.status(400).send("requestedId and type are required");
+  if (!["ACQUAINTANCE", "STRANGER", "FOLLOW"].includes(type))
+    return res.status(400).send("invalid type");
+  if (me === requestedId) return res.status(400).send("cannot request self");
+
+  // FOLLOW guard: only creators can be followed
+  if (type === "FOLLOW") {
+    const target = await prisma.users.findUnique({ where: { id: requestedId } });
+    if (!target) return res.status(404).send("requested user not found");
+    if (!target.isCreator) return res.status(400).send("cannot follow a non-creator");
+  }
+
+  // Prevent duplicate active request (same direction + type)
+  const dup = await prisma.connectionRequest.findFirst({
+    where: { requesterId: me, requestedId, type, status: "PENDING" },
+  });
+  if (dup) return res.status(409).send("request already pending");
+
+  // Prevent creating a request if connection already exists
+  let exists = null as any;
+  if (type === "FOLLOW") {
+    // directed
+    exists = await prisma.connections.findUnique({
+      where: { requesterId_requestedId_type: { requesterId: me, requestedId, type } },
+    });
+  } else {
+    // undirected - normalize
+    const [a, b] = normalizePair(me, requestedId);
+    exists = await prisma.connections.findUnique({
+      where: { requesterId_requestedId_type: { requesterId: a, requestedId: b, type } },
+    });
+  }
+  if (exists) return res.status(409).send("connection already exists");
+
+  const created = await prisma.connectionRequest.create({
+    data: { requesterId: me, requestedId, type },
+  });
+
+  res.status(201).json(created);
+});
+
+// List my incoming pending requests (verify)
+app.get("/connections/requests/incoming", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const items = await prisma.connectionRequest.findMany({
+    where: { requestedId: me, status: "PENDING" },
+    include: { requester: true },
+    orderBy: { createdAt: "desc" },
+  });
+  res.json(items);
+});
+
+// Accept connection request
+app.post("/connections/requests/:id/accept", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const cr = await prisma.connectionRequest.findUnique({ where: { id: req.params.id }});
+  if (!cr || cr.requestedId !== me || cr.status !== "PENDING") 
+    return res.status(400).send("invalid");
+
+  const type = cr.type as "ACQUAINTANCE" | "STRANGER" | "FOLLOW";
+  const [a, b] =
+    type === "FOLLOW"
+      ? [cr.requesterId, cr.requestedId]
+      : cr.requesterId < cr.requestedId
+      ? [cr.requesterId, cr.requestedId]
+      : [cr.requestedId, cr.requesterId];
+
+  const conn = await prisma.connections.create({
+    data: { requesterId: a, requestedId: b, type },
+  });
+  await prisma.connectionRequest.update({
+    where: { id: cr.id },
+    data: { status: "ACCEPTED", decidedAt: new Date() },
+  });
+
+  res.json(conn);
+});
+
+//Get user connections 
+// --- List connections/follows ---
+// --- Connections: lists by category + combined ---
+app.get("/connections/acquaintances", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const rows = await prisma.connections.findMany({
+    where: { type: "ACQUAINTANCE", OR: [{ requesterId: me }, { requestedId: me }] },
+    select: { requesterId: true, requestedId: true },
+  });
+  const ids = rows.map(r => (r.requesterId === me ? r.requestedId : r.requesterId));
+  res.json({ acquaintances: ids });
+});
+
+app.get("/connections/strangers", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const rows = await prisma.connections.findMany({
+    where: { type: "STRANGER", OR: [{ requesterId: me }, { requestedId: me }] },
+    select: { requesterId: true, requestedId: true },
+  });
+  const ids = rows.map(r => (r.requesterId === me ? r.requestedId : r.requesterId));
+  res.json({ strangers: ids });
+});
+
+app.get("/connections/following", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const rows = await prisma.connections.findMany({
+    where: { type: "FOLLOW", requesterId: me },
+    select: { requestedId: true },
+  });
+  res.json({ following: rows.map(r => r.requestedId) });
+});
+
+app.get("/connections/followers", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const rows = await prisma.connections.findMany({
+    where: { type: "FOLLOW", requestedId: me },
+    select: { requesterId: true },
+  });
+  res.json({ followers: rows.map(r => r.requesterId) });
+});
+
+// Get connections; acquaintances, strangers, followers, following or all. 
+// --- Connections: lists by category + combined ---
+app.get("/connections/acquaintances", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const rows = await prisma.connections.findMany({
+    where: { type: "ACQUAINTANCE", OR: [{ requesterId: me }, { requestedId: me }] },
+    select: { requesterId: true, requestedId: true },
+  });
+  const ids = rows.map(r => (r.requesterId === me ? r.requestedId : r.requesterId));
+  res.json({ acquaintances: ids });
+});
+
+app.get("/connections/strangers", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const rows = await prisma.connections.findMany({
+    where: { type: "STRANGER", OR: [{ requesterId: me }, { requestedId: me }] },
+    select: { requesterId: true, requestedId: true },
+  });
+  const ids = rows.map(r => (r.requesterId === me ? r.requestedId : r.requesterId));
+  res.json({ strangers: ids });
+});
+
+app.get("/connections/following", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const rows = await prisma.connections.findMany({
+    where: { type: "FOLLOW", requesterId: me },
+    select: { requestedId: true },
+  });
+  res.json({ following: rows.map(r => r.requestedId) });
+});
+
+app.get("/connections/followers", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const rows = await prisma.connections.findMany({
+    where: { type: "FOLLOW", requestedId: me },
+    select: { requesterId: true },
+  });
+  res.json({ followers: rows.map(r => r.requesterId) });
+});
+
+// Combined: union of all four categories
+app.get("/connections", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const [acq, str, fol, folw] = await Promise.all([
+    prisma.connections.findMany({
+      where: { type: "ACQUAINTANCE", OR: [{ requesterId: me }, { requestedId: me }] },
+      select: { requesterId: true, requestedId: true },
+    }),
+    prisma.connections.findMany({
+      where: { type: "STRANGER", OR: [{ requesterId: me }, { requestedId: me }] },
+      select: { requesterId: true, requestedId: true },
+    }),
+    prisma.connections.findMany({
+      where: { type: "FOLLOW", requesterId: me },
+      select: { requestedId: true },
+    }),
+    prisma.connections.findMany({
+      where: { type: "FOLLOW", requestedId: me },
+      select: { requesterId: true },
+    }),
+  ]);
+
+  const acquaintances = acq.map(r => (r.requesterId === me ? r.requestedId : r.requesterId));
+  const strangers     = str.map(r => (r.requesterId === me ? r.requestedId : r.requesterId));
+  const following     = fol.map(r => r.requestedId);
+  const followers     = folw.map(r => r.requesterId);
+  const connections   = Array.from(new Set([...acquaintances, ...strangers, ...following, ...followers]));
+
+  res.json({ acquaintances, strangers, following, followers, connections });
+});
+
+// GET /feed  -> posts from me, my acquaintances, my strangers, and users I follow
+app.get("/feed", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+
+  const [undirected, following] = await Promise.all([
+    prisma.connections.findMany({
+      where: {
+        type: { in: ["ACQUAINTANCE", "STRANGER"] },
+        OR: [{ requesterId: me }, { requestedId: me }],
+      },
+      select: { requesterId: true, requestedId: true, type: true },
+    }),
+    prisma.connections.findMany({
+      where: { type: "FOLLOW", requesterId: me },
+      select: { requestedId: true },
+    }),
+  ]);
+
+  const acquaintances = new Set<string>();
+  const strangers     = new Set<string>();
+  for (const r of undirected) {
+    const other = r.requesterId === me ? r.requestedId : r.requesterId;
+    (r.type === "ACQUAINTANCE" ? acquaintances : strangers).add(other);
+  }
+  const followingIds = new Set(following.map(r => r.requestedId));
+
+  const authorIds = Array.from(new Set([me, ...acquaintances, ...strangers, ...followingIds]));
+
+  const posts = await prisma.posts.findMany({
+    where: { userId: { in: authorIds } },
+    orderBy: { createdAt: "desc" },
+    include: { user: true },
+    take: 50,
+  });
+
+  const toRelation = (authorId: string) =>
+    authorId === me
+      ? "SELF"
+      : acquaintances.has(authorId)
+      ? "ACQUAINTANCE"
+      : strangers.has(authorId)
+      ? "STRANGER"
+      : followingIds.has(authorId)
+      ? "FOLLOWING"
+      : "NONE";
+
+  res.json(
+    posts.map(p => ({
+      id: p.id,
+      userId: p.userId,
+      content: p.content,
+      createdAt: p.createdAt,
+      user: { id: p.user.id, email: p.user.email },
+      relation: toRelation(p.userId),
+    }))
+  );
+});
+
+
+
+
+
+// ============================================================
 
 // --- Start server ---
 app.listen(PORT, () => console.log(`Server on http://127.0.0.1:${PORT}`));
