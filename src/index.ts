@@ -221,6 +221,20 @@ app.post("/connections/requests/:id/accept", auth, async (req, res) => {
   res.json(conn);
 });
 
+// Decline (deny) a pending connection request
+app.post("/connections/requests/:id/decline", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const cr = await prisma.connectionRequest.findUnique({ where: { id: req.params.id } });
+  if (!cr || cr.requestedId !== me || cr.status !== "PENDING") {
+    return res.status(400).send("invalid");
+  }
+  const updated = await prisma.connectionRequest.update({
+    where: { id: cr.id },
+    data: { status: "DECLINED", decidedAt: new Date() },
+  });
+  res.json(updated);
+});
+
 // Lists
 app.get("/connections/acquaintances", auth, async (req, res) => {
   const me = (req as any).user.id as string;
@@ -364,6 +378,57 @@ app.post("/privacy/me", auth, async (req, res) => {
     res.status(400).json({ error: e.message });
   }
 });
+
+// DELETE /user  -> delete my account
+app.delete("/user", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const force = String(req.query.force || "").toLowerCase() === "true";
+
+  const adminGroups = await prisma.groups.findMany({ where: { adminId: me }, select: { id: true } });
+  if (adminGroups.length && !force) {
+    return res.status(409).json({
+      error: "user_is_group_admin",
+      message: "User administers groups. Reassign or call with ?force=true to delete them."
+    });
+  }
+
+  try {
+    await prisma.$transaction(async tx => {
+      // Remove pending requests (both directions)
+      await tx.connectionRequest.deleteMany({ where: { requesterId: me } });
+      await tx.connectionRequest.deleteMany({ where: { requestedId: me } });
+
+      // Remove connections (both directions)
+      await tx.connections.deleteMany({ where: { requesterId: me } });
+      await tx.connections.deleteMany({ where: { requestedId: me } });
+
+      // Remove group memberships (roster)
+      await tx.groupRoster.deleteMany({ where: { userId: me } });
+
+      // Optionally remove groups the user admins (if forced)
+      if (force && adminGroups.length) {
+        const ids = adminGroups.map(g => g.id);
+        // Delete posts in those groups
+        await tx.posts.deleteMany({ where: { groupId: { in: ids } } });
+        // Delete rosters for those groups
+        await tx.groupRoster.deleteMany({ where: { groupId: { in: ids } } });
+        // Delete the groups
+        await tx.groups.deleteMany({ where: { id: { in: ids } } });
+      }
+
+      // Delete user's own posts
+      await tx.posts.deleteMany({ where: { userId: me } });
+
+      // Finally delete the user
+      await tx.users.delete({ where: { id: me } });
+    });
+
+    res.status(204).end();
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
 
 // --- Start server ---
 app.listen(PORT, () => console.log(`Server on http://127.0.0.1:${PORT}`));
