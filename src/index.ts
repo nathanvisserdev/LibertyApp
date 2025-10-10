@@ -19,7 +19,7 @@ if (!JWT_SECRET) throw new Error("Missing JWT_SECRET in .env");
 // --- CORS ---
 app.use(cors({ origin: CORS_ORIGIN || true }));
 
-// --- Ping route ---
+// --- Ping ---
 app.get("/ping", (_req, res) => res.status(200).send("ok"));
 
 // --- Auth middleware ---
@@ -29,14 +29,14 @@ function auth(req: express.Request, res: express.Response, next: express.NextFun
   const token = header.slice(7);
   try {
     const payload = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
-    (req as any).user = payload; // attach decoded claims
+    (req as any).user = payload;
     next();
   } catch {
     return res.status(401).send("Invalid token");
   }
 }
 
-// --- Signup (email + password only) ---
+// --- Signup (email + password) ---
 app.post("/signup", async (req, res) => {
   const { email, password } = req.body ?? {};
   if (!email || !password) return res.status(400).send("missing required fields");
@@ -79,7 +79,6 @@ app.post("/posts", auth, async (req, res) => {
   const payload = (req as any).user as jwt.JwtPayload;
   const { content, groupId } = req.body ?? {};
   if (!content || String(content).length > 500) return res.status(400).send("Invalid content");
-
   try {
     const post = await prisma.posts.create({
       data: { userId: payload.id, content: String(content), groupId: groupId ?? null },
@@ -126,16 +125,15 @@ app.get("/groups", auth, async (_req, res) => {
   res.json(groups);
 });
 
-// ========== Connections: requests (create + list incoming) ==========
-
+// ========== Connections ==========
 type ConnectionType = "ACQUAINTANCE" | "STRANGER" | "FOLLOW";
 
-// Helper: normalize unordered pair for ACQUAINTANCE/STRANGER
+// normalize unordered pair for ACQUAINTANCE/STRANGER
 function normalizePair(u1: string, u2: string): [string, string] {
   return u1 < u2 ? [u1, u2] : [u2, u1];
 }
 
-// Send a connection request
+// Send a connection request (auto-accept FOLLOW if requested user is public)
 app.post("/connections/requests", auth, async (req, res) => {
   const me = (req as any).user.id as string;
   const { requestedId, type } = req.body ?? {};
@@ -145,28 +143,19 @@ app.post("/connections/requests", auth, async (req, res) => {
     return res.status(400).send("invalid type");
   if (me === requestedId) return res.status(400).send("cannot request self");
 
-  // FOLLOW guard: only creators can be followed
-  if (type === "FOLLOW") {
-    const target = await prisma.users.findUnique({ where: { id: requestedId } });
-    if (!target) return res.status(404).send("requested user not found");
-    if (!target.isCreator) return res.status(400).send("cannot follow a non-creator");
-  }
-
-  // Prevent duplicate active request (same direction + type)
+  // Prevent duplicate pending request
   const dup = await prisma.connectionRequest.findFirst({
     where: { requesterId: me, requestedId, type, status: "PENDING" },
   });
   if (dup) return res.status(409).send("request already pending");
 
-  // Prevent creating a request if connection already exists
+  // Prevent duplicate connection
   let exists = null as any;
   if (type === "FOLLOW") {
-    // directed
     exists = await prisma.connections.findUnique({
       where: { requesterId_requestedId_type: { requesterId: me, requestedId, type } },
     });
   } else {
-    // undirected - normalize
     const [a, b] = normalizePair(me, requestedId);
     exists = await prisma.connections.findUnique({
       where: { requesterId_requestedId_type: { requesterId: a, requestedId: b, type } },
@@ -174,14 +163,28 @@ app.post("/connections/requests", auth, async (req, res) => {
   }
   if (exists) return res.status(409).send("connection already exists");
 
+  // FOLLOW: check target privacy for auto-accept
+  if (type === "FOLLOW") {
+    const target = await prisma.users.findUnique({ where: { id: requestedId } });
+    if (!target) return res.status(404).send("requested user not found");
+
+    if (target.isPrivateUser === false) {
+      // Public user: auto-accept follow
+      const conn = await prisma.connections.create({
+        data: { requesterId: me, requestedId, type: "FOLLOW" },
+      });
+      return res.status(201).json({ autoAccepted: true, connection: conn });
+    }
+    // Private user: fall through to create pending request
+  }
+
   const created = await prisma.connectionRequest.create({
     data: { requesterId: me, requestedId, type },
   });
-
-  res.status(201).json(created);
+  return res.status(201).json(created);
 });
 
-// List my incoming pending requests (verify)
+// List my incoming pending requests
 app.get("/connections/requests/incoming", auth, async (req, res) => {
   const me = (req as any).user.id as string;
   const items = await prisma.connectionRequest.findMany({
@@ -195,14 +198,14 @@ app.get("/connections/requests/incoming", auth, async (req, res) => {
 // Accept connection request
 app.post("/connections/requests/:id/accept", auth, async (req, res) => {
   const me = (req as any).user.id as string;
-  const cr = await prisma.connectionRequest.findUnique({ where: { id: req.params.id }});
-  if (!cr || cr.requestedId !== me || cr.status !== "PENDING") 
+  const cr = await prisma.connectionRequest.findUnique({ where: { id: req.params.id } });
+  if (!cr || cr.requestedId !== me || cr.status !== "PENDING")
     return res.status(400).send("invalid");
 
-  const type = cr.type as "ACQUAINTANCE" | "STRANGER" | "FOLLOW";
+  const type = cr.type as ConnectionType;
   const [a, b] =
     type === "FOLLOW"
-      ? [cr.requesterId, cr.requestedId]
+      ? [cr.requesterId, cr.requestedId] // directed
       : cr.requesterId < cr.requestedId
       ? [cr.requesterId, cr.requestedId]
       : [cr.requestedId, cr.requesterId];
@@ -218,9 +221,7 @@ app.post("/connections/requests/:id/accept", auth, async (req, res) => {
   res.json(conn);
 });
 
-//Get user connections 
-// --- List connections/follows ---
-// --- Connections: lists by category + combined ---
+// Lists
 app.get("/connections/acquaintances", auth, async (req, res) => {
   const me = (req as any).user.id as string;
   const rows = await prisma.connections.findMany({
@@ -259,47 +260,7 @@ app.get("/connections/followers", auth, async (req, res) => {
   res.json({ followers: rows.map(r => r.requesterId) });
 });
 
-// Get connections; acquaintances, strangers, followers, following or all. 
-// --- Connections: lists by category + combined ---
-app.get("/connections/acquaintances", auth, async (req, res) => {
-  const me = (req as any).user.id as string;
-  const rows = await prisma.connections.findMany({
-    where: { type: "ACQUAINTANCE", OR: [{ requesterId: me }, { requestedId: me }] },
-    select: { requesterId: true, requestedId: true },
-  });
-  const ids = rows.map(r => (r.requesterId === me ? r.requestedId : r.requesterId));
-  res.json({ acquaintances: ids });
-});
-
-app.get("/connections/strangers", auth, async (req, res) => {
-  const me = (req as any).user.id as string;
-  const rows = await prisma.connections.findMany({
-    where: { type: "STRANGER", OR: [{ requesterId: me }, { requestedId: me }] },
-    select: { requesterId: true, requestedId: true },
-  });
-  const ids = rows.map(r => (r.requesterId === me ? r.requestedId : r.requesterId));
-  res.json({ strangers: ids });
-});
-
-app.get("/connections/following", auth, async (req, res) => {
-  const me = (req as any).user.id as string;
-  const rows = await prisma.connections.findMany({
-    where: { type: "FOLLOW", requesterId: me },
-    select: { requestedId: true },
-  });
-  res.json({ following: rows.map(r => r.requestedId) });
-});
-
-app.get("/connections/followers", auth, async (req, res) => {
-  const me = (req as any).user.id as string;
-  const rows = await prisma.connections.findMany({
-    where: { type: "FOLLOW", requestedId: me },
-    select: { requesterId: true },
-  });
-  res.json({ followers: rows.map(r => r.requesterId) });
-});
-
-// Combined: union of all four categories
+// Combined
 app.get("/connections", auth, async (req, res) => {
   const me = (req as any).user.id as string;
   const [acq, str, fol, folw] = await Promise.all([
@@ -330,7 +291,7 @@ app.get("/connections", auth, async (req, res) => {
   res.json({ acquaintances, strangers, following, followers, connections });
 });
 
-// GET /feed  -> posts from me, my acquaintances, my strangers, and users I follow
+// --- Feed (SELF + acquaintances + strangers + following) ---
 app.get("/feed", auth, async (req, res) => {
   const me = (req as any).user.id as string;
 
@@ -388,11 +349,21 @@ app.get("/feed", auth, async (req, res) => {
   );
 });
 
-
-
-
-
-// ============================================================
+// --- Privacy toggle (make myself public/private) ---
+app.post("/privacy/me", auth, async (req, res) => {
+  const me = (req as any).user.id as string;
+  const { isPrivateUser } = req.body ?? {};
+  if (typeof isPrivateUser !== "boolean") return res.status(400).send("isPrivateUser must be boolean");
+  try {
+    const u = await prisma.users.update({
+      where: { id: me },
+      data: { isPrivateUser },
+    });
+    res.json({ id: u.id, isPrivateUser: u.isPrivateUser });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
 
 // --- Start server ---
 app.listen(PORT, () => console.log(`Server on http://127.0.0.1:${PORT}`));

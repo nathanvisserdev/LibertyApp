@@ -36,8 +36,8 @@ model Users {
   about       String?
   createdAt   DateTime  @default(now())
 
-  // creator flag
-  isCreator Boolean @default(false)
+  // user privacy default settings
+  isPrivateUser Boolean  @default(true) // private by default
 
   // content
   posts Posts[]
