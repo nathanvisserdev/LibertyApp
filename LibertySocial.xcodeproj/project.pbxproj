@@ -33,6 +33,7 @@
 		15064F492E942D56000E0D11 /* Exceptions for "LibertySocial" folder in "LibertySocialTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Features/Feed/FeedViewModel.swift,
 				Features/Login/LoginViewModel.swift,
 				Features/Main/MainViewModel.swift,
 				Services/AuthService.swift,
@@ -42,6 +43,8 @@
 		15064F502E9430ED000E0D11 /* Exceptions for "LibertySocial" folder in "LibertySocialUITests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Features/Feed/FeedView.swift,
+				Features/Feed/FeedViewModel.swift,
 				Features/Login/LoginView.swift,
 				Features/Main/MainView.swift,
 				Features/Main/MainViewModel.swift,

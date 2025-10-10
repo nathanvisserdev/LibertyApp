@@ -16,7 +16,7 @@ struct LibertySocialApp: App {
         WindowGroup {
             Group {
                 if session.isAuthenticated {
-                    MainView() // replace with your actual authenticated root
+                    FeedView() // replace with your actual authenticated root
                 } else {
                     LoginView()
                 }
