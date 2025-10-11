@@ -10,7 +10,7 @@ import SwiftUI
 struct FeedView: View {
     @StateObject private var vm = FeedViewModel()
     @EnvironmentObject private var session: SessionStore
-    @State private var showingComposer = false   // NEW
+    @StateObject private var tabBarVM = TabBarViewModel() // Use TabBarViewModel
 
     var body: some View {
         NavigationStack {
@@ -44,28 +44,14 @@ struct FeedView: View {
             }
         }
         .task { await vm.load() }
-        // NEW: put the bar under the feed
+        // Use TabBarView with viewModel
         .safeAreaInset(edge: .bottom) {
-            TabBarView { showingComposer = true }
+            TabBarView(viewModel: tabBarVM)
                 .ignoresSafeArea(edges: .bottom)
         }
-        // NEW: temporary composer
-        .sheet(isPresented: $showingComposer) {
-            NavigationStack {
-                VStack {
-                    TextEditor(text: .constant(""))
-                        .padding()
-                        .background(.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
-                    Button("Post to Public Square") { showingComposer = false }
-                        .buttonStyle(.borderedProminent)
-                        .padding(.top, 12)
-                }
-                .padding()
-                .navigationTitle("Compose")
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) { Button("Cancel") { showingComposer = false } }
-                }
-            }
+        // Show composer when tabBarVM.isComposePresented is true
+        .sheet(isPresented: $tabBarVM.isComposePresented) {
+            ComposeView(viewModel: tabBarVM)
         }
     }
 

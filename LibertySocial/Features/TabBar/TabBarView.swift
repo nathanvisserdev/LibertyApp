@@ -9,12 +9,14 @@
 import SwiftUI
 
 struct TabBarView: View {
-    var onQuillTap: () -> Void
+    @ObservedObject var viewModel: TabBarViewModel
 
     var body: some View {
         HStack {
             Spacer()
-            Button(action: onQuillTap) {
+            Button(action: {
+                viewModel.showCompose()
+            }) {
                 Image("quill") // in Assets.xcassets
                     .resizable()
                     .scaledToFit()
@@ -31,5 +33,44 @@ struct TabBarView: View {
         }
         .padding(.vertical, 8)
         .background(.ultraThinMaterial)
+        .sheet(isPresented: $viewModel.isComposePresented) {
+            ComposeView(viewModel: viewModel)
+        }
+    }
+}
+
+struct ComposeView: View {
+    @ObservedObject var viewModel: TabBarViewModel
+
+    var body: some View {
+        NavigationView {
+            VStack(alignment: .leading) {
+                TextEditor(text: Binding(
+                    get: { viewModel.postContent },
+                    set: { viewModel.updatePostContent($0) }
+                ))
+                .frame(minHeight: 150)
+                .padding()
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.2)))
+                .accessibilityLabel("Compose Post")
+
+                HStack {
+                    Spacer()
+                    Text("\(viewModel.remainingCharacters) characters left")
+                        .foregroundColor(viewModel.remainingCharacters < 0 ? .red : .secondary)
+                        .font(.caption)
+                }
+                .padding(.horizontal)
+
+                Spacer()
+            }
+            .navigationTitle("Compose Post")
+            .navigationBarItems(leading: Button("Cancel") {
+                viewModel.hideCompose()
+            }, trailing: Button("Post") {
+                // Add post logic here
+                viewModel.hideCompose()
+            }.disabled(viewModel.postContent.isEmpty || viewModel.remainingCharacters < 0))
+        }
     }
 }
