@@ -9,7 +9,8 @@ import SwiftUI
 
 struct FeedView: View {
     @StateObject private var vm = FeedViewModel()
-    @EnvironmentObject private var session: SessionStore  // <- for routing after logout
+    @EnvironmentObject private var session: SessionStore
+    @State private var showingComposer = false   // NEW
 
     var body: some View {
         NavigationStack {
@@ -36,13 +37,36 @@ struct FeedView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Log out") {
-                        AuthService.logout()     // clears token
-                        session.refresh()        // re-evaluate auth -> show LoginView
+                        AuthService.logout()
+                        session.refresh()
                     }
                 }
             }
         }
         .task { await vm.load() }
+        // NEW: put the bar under the feed
+        .safeAreaInset(edge: .bottom) {
+            TabBarView { showingComposer = true }
+                .ignoresSafeArea(edges: .bottom)
+        }
+        // NEW: temporary composer
+        .sheet(isPresented: $showingComposer) {
+            NavigationStack {
+                VStack {
+                    TextEditor(text: .constant(""))
+                        .padding()
+                        .background(.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+                    Button("Post to Public Square") { showingComposer = false }
+                        .buttonStyle(.borderedProminent)
+                        .padding(.top, 12)
+                }
+                .padding()
+                .navigationTitle("Compose")
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) { Button("Cancel") { showingComposer = false } }
+                }
+            }
+        }
     }
 
     @ViewBuilder private func rows(_ items: [FeedItem]) -> some View {
@@ -59,10 +83,15 @@ struct FeedView: View {
 }
 
 private extension DateFormatter {
-    static let feed: DateFormatter = { let f = DateFormatter(); f.dateStyle = .short; f.timeStyle = .short; return f }()
+    static let feed: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .short
+        f.timeStyle = .short
+        return f
+    }()
+
     func string(fromISO s: String) -> String {
         let iso = ISO8601DateFormatter()
         return string(from: iso.date(from: s) ?? Date())
     }
 }
-

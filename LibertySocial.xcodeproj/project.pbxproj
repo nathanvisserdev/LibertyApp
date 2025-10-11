@@ -48,6 +48,7 @@
 				Features/Login/LoginView.swift,
 				Features/Main/MainView.swift,
 				Features/Main/MainViewModel.swift,
+				Features/TabBar/TabBarView.swift,
 			);
 			target = 15913F7D2E8EB4B800A015C7 /* LibertySocialUITests */;
 		};
