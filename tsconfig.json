@@ -7,11 +7,12 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "commonjs",
-    "target": "es2020",
+  "module": "ESNext",
+  "moduleResolution": "node",
+  "target": "ES2022",
     "types": [],
     // For nodejs:
-    // "lib": ["esnext"],
+  "lib": ["ES2022", "DOM"],
     // "types": ["node"],
     // and npm install -D @types/node
 
