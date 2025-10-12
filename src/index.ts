@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { PrismaClient, GroupType } from "./generated/prisma";
+import { PrismaClient, GroupType, PostVisibility } from "./generated/prisma";
 
 const app = express();
 const prisma = new PrismaClient();
@@ -14,10 +14,7 @@ const PORT = Number(process.env.PORT || 3000);
 const CORS_ORIGIN = process.env.CORS_ORIGIN?.split(",").map(s => s.trim());
 const BCRYPT_ROUNDS = Number(process.env.BCRYPT_ROUNDS || 12);
 const JWT_SECRET = process.env.JWT_SECRET ?? "";
-const PUBLIC_SQUARE_ADMIN_ID = process.env.PUBLIC_SQUARE_ADMIN_ID ?? "";
-
 if (!JWT_SECRET) throw new Error("Missing JWT_SECRET in .env");
-if (!PUBLIC_SQUARE_ADMIN_ID) throw new Error("Missing PUBLIC_SQUARE_ADMIN_ID in .env");
 
 // --- CORS ---
 app.use(cors({ origin: CORS_ORIGIN || true }));
@@ -39,29 +36,6 @@ function auth(req: express.Request, res: express.Response, next: express.NextFun
   }
 }
 
-// --- Startup: ensure single global Public Square exists ---
-async function ensurePublicSquare() {
-  const admin = await prisma.users.findUnique({ where: { id: PUBLIC_SQUARE_ADMIN_ID } });
-  if (!admin) throw new Error("PUBLIC_SQUARE_ADMIN_ID does not reference an existing user");
-
-  const existing = await prisma.groups.findFirst({ where: { groupType: "ALL_USERS" } });
-  if (!existing) {
-    await prisma.groups.create({
-      data: {
-        name: "All Users",
-        description: "Global Public Square",
-        groupType: "ALL_USERS",
-        adminId: PUBLIC_SQUARE_ADMIN_ID,
-      },
-    });
-    console.log("✔ Created global Public Square group");
-  }
-}
-ensurePublicSquare().catch(err => {
-  console.error("Failed to ensure Public Square:", err);
-  process.exit(1);
-});
-
 // --- Helpers ---
 async function isBlockedBetween(a: string, b: string) {
   const hit = await prisma.blocks.findFirst({
@@ -71,13 +45,20 @@ async function isBlockedBetween(a: string, b: string) {
   return !!hit;
 }
 
-async function userInnerCircleGroupId(userId: string) {
+// (kept for future use; returns PERSONAL group id if present)
+async function userSocialCircleGroupId(userId: string) {
   const g = await prisma.groups.findFirst({
     where: { adminId: userId, groupType: "PERSONAL" },
     select: { id: true },
   });
   return g?.id ?? null;
 }
+
+// Public feed predicate: visibility PUBLIC and (no group OR group is PUBLIC)
+const publicFeedWhere = () => ({
+  visibility: PostVisibility.PUBLIC,
+  OR: [{ groupId: null }, { group: { groupType: GroupType.PUBLIC } }],
+});
 
 // --- Signup (email + password) ---
 app.post("/signup", async (req, res) => {
@@ -89,11 +70,11 @@ app.post("/signup", async (req, res) => {
       data: { email: String(email).toLowerCase(), password: hash },
     });
 
-    // Ensure exactly one Inner Circle (PERSONAL) per user
+    // Ensure exactly one PERSONAL group per user (Social Circle)
     await prisma.groups.create({
       data: {
-        name: "Inner Circle",
-        description: "Your private audience",
+        name: "Social Circle",
+        description: "Your personal group",
         groupType: "PERSONAL",
         adminId: user.id,
       },
@@ -151,51 +132,40 @@ app.post("/unblock", auth, async (req, res) => {
   res.sendStatus(204);
 });
 
-// --- Create Post (≤500 chars) single target ---
+// --- Create Post (≤500 chars) for Public Feed (auth required, no group) ---
 app.post("/posts", auth, async (req, res) => {
-  const me = (req as any).user as jwt.JwtPayload;
-  const { content, groupId } = req.body ?? {};
-  if (!content || String(content).length > 500) return res.status(400).send("Invalid content");
-  if (!groupId) return res.status(400).send("groupId required");
+  const me = (req as any).user as jwt.JwtPayload; // comes from verified JWT
+  const { content } = req.body ?? {};
 
-  // Validate target & permissions
-  const group = await prisma.groups.findUnique({ where: { id: String(groupId) } });
-  if (!group) return res.status(404).send("group not found");
-
-  // Blocked users can't post to others' groups if the admin blocked them (bilateral applies globally)
-  if (await isBlockedBetween(me.id, group.adminId)) return res.sendStatus(403);
-
-  switch (group.groupType) {
-    case "ALL_USERS":
-      // Public Square: allowed
-      break;
-    case "PUBLIC":
-      // Assembly Rooms: allowed
-      break;
-    case "PRIVATE": {
-      // Sanctuaries: must be a member
-      const member = await prisma.groupRoster.findUnique({
-        where: { userId_groupId: { userId: me.id, groupId: group.id } },
-      });
-      if (!member) return res.status(403).send("not a member");
-      break;
-    }
-    case "PERSONAL": {
-      // Inner Circle: only the owner can post to their own Inner Circle
-      if (group.adminId !== me.id) return res.status(403).send("not owner of inner circle");
-      break;
-    }
+  if (!content || String(content).trim().length === 0 || String(content).length > 500) {
+    return res.status(400).send("Invalid content");
   }
 
   try {
     const post = await prisma.posts.create({
-      data: { userId: me.id, content: String(content), groupId: group.id },
+      data: {
+        userId: me.id,               // linked to authenticated user
+        content: String(content),    // sanitized content
+        // no groupId -> public feed
+      },
     });
-    res.json(post);
+
+    // secure, consistent JSON response
+    res.status(201).json({
+      id: post.id,
+      content: post.content,
+      createdAt: post.createdAt,
+      userId: post.userId,
+    });
   } catch (e: any) {
+    console.error(e);
     res.status(400).json({ error: e.message });
   }
 });
+
+
+
+
 
 // --- Get Posts (optionally by group) with block filtering ---
 app.get("/posts", auth, async (req, res) => {
@@ -242,6 +212,29 @@ app.get("/posts", auth, async (req, res) => {
   res.json(posts);
 });
 
+// --- Public Square feed (derived; no auth required) ---
+app.get("/feed/public-square", async (req, res) => {
+  try {
+    const take = Math.min(Number(req.query.take) || 30, 100);
+    const cursor = req.query.cursor ? String(req.query.cursor) : undefined;
+
+    const items = await prisma.posts.findMany({
+      where: publicFeedWhere(),
+      include: { user: true, group: true },
+      orderBy: { createdAt: "desc" },
+      take,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+    });
+
+    res.json({
+      items,
+      nextCursor: items.length === take ? items[items.length - 1].id : null,
+    });
+  } catch (e) {
+    res.status(500).json({ error: "public-square-failed" });
+  }
+});
+
 // --- Groups (create/list) ---
 app.post("/groups", auth, async (req, res) => {
   const { name, description, groupType } = req.body ?? {};
@@ -249,7 +242,7 @@ app.post("/groups", auth, async (req, res) => {
 
   const me = (req as any).user as jwt.JwtPayload;
 
-  // Only allow Assembly Room (PUBLIC) or Sanctuary (PRIVATE)
+  // Only allow PUBLIC or PRIVATE for assembly rooms
   const allowed = ["PUBLIC", "PRIVATE"];
   if (!allowed.includes(String(groupType)?.toUpperCase()))
     return res.status(400).send("groupType must be PUBLIC or PRIVATE");
@@ -272,17 +265,14 @@ app.post("/groups", auth, async (req, res) => {
 app.get("/groups", auth, async (_req, res) => {
   const groups = await prisma.groups.findMany({ include: { admin: true } });
   res.json(
-    groups.map(g => ({
-      ...g,
-      displayLabel:
-        g.groupType === "ALL_USERS"
-          ? "Public Square"
-          : g.groupType === "PUBLIC"
-          ? "Assembly Room"
-          : g.groupType === "PRIVATE"
-          ? "Sanctuary"
-          : "Inner Circle",
-    }))
+    groups.map(g => {
+      if (g.groupType === "PUBLIC")
+        return { ...g, displayLabel: `${g.name} public assembly room` };
+      if (g.groupType === "PRIVATE")
+      return { ...g, displayLabel: `${g.name} private assembly room` };
+      // PERSONAL unchanged
+      return { ...g, displayLabel: "Social Circle" };
+    })
   );
 });
 
@@ -292,7 +282,7 @@ app.get("/groups/:id/room", auth, async (req, res) => {
   const g = await prisma.groups.findUnique({ where: { id: req.params.id } });
   if (!g) return res.sendStatus(404);
 
-  if (g.groupType === "PERSONAL") return res.status(404).send("no room for inner circle");
+  if (g.groupType === "PERSONAL") return res.status(404).send("no room for social circle");
   if (g.groupType === "PRIVATE") {
     const member = await prisma.groupRoster.findUnique({
       where: { userId_groupId: { userId: me, groupId: g.id } },
@@ -302,15 +292,13 @@ app.get("/groups/:id/room", auth, async (req, res) => {
   res.json({
     id: g.id,
     forumName:
-      g.groupType === "ALL_USERS"
-        ? "Public Square"
-        : g.groupType === "PUBLIC"
-        ? "Assembly Room"
-        : "Sanctuary",
+      g.groupType === "PUBLIC"
+        ? `${g.name} public assembly room`
+        : `${g.name} private assembly room`,
   });
 });
 
-// --- Delete user (protect Public Square & clean) ---
+// --- Delete user (protect and clean) ---
 app.delete("/user", auth, async (req, res) => {
   const me = (req as any).user.id as string;
   const force = String(req.query.force || "").toLowerCase() === "true";
@@ -337,9 +325,7 @@ app.delete("/user", auth, async (req, res) => {
       await tx.groupRoster.deleteMany({ where: { userId: me } });
 
       if (force && adminGroups.length) {
-        const deletableIds = adminGroups
-          .filter(g => g.groupType !== "ALL_USERS")
-          .map(g => g.id);
+        const deletableIds = adminGroups.map(g => g.id);
         if (deletableIds.length) {
           await tx.posts.deleteMany({ where: { groupId: { in: deletableIds } } });
           await tx.groupRoster.deleteMany({ where: { groupId: { in: deletableIds } } });

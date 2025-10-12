@@ -22,36 +22,41 @@ enum ConnectionType {
 }
 
 enum GroupType {
-  PUBLIC      // Assembly Rooms
-  PRIVATE     // Sanctuaries
-  PERSONAL    // Inner Circle (no room)
-  ALL_USERS   // Public Square (one global)
+  PUBLIC     // General Assembly
+  PRIVATE    // Assembly Room
+  PERSONAL   // Social Circle (owner = admin)
+}
+
+enum PostVisibility {
+  PUBLIC        // shows in Public Square if not in PRIVATE/PERSONAL group
+  CONNECTIONS   // author’s connections only
+  GROUP         // governed by group membership
 }
 
 model Users {
-  id          String    @id @default(cuid())
-  email       String    @unique
-  password    String
-  firstName   String?
-  lastName    String?
-  username    String?   @unique
-  dateOfBirth DateTime?
-  gender      Boolean?
-  phoneNumber String?
-  zipCode     String?
-  photo       String?
-  about       String?
-  createdAt   DateTime  @default(now())
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  username      String?   @unique
+  dateOfBirth   DateTime?
+  gender        Boolean?
+  phoneNumber   String?
+  zipCode       String?
+  photo         String?
+  about         String?
+  createdAt     DateTime  @default(now())
 
   // privacy & account state
-  isPrivateUser Boolean  @default(true)
-  isBanned      Boolean  @default(false) // platform ban toggle
+  isPrivateUser Boolean   @default(true)
+  isBanned      Boolean   @default(false)
 
   // content
-  posts Posts[]
+  posts         Posts[]
 
-  // groups this user belongs to (roster entries)
-  groups GroupRoster[]
+  // group membership
+  groups        GroupRoster[]
 
   // requests
   outgoingRequests ConnectionRequest[] @relation("req_outgoing")
@@ -61,14 +66,14 @@ model Users {
   following Connections[] @relation("conn_outgoing")
   followers Connections[] @relation("conn_incoming")
 
-  // blocks (bilateral effect via two directed rows)
+  // blocks
   blocksInitiated Blocks[] @relation("blocks_blocker")
   blocksReceived  Blocks[] @relation("blocks_blocked")
 
-  // optional 1:1 creator profile
+  // optional creator profile
   creator Creator?
 
-  // groups this user administers (back-relation to Groups.admin)
+  // groups this user administers
   adminGroups Groups[] @relation("GroupAdmin")
 }
 
@@ -80,34 +85,40 @@ model Creator {
 
 model Groups {
   id          String    @id @default(cuid())
-  name        String    @unique
+  name        String
   description String?
   createdAt   DateTime  @default(now())
 
   // visibility & admin
-  groupType GroupType @default(PERSONAL)
+  groupType GroupType @default(PRIVATE)
   adminId   String
   admin     Users     @relation("GroupAdmin", fields: [adminId], references: [id])
 
   // content
   posts Posts[]
 
-  // roster entries (who belongs to this group)
+  // roster
   members GroupRoster[]
 
   @@index([groupType])
   @@index([adminId])
+  @@unique([adminId, name])
 }
 
 model Posts {
-  id        String   @id @default(cuid())
-  content   String
-  createdAt DateTime @default(now())
-  userId    String
-  groupId   String?
+  id          String         @id @default(cuid())
+  content     String
+  createdAt   DateTime       @default(now())
+  userId      String
+  groupId     String?
+  visibility  PostVisibility @default(PUBLIC)
 
   user  Users   @relation(fields: [userId], references: [id])
   group Groups? @relation(fields: [groupId], references: [id])
+
+  @@index([createdAt])
+  @@index([visibility])
+  @@index([groupId])
 }
 
 model GroupRoster {
