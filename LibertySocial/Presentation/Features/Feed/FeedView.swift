@@ -10,7 +10,7 @@ import SwiftUI
 struct FeedView: View {
     @StateObject private var vm = FeedViewModel()
     @EnvironmentObject private var session: SessionStore
-    @StateObject private var tabBarVM = TabBarViewModel() // Use TabBarViewModel
+    @StateObject private var tabBarVM = TabBarViewModel() // controls compose sheet via TabBarView
 
     var body: some View {
         NavigationStack {
@@ -24,10 +24,10 @@ struct FeedView: View {
                     }
                 } else {
                     List {
-                        if !vm.mine.isEmpty         { Section("Your posts") { rows(vm.mine) } }
-                        if !vm.acquaintances.isEmpty{ Section("Acquaintances") { rows(vm.acquaintances) } }
-                        if !vm.strangers.isEmpty    { Section("Strangers") { rows(vm.strangers) } }
-                        if !vm.following.isEmpty    { Section("Following") { rows(vm.following) } }
+                        if !vm.mine.isEmpty          { Section("Your posts") { rows(vm.mine) } }
+                        if !vm.acquaintances.isEmpty { Section("Acquaintances") { rows(vm.acquaintances) } }
+                        if !vm.strangers.isEmpty     { Section("Strangers") { rows(vm.strangers) } }
+                        if !vm.following.isEmpty     { Section("Following") { rows(vm.following) } }
                     }
                     .listStyle(.insetGrouped)
                     .refreshable { await vm.refresh() }
@@ -44,14 +44,9 @@ struct FeedView: View {
             }
         }
         .task { await vm.load() }
-        // Use TabBarView with viewModel
         .safeAreaInset(edge: .bottom) {
-            TabBarView(viewModel: tabBarVM)
+            TabBarView(viewModel: tabBarVM) // presents CreatePostView internally
                 .ignoresSafeArea(edges: .bottom)
-        }
-        // Show composer when tabBarVM.isComposePresented is true
-        .sheet(isPresented: $tabBarVM.isComposePresented) {
-            ComposeView(viewModel: tabBarVM)
         }
     }
 
@@ -81,3 +76,4 @@ private extension DateFormatter {
         return string(from: iso.date(from: s) ?? Date())
     }
 }
+

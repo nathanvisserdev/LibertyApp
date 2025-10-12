@@ -33,9 +33,10 @@
 		15064F492E942D56000E0D11 /* Exceptions for "LibertySocial" folder in "LibertySocialTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Features/Feed/FeedViewModel.swift,
-				Features/Login/LoginViewModel.swift,
-				Features/Main/MainViewModel.swift,
+				Presentation/Features/CreatePost/CreatePostViewModel.swift,
+				Presentation/Features/Feed/FeedViewModel.swift,
+				Presentation/Features/Login/LoginViewModel.swift,
+				Presentation/Features/Main/MainViewModel.swift,
 				Services/AuthService.swift,
 			);
 			target = 15913F732E8EB4B800A015C7 /* LibertySocialTests */;
@@ -43,12 +44,14 @@
 		15064F502E9430ED000E0D11 /* Exceptions for "LibertySocial" folder in "LibertySocialUITests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Features/Feed/FeedView.swift,
-				Features/Feed/FeedViewModel.swift,
-				Features/Login/LoginView.swift,
-				Features/Main/MainView.swift,
-				Features/Main/MainViewModel.swift,
-				Features/TabBar/TabBarView.swift,
+				Presentation/Features/CreatePost/CreatePostView.swift,
+				Presentation/Features/CreatePost/CreatePostViewModel.swift,
+				Presentation/Features/Feed/FeedView.swift,
+				Presentation/Features/Feed/FeedViewModel.swift,
+				Presentation/Features/Login/LoginView.swift,
+				Presentation/Features/Main/MainView.swift,
+				Presentation/Features/Main/MainViewModel.swift,
+				Presentation/Features/TabBar/TabBarView.swift,
 			);
 			target = 15913F7D2E8EB4B800A015C7 /* LibertySocialUITests */;
 		};
