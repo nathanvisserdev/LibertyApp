@@ -1,12 +1,4 @@
-//
-//  CreatePostVM.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-12.
-//
-
 import Foundation
-import Combine
 
 @MainActor
 final class CreatePostViewModel: ObservableObject {
@@ -33,5 +25,3 @@ final class CreatePostViewModel: ObservableObject {
         isSubmitting = false
     }
 }
-
-

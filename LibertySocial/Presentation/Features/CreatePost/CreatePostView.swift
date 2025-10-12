@@ -55,8 +55,10 @@ struct CreatePostView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Post") {
-                        vm.submit()
-                        onPosted()
+                        Task {
+                            await vm.submit()
+                            onPosted()
+                        }
                     }
                     .disabled(vm.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                               || vm.remainingCharacters < 0
@@ -66,4 +68,3 @@ struct CreatePostView: View {
         }
     }
 }
-

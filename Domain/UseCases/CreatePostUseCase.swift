@@ -1,10 +1,3 @@
-//
-//  CreatePostUseCase.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-12.
-//
-
 import Foundation
 
 struct CreatePostUseCase {
@@ -31,5 +24,3 @@ struct CreatePostUseCase {
         }
     }
 }
-
-
