@@ -47,9 +47,9 @@ struct TabBarView: View {
             .accessibilityLabel("Compose")
             Spacer(minLength: 0)
             Button {
-                // Action for add person
+                viewModel.showSearch()
             } label: {
-                Image(systemName: "person.badge.plus")
+                Image(systemName: "magnifyingglass")
                     .font(.system(size: 28, weight: .regular))
                     .foregroundColor(.primary)
             }
@@ -76,6 +76,14 @@ struct TabBarView: View {
                 onCancel: { viewModel.hideCompose() },
                 onPosted: { viewModel.hideCompose() }
             )
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { viewModel.isShowingSearch },
+                set: { viewModel.isShowingSearch = $0 }
+            )
+        ) {
+            SearchView(viewModel: SearchViewModel())
         }
     }
 }
