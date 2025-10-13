@@ -45,7 +45,7 @@ struct FeedView: View {
         }
         .task { await vm.load() }
         .safeAreaInset(edge: .bottom) {
-            TabBarView(viewModel: tabBarVM) // presents CreatePostView internally
+            TabBarView(viewModel: tabBarVM, feedViewModel: vm)
                 .ignoresSafeArea(edges: .bottom)
         }
     }
@@ -76,5 +76,3 @@ private extension DateFormatter {
         return string(from: iso.date(from: s) ?? Date())
     }
 }
-
-

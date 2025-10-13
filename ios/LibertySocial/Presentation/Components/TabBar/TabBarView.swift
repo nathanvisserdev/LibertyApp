@@ -9,12 +9,13 @@ import SwiftUI
 
 struct TabBarView: View {
     @ObservedObject var viewModel: TabBarViewModel
+    @ObservedObject var feedViewModel: FeedViewModel
 
     var body: some View {
         HStack {
             Spacer(minLength: 0)
             Button {
-                // Action for refresh
+                Task { await feedViewModel.refresh() }
             } label: {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 28, weight: .regular))
