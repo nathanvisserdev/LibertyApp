@@ -12,7 +12,23 @@ struct TabBarView: View {
 
     var body: some View {
         HStack {
-            Spacer()
+            Spacer(minLength: 0)
+            Button {
+                // Action for refresh
+            } label: {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 28, weight: .regular))
+                    .foregroundColor(.primary)
+            }
+            Spacer(minLength: 0)
+            Button {
+                // Action for group/sequence
+            } label: {
+                Image(systemName: "person.3.sequence")
+                    .font(.system(size: 28, weight: .regular))
+                    .foregroundColor(.primary)
+            }
+            Spacer(minLength: 0)
             Button {
                 viewModel.showCompose()
             } label: {
@@ -22,13 +38,29 @@ struct TabBarView: View {
                         .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 2)
                     Image("quill")
                         .resizable()
-                        .scaledToFit()   // use scaledToFill() for edge-to-edge fill (will crop)
-                        .padding(8)      // reduce/remove padding for tighter fit
+                        .scaledToFit()
+                        .padding(8)
                 }
                 .frame(width: 60, height: 60)
             }
             .accessibilityLabel("Compose")
-            Spacer()
+            Spacer(minLength: 0)
+            Button {
+                // Action for add person
+            } label: {
+                Image(systemName: "person.badge.plus")
+                    .font(.system(size: 28, weight: .regular))
+                    .foregroundColor(.primary)
+            }
+            Spacer(minLength: 0)
+            Button {
+                // Action for profile
+            } label: {
+                Image(systemName: "person.crop.circle")
+                    .font(.system(size: 28, weight: .regular))
+                    .foregroundColor(.primary)
+            }
+            Spacer(minLength: 0)
         }
         .padding(.vertical, 8)
         .background(.ultraThinMaterial)
@@ -46,5 +78,3 @@ struct TabBarView: View {
         }
     }
 }
-
-
