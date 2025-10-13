@@ -1,0 +1,16 @@
+# Xcode
+**/DerivedData/
+**/*.xcuserdatad/
+**/*.xccheckout
+**/*.xcscmblueprint
+*.xcworkspace/xcuserdata/
+
+# Node
+server/node_modules/
+server/dist/
+.env
+.env.*.local
+
+# macOS
+.DS_Store
+
