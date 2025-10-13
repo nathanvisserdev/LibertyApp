@@ -94,7 +94,8 @@ router.get("/feed/public-square", async (req, res) => {
     const take = Math.min(Number(req.query.take) || 30, 100);
     const cursor = req.query.cursor ? String(req.query.cursor) : undefined;
 
-    const items = await prisma.posts.findMany({
+
+    const itemsRaw = await prisma.posts.findMany({
       where: {
         groupId: null,
       },
@@ -106,10 +107,15 @@ router.get("/feed/public-square", async (req, res) => {
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
     });
 
+    // Ensure every item includes a relation field
+    const items = itemsRaw;
+
+    const hasNext = Array.isArray(items) && items.length === take && items.at(-1)?.id;
     res.json({
       items,
-  nextCursor: items.length === take && items.length > 0 && items[items.length - 1]?.id ? items[items.length - 1].id : null,
+      nextCursor: hasNext ? items.at(-1)!.id : null,
     });
+
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "public-square-failed" });

@@ -22,4 +22,10 @@ app.use(blocksRouter);
 app.use(postsRouter);
 app.use(groupsRouter);
 
-app.listen(PORT, () => console.log(`Server on http://127.0.0.1:${PORT}`));
+if (process.env.NODE_ENV !== "test") {
+  app.listen(process.env.PORT || 3000, () =>
+    console.log("Server on http://127.0.0.1:3000")
+  );
+}
+
+export { app };
