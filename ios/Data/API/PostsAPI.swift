@@ -2,7 +2,7 @@ import Foundation
 
 struct PostsAPI {
     static func createPost(content: String) async throws -> PostRequestResponseDTO {
-        guard let url = URL(string: "${BASE_URL}/posts") else {
+        guard let url = URL(string: "\(AppConfig.base)/posts") else {
             throw URLError(.badURL)
         }
         var request = URLRequest(url: url)
