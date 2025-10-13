@@ -16,16 +16,16 @@ struct TabBarView: View {
             Button {
                 viewModel.showCompose()
             } label: {
-                Image("quill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 24, height: 24)
-                    .padding(18)
-                    .background(
-                        Circle()
-                            .fill(Color(.systemBackground))
-                            .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 2)
-                    )
+                ZStack {
+                    Circle()
+                        .fill(Color(.systemBackground))
+                        .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 2)
+                    Image("quill")
+                        .resizable()
+                        .scaledToFit()   // use scaledToFill() for edge-to-edge fill (will crop)
+                        .padding(8)      // reduce/remove padding for tighter fit
+                }
+                .frame(width: 60, height: 60)
             }
             .accessibilityLabel("Compose")
             Spacer()
