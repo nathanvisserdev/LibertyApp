@@ -92,10 +92,10 @@ final class AuthService {
         return decoded.accessToken
     }
 
-    // MARK: - /user (JSON dictionary as you had)
+    // MARK: - /user/me (JSON dictionary as you had)
     static func fetchCurrentUser() async throws -> [String: Any] {
         guard let token = KeychainHelper.read() else { throw APIError.unauthorized }
-        var req = URLRequest(url: baseURL.appendingPathComponent("/user"))
+        var req = URLRequest(url: baseURL.appendingPathComponent("/user/me"))
         req.httpMethod = "GET"
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
@@ -110,7 +110,7 @@ final class AuthService {
     // Optional typed variant if you want it:
     static func fetchCurrentUserTyped() async throws -> APIUser {
         guard let token = KeychainHelper.read() else { throw APIError.unauthorized }
-        var req = URLRequest(url: baseURL.appendingPathComponent("/user"))
+        var req = URLRequest(url: baseURL.appendingPathComponent("/user/me"))
         req.httpMethod = "GET"
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         let (data, response) = try await URLSession.shared.data(for: req)
