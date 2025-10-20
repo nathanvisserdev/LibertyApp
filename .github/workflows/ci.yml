@@ -8,8 +8,6 @@ jobs:
       run:
         working-directory: server
     env:
-      DATABASE_URL: "file:./prisma/dev.db"
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
       NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
@@ -17,8 +15,16 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: server/package-lock.json
+      - name: Create .env file
+        run: |
+          echo "DATABASE_URL=file:./prisma/ci.db" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "PORT=3000" >> .env
+          echo "PUBLIC_SQUARE_ADMIN_ID=test-admin-id" >> .env
+          echo "BCRYPT_ROUNDS=1" >> .env
       - run: npm ci
       - run: npx prisma generate
       - run: npx prisma db push --force-reset
-      - run: npm test
+      - run: npm test -- --pool=forks --poolOptions.forks.singleFork=true
 
