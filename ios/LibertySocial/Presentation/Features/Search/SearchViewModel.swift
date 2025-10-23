@@ -8,38 +8,34 @@
 import Foundation
 import Combine
 
+@MainActor
 class SearchViewModel: ObservableObject {
     @Published var query: String = ""
-    @Published var results: [User] = []
+    @Published var users: [SearchUser] = []
+    @Published var groups: [SearchGroup] = []
+    @Published var isLoading: Bool = false
+    @Published var errorMessage: String?
 
-    private var cancellables = Set<AnyCancellable>()
-
-    init() {
-        $query
-            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
-            .removeDuplicates()
-            .sink { [weak self] newQuery in
-                self?.searchUsers(email: newQuery)
-            }
-            .store(in: &cancellables)
-    }
-
-    func searchUsers(email: String) {
-        // Replace with your actual user fetching logic
-        let allUsers: [User] = [
-            User(id: 1, email: "alice@example.com"),
-            User(id: 2, email: "bob@example.com"),
-            User(id: 3, email: "carol@example.com")
-        ]
-        if email.isEmpty {
-            results = []
-        } else {
-            results = allUsers.filter { $0.email.lowercased().contains(email.lowercased()) }
+    func searchUsers(query: String) async {
+        guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            users = []
+            groups = []
+            return
         }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            let result = try await AuthService.searchUsers(query: query.trimmingCharacters(in: .whitespacesAndNewlines))
+            users = result.users
+            groups = result.groups
+        } catch {
+            errorMessage = error.localizedDescription
+            users = []
+            groups = []
+        }
+        
+        isLoading = false
     }
-}
-
-struct User: Identifiable {
-    let id: Int
-    let email: String
 }

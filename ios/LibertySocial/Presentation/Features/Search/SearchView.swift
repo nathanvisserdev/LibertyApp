@@ -10,16 +10,91 @@ import SwiftUI
 struct SearchView: View {
     @ObservedObject var viewModel: SearchViewModel
     @Environment(\.dismiss) var dismiss
+    @FocusState private var isTextFieldFocused: Bool
 
     var body: some View {
         NavigationView {
             VStack {
-                TextField("Search by email...", text: $viewModel.query)
+                TextField("Search", text: $viewModel.query)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .submitLabel(.search)
+                    .focused($isTextFieldFocused)
+                    .padding(.horizontal)
+                    .padding(.top)
+                
+                Button(action: {
+                    Task {
+                        await viewModel.searchUsers(query: viewModel.query)
+                    }
+                    isTextFieldFocused = false
+                }) {
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 32)
+                    } else {
+                        Text("Submit")
+                            .fontWeight(.semibold)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 32)
+                    }
+                }
+                .background(viewModel.query.isEmpty ? Color.gray : Color(red: 0.2, green: 0.5, blue: 0.9))
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .disabled(viewModel.query.isEmpty || viewModel.isLoading)
+                .padding(.horizontal)
 
-                List(viewModel.results) { user in
-                    Text(user.email)
+                if let error = viewModel.errorMessage {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                        .padding(.horizontal)
+                }
+
+                // Results
+                if viewModel.users.isEmpty && viewModel.groups.isEmpty && !viewModel.query.isEmpty && !viewModel.isLoading {
+                    VStack {
+                        Spacer()
+                        Text("No results found")
+                            .foregroundColor(.gray)
+                        Spacer()
+                    }
+                } else {
+                    List {
+                        if !viewModel.users.isEmpty {
+                            Section(header: Text("Users")) {
+                                ForEach(viewModel.users, id: \.id) { user in
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("\(user.firstName) \(user.lastName)")
+                                            .font(.headline)
+                                        Text("@\(user.username)")
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                    }
+                                    .padding(.vertical, 4)
+                                }
+                            }
+                        }
+                        
+                        if !viewModel.groups.isEmpty {
+                            Section(header: Text("Groups")) {
+                                ForEach(viewModel.groups, id: \.id) { group in
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(group.name)
+                                            .font(.headline)
+                                        Text(group.groupType)
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
+                                    .padding(.vertical, 4)
+                                }
+                            }
+                        }
+                    }
                 }
             }
             .navigationTitle("Search Users")

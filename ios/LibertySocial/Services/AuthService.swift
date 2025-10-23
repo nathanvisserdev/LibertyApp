@@ -77,6 +77,26 @@ struct ConnectionRequestRow: Decodable {
     let requester: APIUser?
 }
 
+struct SearchUser: Decodable {
+    let id: String
+    let username: String
+    let firstName: String
+    let lastName: String
+    let photo: String?
+}
+
+struct SearchGroup: Decodable {
+    let id: String
+    let name: String
+    let groupType: String
+    let isHidden: Bool
+}
+
+struct SearchResponse: Decodable {
+    let users: [SearchUser]
+    let groups: [SearchGroup]
+}
+
 @MainActor
 final class AuthService {
     static let baseURL = URL(string: "http://127.0.0.1:3000")!
@@ -214,6 +234,28 @@ final class AuthService {
             throw APIError.server(msg)
         }
         do { return try JSONDecoder().decode(ConnectionRequestRow.self, from: respData) }
+        catch { throw APIError.decoding }
+    }
+
+    // MARK: - Search
+    static func searchUsers(query: String) async throws -> SearchResponse {
+        guard let token = KeychainHelper.read() else { throw APIError.unauthorized }
+        
+        var components = URLComponents(url: baseURL.appendingPathComponent("/search/users"), resolvingAgainstBaseURL: true)
+        components?.queryItems = [URLQueryItem(name: "q", value: query)]
+        
+        guard let url = components?.url else { throw APIError.badURL }
+        
+        var req = URLRequest(url: url)
+        req.httpMethod = "GET"
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: req)
+        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            throw APIError.server("Failed to search users")
+        }
+        
+        do { return try JSONDecoder().decode(SearchResponse.self, from: data) }
         catch { throw APIError.decoding }
     }
 
