@@ -97,6 +97,18 @@ struct SearchResponse: Decodable {
     let groups: [SearchGroup]
 }
 
+struct UserProfile: Decodable {
+    let id: String
+    let firstName: String
+    let lastName: String
+    let username: String
+    let photo: String?
+    let about: String?
+    let gender: String?
+    let connectionStatus: String?
+    let requestType: String?
+}
+
 @MainActor
 final class AuthService {
     static let baseURL = URL(string: "http://127.0.0.1:3000")!
@@ -256,6 +268,23 @@ final class AuthService {
         }
         
         do { return try JSONDecoder().decode(SearchResponse.self, from: data) }
+        catch { throw APIError.decoding }
+    }
+
+    // MARK: - Profile
+    static func fetchUserProfile(userId: String) async throws -> UserProfile {
+        guard let token = KeychainHelper.read() else { throw APIError.unauthorized }
+        
+        var req = URLRequest(url: baseURL.appendingPathComponent("/users/\(userId)"))
+        req.httpMethod = "GET"
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: req)
+        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            throw APIError.server("Failed to fetch user profile")
+        }
+        
+        do { return try JSONDecoder().decode(UserProfile.self, from: data) }
         catch { throw APIError.decoding }
     }
 

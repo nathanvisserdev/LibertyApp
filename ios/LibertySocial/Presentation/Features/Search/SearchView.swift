@@ -68,14 +68,16 @@ struct SearchView: View {
                         if !viewModel.users.isEmpty {
                             Section(header: Text("Users")) {
                                 ForEach(viewModel.users, id: \.id) { user in
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("\(user.firstName) \(user.lastName)")
-                                            .font(.headline)
-                                        Text("@\(user.username)")
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
+                                    NavigationLink(destination: ProfileView(viewModel: ProfileViewModel(), userId: user.id)) {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("\(user.firstName) \(user.lastName)")
+                                                .font(.headline)
+                                            Text("@\(user.username)")
+                                                .font(.subheadline)
+                                                .foregroundColor(.gray)
+                                        }
+                                        .padding(.vertical, 4)
                                     }
-                                    .padding(.vertical, 4)
                                 }
                             }
                         }
