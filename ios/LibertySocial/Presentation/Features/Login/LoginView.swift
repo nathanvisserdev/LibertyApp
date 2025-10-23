@@ -64,11 +64,8 @@ struct LoginView: View {
                     .padding(14)
                     .background(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
 
-                    // MARK: - Signup and Forgot Password
+                    // MARK: - Forgot Password
                     HStack {
-                        Button("Create account") {
-                            showSignup = true
-                        }
                         Spacer()
                         Button("Forgot password?") {}
                     }
@@ -90,6 +87,21 @@ struct LoginView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .disabled(!vm.canSubmit)
+                .frame(maxWidth: .infinity)
+
+                // MARK: - Or Divider
+                Text("or")
+                    .foregroundStyle(.secondary)
+                    .font(.callout)
+
+                // MARK: - Create Account Button
+                Button {
+                    showSignup = true
+                } label: {
+                    Text("Create account").font(.headline)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
                 .frame(maxWidth: .infinity)
 
                 Spacer(minLength: 0)
