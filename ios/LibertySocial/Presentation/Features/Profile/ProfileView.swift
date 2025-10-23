@@ -11,6 +11,7 @@ import Combine
 struct ProfileView: View {
     @StateObject var viewModel: ProfileViewModel
     let userId: String
+    @State private var showConnectionTypeSelection = false
     
     var body: some View {
         ScrollView {
@@ -100,7 +101,7 @@ struct ProfileView: View {
                     
                     // Connect Button
                     Button(action: {
-                        // TODO: Implement connection request
+                        showConnectionTypeSelection = true
                     }) {
                         Text("Connect with \(profile.firstName)")
                             .fontWeight(.semibold)
@@ -111,6 +112,9 @@ struct ProfileView: View {
                             .cornerRadius(10)
                     }
                     .padding(.horizontal, 20)
+                    .sheet(isPresented: $showConnectionTypeSelection) {
+                        ConnectView(firstName: profile.firstName, userId: userId)
+                    }
                     
                     Divider()
                         .padding(.horizontal)
