@@ -98,6 +98,20 @@ struct ProfileView: View {
                             .cornerRadius(20)
                     }
                     
+                    // Connect Button
+                    Button(action: {
+                        // TODO: Implement connection request
+                    }) {
+                        Text("Connect with \(profile.firstName)")
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                    .padding(.horizontal, 20)
+                    
                     Divider()
                         .padding(.horizontal)
                     
