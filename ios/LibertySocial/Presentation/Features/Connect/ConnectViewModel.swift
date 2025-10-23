@@ -13,15 +13,18 @@ class ConnectViewModel: ObservableObject {
     @Published var selectedType: String? = nil
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var successMessage: String?
     @Published var requestSent = false
     
     func sendConnectionRequest(userId: String, type: String) async {
         isLoading = true
         errorMessage = nil
+        successMessage = nil
         
         do {
             _ = try await AuthService.createConnectionRequest(requestedId: userId, type: type)
             requestSent = true
+            successMessage = "Connection request sent!"
         } catch {
             errorMessage = error.localizedDescription
         }

@@ -84,6 +84,12 @@ struct FeedItem: Decodable {
     struct UserSummary: Decodable { let id: String; let email: String }
 }
 
+struct ConnectionRequestResponse: Decodable {
+    let requesterId: String
+    let requestedId: String
+    let requestType: String
+}
+
 struct ConnectionRequestRow: Decodable {
     let id: String
     let requesterId: String
@@ -264,12 +270,15 @@ final class AuthService {
     }
 
     // Create a connection request
-    static func createConnectionRequest(requestedId: String, type: String) async throws -> ConnectionRequestRow {
+    static func createConnectionRequest(requestedId: String, type: String) async throws -> ConnectionRequestResponse {
         guard let token = KeychainHelper.read() else { throw APIError.unauthorized }
-        let body = ["requestedId": requestedId, "type": type]
+        
+        // Map IS_FOLLOWING to FOLLOW for server compatibility
+        let requestType = type == "IS_FOLLOWING" ? "FOLLOW" : type
+        let body = ["requestedId": requestedId, "requestType": requestType]
         let data = try JSONSerialization.data(withJSONObject: body)
 
-        var req = URLRequest(url: baseURL.appendingPathComponent("/connections/requests"))
+        var req = URLRequest(url: baseURL.appendingPathComponent("/connections/request"))
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -280,8 +289,11 @@ final class AuthService {
             let msg = String(data: respData, encoding: .utf8) ?? "Failed to create request"
             throw APIError.server(msg)
         }
-        do { return try JSONDecoder().decode(ConnectionRequestRow.self, from: respData) }
-        catch { throw APIError.decoding }
+        do { return try JSONDecoder().decode(ConnectionRequestResponse.self, from: respData) }
+        catch { 
+            print("Failed to decode response. Raw data: \(String(data: respData, encoding: .utf8) ?? "nil")")
+            throw APIError.decoding 
+        }
     }
 
     // MARK: - Search

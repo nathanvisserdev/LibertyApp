@@ -55,9 +55,6 @@ struct ConnectView: View {
                     Button(action: {
                         Task {
                             await viewModel.sendConnectionRequest(userId: userId, type: type)
-                            if viewModel.requestSent {
-                                dismiss()
-                            }
                         }
                     }) {
                         if viewModel.isLoading {
@@ -113,6 +110,16 @@ struct ConnectView: View {
         } message: {
             if let error = viewModel.errorMessage {
                 Text(error)
+            }
+        }
+        .alert("Success", isPresented: .constant(viewModel.successMessage != nil)) {
+            Button("OK") {
+                viewModel.successMessage = nil
+                dismiss()
+            }
+        } message: {
+            if let success = viewModel.successMessage {
+                Text(success)
             }
         }
     }
