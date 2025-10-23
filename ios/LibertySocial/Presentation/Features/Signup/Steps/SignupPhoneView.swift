@@ -10,6 +10,7 @@ import Combine
 
 struct SignupPhoneView: View {
     @ObservedObject var coordinator: SignupFlowCoordinator
+    @State private var formattedPhone: String = ""
     
     var body: some View {
         VStack(spacing: 20) {
@@ -28,11 +29,23 @@ struct SignupPhoneView: View {
                 Text("Phone Number")
                     .font(.headline)
                 
-                TextField("Enter your phone number", text: $coordinator.phoneNumber)
+                TextField("(555)123-4567", text: $formattedPhone)
                     .keyboardType(.phonePad)
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
+                    .onChange(of: formattedPhone) { oldValue, newValue in
+                        let digitsOnly = newValue.filter { $0.isNumber }
+                        
+                        // Limit to 10 digits
+                        let limitedDigits = String(digitsOnly.prefix(10))
+                        
+                        // Store unformatted number in coordinator
+                        coordinator.phoneNumber = limitedDigits
+                        
+                        // Format for display
+                        formattedPhone = formatPhoneNumber(limitedDigits)
+                    }
                 
                 Text("We'll never share your phone number without your permission")
                     .font(.caption)
@@ -56,7 +69,7 @@ struct SignupPhoneView: View {
                             .frame(maxWidth: .infinity)
                             .padding()
                     } else {
-                        Text(coordinator.phoneNumber.isEmpty ? "Skip and finish" : "Finish")
+                        Text(coordinator.phoneNumber.isEmpty ? "Opt-out and finish" : "Finish")
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -70,6 +83,7 @@ struct SignupPhoneView: View {
                 if !coordinator.phoneNumber.isEmpty {
                     Button(action: {
                         coordinator.phoneNumber = ""
+                        formattedPhone = ""
                         Task {
                             await coordinator.completeSignup()
                             if coordinator.errorMessage == nil {
@@ -77,7 +91,7 @@ struct SignupPhoneView: View {
                             }
                         }
                     }) {
-                        Text("Skip")
+                        Text("Opt-out")
                             .fontWeight(.semibold)
                             .foregroundColor(.blue)
                     }
@@ -96,5 +110,30 @@ struct SignupPhoneView: View {
                 Text(error)
             }
         }
+    }
+    
+    private func formatPhoneNumber(_ digits: String) -> String {
+        guard !digits.isEmpty else { return "" }
+        
+        var formatted = ""
+        let count = digits.count
+        
+        if count <= 3 {
+            // (508
+            formatted = "(\(digits)"
+        } else if count <= 6 {
+            // (508)918
+            let areaCode = digits.prefix(3)
+            let middle = digits.dropFirst(3)
+            formatted = "(\(areaCode))\(middle)"
+        } else {
+            // (508)918-6749
+            let areaCode = digits.prefix(3)
+            let middle = digits.dropFirst(3).prefix(3)
+            let last = digits.dropFirst(6)
+            formatted = "(\(areaCode))\(middle)-\(last)"
+        }
+        
+        return formatted
     }
 }

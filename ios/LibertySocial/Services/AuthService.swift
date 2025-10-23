@@ -15,6 +15,23 @@ enum APIError: Error {
     case unknown(Error?)
 }
 
+extension APIError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case .badURL:
+            return "Invalid URL"
+        case .server(let message):
+            return "Server error: \(message)"
+        case .unauthorized:
+            return "Unauthorized access"
+        case .decoding:
+            return "Failed to decode response"
+        case .unknown(let error):
+            return error?.localizedDescription ?? "Unknown error"
+        }
+    }
+}
+
 // MARK: - Models
 struct LoginResponse: Decodable { let accessToken: String }
 
@@ -142,11 +159,29 @@ final class AuthService {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.httpBody = try JSONEncoder().encode(request)
+        
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        req.httpBody = try encoder.encode(request)
+        
+        // Debug: Print the request body
+        if let jsonString = String(data: req.httpBody!, encoding: .utf8) {
+            print("Signup request JSON:\n\(jsonString)")
+        }
 
-        let (_, response) = try await URLSession.shared.data(for: req)
-        guard let http = response as? HTTPURLResponse, http.statusCode == 201 else {
-            throw APIError.server("Signup failed")
+        let (data, response) = try await URLSession.shared.data(for: req)
+        guard let http = response as? HTTPURLResponse else {
+            throw APIError.unknown(nil)
+        }
+        
+        print("Signup response status: \(http.statusCode)")
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("Signup response body: \(responseString)")
+        }
+        
+        guard http.statusCode == 201 else {
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Signup failed"
+            throw APIError.server(errorMessage)
         }
     }
 

@@ -64,9 +64,18 @@ final class SignupFlowCoordinator: ObservableObject {
                 password: password,
                 dateOfBirth: formatter.string(from: dateOfBirth),
                 gender: gender,
-                phoneNumber: phoneNumber.isEmpty ? nil : phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines),
-                photo: photo.isEmpty ? nil : photo.trimmingCharacters(in: .whitespacesAndNewlines),
-                about: about.isEmpty ? nil : about.trimmingCharacters(in: .whitespacesAndNewlines)
+                phoneNumber: {
+                    let trimmed = phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return trimmed.isEmpty ? nil : trimmed
+                }(),
+                photo: {
+                    let trimmed = photo.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return trimmed.isEmpty ? nil : trimmed
+                }(),
+                about: {
+                    let trimmed = about.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return trimmed.isEmpty ? nil : trimmed
+                }()
             )
             
             try await AuthService.signup(request)

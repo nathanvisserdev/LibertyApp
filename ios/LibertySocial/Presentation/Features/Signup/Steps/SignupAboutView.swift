@@ -47,51 +47,16 @@ struct SignupAboutView: View {
             
             VStack(spacing: 12) {
                 Button(action: {
-                    if coordinator.about.isEmpty {
-                        // Skip - complete signup without about
-                        Task {
-                            await coordinator.completeSignup()
-                            if coordinator.errorMessage == nil {
-                                coordinator.nextStep()
-                            }
-                        }
-                    } else {
-                        // Continue to next step
-                        coordinator.nextStep()
-                    }
+                    // Just move to next step, don't signup yet
+                    coordinator.nextStep()
                 }) {
-                    if coordinator.isLoading {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    } else {
-                        Text(coordinator.about.isEmpty ? "Skip and finish" : "Continue")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    }
-                }
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(10)
-                .disabled(coordinator.isLoading)
-                
-                if !coordinator.about.isEmpty {
-                    Button(action: {
-                        coordinator.about = ""
-                        Task {
-                            await coordinator.completeSignup()
-                            if coordinator.errorMessage == nil {
-                                coordinator.nextStep()
-                            }
-                        }
-                    }) {
-                        Text("Skip")
-                            .fontWeight(.semibold)
-                            .foregroundColor(.blue)
-                    }
-                    .disabled(coordinator.isLoading)
+                    Text(coordinator.about.isEmpty ? "Opt-out" : "Continue")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                 }
             }
             .padding(.bottom, 20)

@@ -20,15 +20,16 @@ struct SignupWelcomeView: View {
                 .font(.system(size: 80))
                 .foregroundColor(.green)
             
-            Text("Welcome to Liberty Social!")
+            Text("Welcome to Liberty Social \(coordinator.firstName)!")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
             
-            Text("Your account has been created successfully")
+            Text("Your account has been successfully created. Let's get started connecting with friends and exploring the community.")
                 .font(.body)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal)
             
             Spacer()
             
