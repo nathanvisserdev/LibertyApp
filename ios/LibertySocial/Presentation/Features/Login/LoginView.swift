@@ -11,6 +11,7 @@ import Combine
 struct LoginView: View {
     @StateObject private var vm = LoginViewModel()
     @EnvironmentObject private var session: SessionStore
+    @State private var showSignup = false
 
     var body: some View {
         NavigationStack {
@@ -66,23 +67,7 @@ struct LoginView: View {
                     // MARK: - Signup and Forgot Password
                     HStack {
                         Button("Create account") {
-                            Task {
-                                do {
-                                    let req = SignupRequest(
-                                        firstName: "Nathan",
-                                        lastName: "Visser",
-                                        email: vm.email,
-                                        username: vm.email.components(separatedBy: "@").first ?? "user",
-                                        password: vm.password,
-                                        dateOfBirth: "1990-01-01",
-                                        gender: true
-                                    )
-                                    try await AuthService.signup(req)
-                                    vm.errorMessage = "Account created! Please sign in."
-                                } catch {
-                                    vm.errorMessage = error.localizedDescription
-                                }
-                            }
+                            showSignup = true
                         }
                         Spacer()
                         Button("Forgot password?") {}
@@ -122,6 +107,9 @@ struct LoginView: View {
                     Spacer()
                     Button("Done") { hideKeyboard() }
                 }
+            }
+            .sheet(isPresented: $showSignup) {
+                SignupFlowView()
             }
         }
     }

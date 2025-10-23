@@ -19,17 +19,41 @@ enum APIError: Error {
 struct LoginResponse: Decodable { let accessToken: String }
 
 struct SignupRequest: Encodable {
-    // NOTE: server currently expects only email/password; keep this if you still use it elsewhere.
     let firstName: String
     let lastName: String
     let email: String
     let username: String
     let password: String
     let dateOfBirth: String
-    let gender: Bool
+    let gender: String
+    let phoneNumber: String?
+    let photo: String?
+    let about: String?
+    
+    init(firstName: String, lastName: String, email: String, username: String, password: String, dateOfBirth: String, gender: String, phoneNumber: String? = nil, photo: String? = nil, about: String? = nil) {
+        self.firstName = firstName
+        self.lastName = lastName
+        self.email = email
+        self.username = username
+        self.password = password
+        self.dateOfBirth = dateOfBirth
+        self.gender = gender
+        self.phoneNumber = phoneNumber
+        self.photo = photo
+        self.about = about
+    }
 }
 
 struct SignupResponse: Decodable { let id: String; let email: String }
+
+struct AvailabilityRequest: Encodable {
+    let email: String?
+    let username: String?
+}
+
+struct AvailabilityResponse: Decodable {
+    let available: Bool
+}
 
 struct APIUser: Decodable { let id: String; let email: String }
 
@@ -56,6 +80,29 @@ struct ConnectionRequestRow: Decodable {
 @MainActor
 final class AuthService {
     static let baseURL = URL(string: "http://127.0.0.1:3000")!
+
+    // MARK: - Availability Check
+    static func checkAvailability(email: String? = nil, username: String? = nil) async throws -> Bool {
+        let url = baseURL.appendingPathComponent("/availability")
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let availabilityReq = AvailabilityRequest(email: email, username: username)
+        req.httpBody = try JSONEncoder().encode(availabilityReq)
+        
+        let (data, response) = try await URLSession.shared.data(for: req)
+        guard let http = response as? HTTPURLResponse else {
+            throw APIError.unknown(nil)
+        }
+        
+        if http.statusCode == 200 {
+            let decoded = try JSONDecoder().decode(AvailabilityResponse.self, from: data)
+            return decoded.available
+        } else {
+            throw APIError.server("Failed to check availability")
+        }
+    }
 
     // MARK: - Signup
     static func signup(_ request: SignupRequest) async throws {
