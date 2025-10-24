@@ -8,37 +8,38 @@
 import Foundation
 import Combine
 
+@MainActor
 final class TabBarViewModel: ObservableObject {
-    @Published var isShowingCompose: Bool = false
-    @Published var isShowingSearch: Bool = false
-    @Published var isShowingConnectionRequests: Bool = false
-    @Published var isShowingNotifications: Bool = false
-    @Published var isShowingProfile: Bool = false
+    // MARK: - Published Properties (State Only)
     @Published var currentUserPhotoKey: String?
     @Published var currentUserId: String?
-
-    func showCompose() { isShowingCompose = true }
-    func hideCompose() { isShowingCompose = false }
-    func showSearch() { isShowingSearch = true }
-    func hideSearch() { isShowingSearch = false }
-    func showConnectionRequests() { isShowingConnectionRequests = true }
-    func hideConnectionRequests() { isShowingConnectionRequests = false }
-    func showNotifications() { isShowingNotifications = true }
-    func hideNotifications() { isShowingNotifications = false }
-    func showProfile() { isShowingProfile = true }
-    func hideProfile() { isShowingProfile = false }
+    @Published var isLoading: Bool = false
+    @Published var errorMessage: String?
     
-    @MainActor
-    func fetchCurrentUserPhoto() async {
+    // MARK: - Public Methods
+    
+    /// Fetch current user's photo and ID from /user/me
+    func fetchCurrentUserInfo() async {
+        isLoading = true
+        errorMessage = nil
+        
         do {
-            guard let token = KeychainHelper.read() else { return }
+            guard let token = KeychainHelper.read() else {
+                errorMessage = "No authentication token"
+                isLoading = false
+                return
+            }
             
             var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/user/me"))
             req.httpMethod = "GET"
             req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             
             let (data, response) = try await URLSession.shared.data(for: req)
-            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { return }
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                errorMessage = "Failed to fetch user info"
+                isLoading = false
+                return
+            }
             
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                 if let photoKey = json["profilePhoto"] as? String {
@@ -48,8 +49,11 @@ final class TabBarViewModel: ObservableObject {
                     currentUserId = userId
                 }
             }
+            
+            isLoading = false
         } catch {
-            print("❌ Failed to fetch current user photo: \(error)")
+            errorMessage = "Failed to fetch current user info: \(error.localizedDescription)"
+            isLoading = false
         }
     }
 }

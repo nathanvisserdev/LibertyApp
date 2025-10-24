@@ -10,7 +10,14 @@ import SwiftUI
 struct FeedView: View {
     @StateObject private var vm = FeedViewModel()
     @EnvironmentObject private var session: SessionStore
-    @StateObject private var tabBarVM = TabBarViewModel() // controls compose sheet via TabBarView
+    @StateObject private var tabBarVM = TabBarViewModel()
+    @StateObject private var tabBarCoordinator: TabBarCoordinator
+    
+    init() {
+        let viewModel = TabBarViewModel()
+        _tabBarVM = StateObject(wrappedValue: viewModel)
+        _tabBarCoordinator = StateObject(wrappedValue: TabBarCoordinator(viewModel: viewModel))
+    }
 
     var body: some View {
         NavigationStack {
@@ -45,7 +52,7 @@ struct FeedView: View {
         }
         .task { await vm.load() }
         .safeAreaInset(edge: .bottom) {
-            TabBarView(viewModel: tabBarVM, feedViewModel: vm)
+            TabBarView(viewModel: tabBarVM, coordinator: tabBarCoordinator, feedViewModel: vm)
                 .ignoresSafeArea(edges: .bottom)
         }
     }

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TabBarView: View {
     @ObservedObject var viewModel: TabBarViewModel
+    @ObservedObject var coordinator: TabBarCoordinator
     @ObservedObject var feedViewModel: FeedViewModel
     @AppStorage("newConnectionRequest") private var newConnectionRequest: Bool = false
 
@@ -17,7 +18,7 @@ struct TabBarView: View {
         HStack {
             Spacer(minLength: 0)
             Button {
-                viewModel.showNotifications()
+                coordinator.showNotifications()
             } label: {
                 Image(systemName: newConnectionRequest ? "bell.and.waves.left.and.right.fill" : "bell")
                     .font(.system(size: 28, weight: .regular))
@@ -25,8 +26,7 @@ struct TabBarView: View {
             }
             Spacer(minLength: 0)
             Button {
-                // Action for group/sequence - show connection requests
-                viewModel.showConnectionRequests()
+                coordinator.showConnectionRequests()
             } label: {
                 ZStack(alignment: .topTrailing) {
                     Image(systemName: "person.3.sequence")
@@ -36,7 +36,7 @@ struct TabBarView: View {
             }
             Spacer(minLength: 0)
             Button {
-                viewModel.showCompose()
+                coordinator.showCompose()
             } label: {
                 Image(systemName: "square.and.arrow.up")
                     .font(.system(size: 28, weight: .regular))
@@ -45,7 +45,7 @@ struct TabBarView: View {
             .accessibilityLabel("Compose")
             Spacer(minLength: 0)
             Button {
-                viewModel.showSearch()
+                coordinator.showSearch()
             } label: {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 28, weight: .regular))
@@ -53,7 +53,7 @@ struct TabBarView: View {
             }
             Spacer(minLength: 0)
             Button {
-                viewModel.showProfile()
+                coordinator.showCurrentUserProfile()
             } label: {
                 if let photoKey = viewModel.currentUserPhotoKey {
                     ProfilePhotoView(photoKey: photoKey)
@@ -70,56 +70,56 @@ struct TabBarView: View {
         .padding(.vertical, 8)
         .background(.ultraThinMaterial)
         .task {
-            // Fetch current user's photo when tab bar appears
-            await viewModel.fetchCurrentUserPhoto()
+            // Fetch current user's info when tab bar appears
+            await viewModel.fetchCurrentUserInfo()
         }
         .sheet(
             isPresented: Binding(
-                get: { viewModel.isShowingCompose },
-                set: { viewModel.isShowingCompose = $0 }
+                get: { coordinator.isShowingCompose },
+                set: { coordinator.isShowingCompose = $0 }
             )
         ) {
             CreatePostView(
                 vm: CreatePostViewModel(),
-                onCancel: { viewModel.hideCompose() },
-                onPosted: { viewModel.hideCompose() }
+                onCancel: { coordinator.hideCompose() },
+                onPosted: { coordinator.hideCompose() }
             )
         }
         .sheet(
             isPresented: Binding(
-                get: { viewModel.isShowingSearch },
-                set: { viewModel.isShowingSearch = $0 }
+                get: { coordinator.isShowingSearch },
+                set: { coordinator.isShowingSearch = $0 }
             )
         ) {
             SearchView(viewModel: SearchViewModel())
         }
         .sheet(
             isPresented: Binding(
-                get: { viewModel.isShowingConnectionRequests },
-                set: { viewModel.isShowingConnectionRequests = $0 }
+                get: { coordinator.isShowingConnectionRequests },
+                set: { coordinator.isShowingConnectionRequests = $0 }
             )
         ) {
             ConnectionRequestsView(onDismiss: {
-                viewModel.hideConnectionRequests()
+                coordinator.hideConnectionRequests()
                 // Clear badge when viewing requests
                 newConnectionRequest = false
             })
         }
         .sheet(
             isPresented: Binding(
-                get: { viewModel.isShowingNotifications },
-                set: { viewModel.isShowingNotifications = $0 }
+                get: { coordinator.isShowingNotifications },
+                set: { coordinator.isShowingNotifications = $0 }
             )
         ) {
             NotificationsView()
         }
         .sheet(
             isPresented: Binding(
-                get: { viewModel.isShowingProfile },
-                set: { viewModel.isShowingProfile = $0 }
+                get: { coordinator.isShowingProfile },
+                set: { coordinator.isShowingProfile = $0 }
             )
         ) {
-            if let userId = viewModel.currentUserId {
+            if let userId = coordinator.selectedUserId {
                 ProfileView(viewModel: ProfileViewModel(), userId: userId)
             }
         }
