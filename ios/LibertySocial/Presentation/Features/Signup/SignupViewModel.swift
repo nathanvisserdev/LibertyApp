@@ -88,7 +88,7 @@ final class SignupViewModel: ObservableObject {
                 dateOfBirth: formattedDateOfBirth,
                 gender: gender,
                 phoneNumber: phoneNumber.trimmed.isEmpty ? nil : phoneNumber.trimmed,
-                photo: photo.trimmed.isEmpty ? nil : photo.trimmed,
+                profilePhoto: photo.trimmed.isEmpty ? nil : photo.trimmed,
                 about: about.trimmed.isEmpty ? nil : about.trimmed
             )
             

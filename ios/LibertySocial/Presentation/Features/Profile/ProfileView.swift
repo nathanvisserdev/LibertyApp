@@ -35,24 +35,11 @@ struct ProfileView: View {
             } else if let profile = viewModel.profile {
                 VStack(spacing: 20) {
                     // Profile Photo
-                    if let photoURL = profile.photo, let url = URL(string: photoURL) {
-                        AsyncImage(url: url) { image in
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 120, height: 120)
-                                .clipShape(Circle())
-                        } placeholder: {
-                            Circle()
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 120, height: 120)
-                                .overlay(
-                                    Image(systemName: "person.fill")
-                                        .font(.system(size: 50))
-                                        .foregroundColor(.gray)
-                                )
-                        }
+                    if let photoKey = profile.profilePhoto, !photoKey.isEmpty {
+                        let _ = print("📸 ProfileView: Photo key from profile: \(photoKey)")
+                        ProfilePhotoView(photoKey: photoKey)
                     } else {
+                        let _ = print("📸 ProfileView: No profilePhoto key in profile")
                         Circle()
                             .fill(Color.gray.opacity(0.3))
                             .frame(width: 120, height: 120)

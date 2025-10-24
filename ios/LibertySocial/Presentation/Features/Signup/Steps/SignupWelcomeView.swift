@@ -31,6 +31,23 @@ struct SignupWelcomeView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             
+            // Photo upload status message
+            if let photoMessage = coordinator.photoUploadMessage {
+                HStack(spacing: 8) {
+                    Image(systemName: coordinator.photoUploadSuccess ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                        .foregroundColor(coordinator.photoUploadSuccess ? .green : .orange)
+                    Text(photoMessage)
+                        .font(.subheadline)
+                        .foregroundColor(coordinator.photoUploadSuccess ? .green : .orange)
+                }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(coordinator.photoUploadSuccess ? Color.green.opacity(0.1) : Color.orange.opacity(0.1))
+                )
+                .padding(.horizontal)
+            }
+            
             Spacer()
             
             Button(action: {

@@ -44,10 +44,10 @@ struct SignupRequest: Encodable {
     let dateOfBirth: String
     let gender: String
     let phoneNumber: String?
-    let photo: String?
+    let profilePhoto: String?
     let about: String?
     
-    init(firstName: String, lastName: String, email: String, username: String, password: String, dateOfBirth: String, gender: String, phoneNumber: String? = nil, photo: String? = nil, about: String? = nil) {
+    init(firstName: String, lastName: String, email: String, username: String, password: String, dateOfBirth: String, gender: String, phoneNumber: String? = nil, profilePhoto: String? = nil, about: String? = nil) {
         self.firstName = firstName
         self.lastName = lastName
         self.email = email
@@ -56,7 +56,7 @@ struct SignupRequest: Encodable {
         self.dateOfBirth = dateOfBirth
         self.gender = gender
         self.phoneNumber = phoneNumber
-        self.photo = photo
+        self.profilePhoto = profilePhoto
         self.about = about
     }
 }
@@ -133,7 +133,7 @@ struct UserProfile: Decodable {
     let firstName: String
     let lastName: String
     let username: String
-    let photo: String?
+    let profilePhoto: String?
     let about: String?
     let gender: String?
     let connectionStatus: String?

@@ -39,6 +39,8 @@ final class SignupFlowCoordinator: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var showWelcome: Bool = false
+    @Published var photoUploadSuccess: Bool = false
+    @Published var photoUploadMessage: String?
     
     func nextStep() {
         if let next = SignupStep(rawValue: currentStep.rawValue + 1) {
@@ -52,6 +54,12 @@ final class SignupFlowCoordinator: ObservableObject {
     }
     
     func completeSignup() async {
+        print("🚀 completeSignup: Starting signup process...")
+        print("🚀 completeSignup: Has photo data? \(photoData != nil)")
+        if let photoData = photoData {
+            print("🚀 completeSignup: Photo data size: \(photoData.count) bytes")
+        }
+        
         isLoading = true
         errorMessage = nil
         
@@ -71,24 +79,43 @@ final class SignupFlowCoordinator: ObservableObject {
                     let trimmed = phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
                     return trimmed.isEmpty ? nil : trimmed
                 }(),
-                photo: nil, // Will be uploaded after login
+                profilePhoto: nil, // Will be uploaded after login
                 about: {
                     let trimmed = about.trimmingCharacters(in: .whitespacesAndNewlines)
                     return trimmed.isEmpty ? nil : trimmed
                 }()
             )
             
+            print("📝 completeSignup: Calling signup endpoint...")
             try await AuthService.signup(request)
+            print("✅ completeSignup: Signup successful!")
             
             // Auto-login after signup
+            print("🔐 completeSignup: Auto-logging in...")
             _ = try await AuthService.login(email: email.trimmingCharacters(in: .whitespacesAndNewlines), password: password)
+            print("✅ completeSignup: Login successful!")
             
             // Upload photo if one was selected
             if let photoData = photoData {
                 do {
+                    print("📸 completeSignup: Starting photo upload with \(photoData.count) bytes...")
                     try await uploadPhoto(photoData: photoData)
+                    photoUploadSuccess = true
+                    photoUploadMessage = "Profile photo uploaded successfully! ✓"
+                    print("✅ completeSignup: Photo upload completed successfully")
                 } catch {
-                    print("⚠️ Photo upload failed: \(error.localizedDescription)")
+                    print("❌ completeSignup: Photo upload failed!")
+                    print("❌ completeSignup: Error: \(error)")
+                    print("❌ completeSignup: Error description: \(error.localizedDescription)")
+                    
+                    if let nsError = error as NSError? {
+                        print("❌ completeSignup: Error domain: \(nsError.domain)")
+                        print("❌ completeSignup: Error code: \(nsError.code)")
+                        print("❌ completeSignup: Error userInfo: \(nsError.userInfo)")
+                    }
+                    
+                    photoUploadSuccess = false
+                    photoUploadMessage = "Photo upload failed, but your account was created. You can upload a photo later."
                     // Don't fail signup if photo upload fails
                 }
             }
@@ -102,17 +129,28 @@ final class SignupFlowCoordinator: ObservableObject {
     }
     
     private func uploadPhoto(photoData: Data) async throws {
+        print("📸 uploadPhoto: Starting photo upload process...")
+        print("📸 uploadPhoto: Photo data size: \(photoData.count) bytes")
+        
         // Get presigned URL
+        print("📸 uploadPhoto: Step 1 - Getting presigned URL...")
         let presignResponse = try await getPresignedURL(contentType: "image/jpeg")
+        print("📸 uploadPhoto: Got presigned URL: \(presignResponse.url)")
+        print("📸 uploadPhoto: Photo key: \(presignResponse.key)")
         
         // Upload to R2
+        print("📸 uploadPhoto: Step 2 - Uploading to R2...")
         try await uploadToR2(imageData: photoData, presignResponse: presignResponse)
+        print("📸 uploadPhoto: Successfully uploaded to R2")
         
         // Update user's photo URL
-        let photoURL = try await updateUserPhoto(key: presignResponse.key)
+        print("📸 uploadPhoto: Step 3 - Updating user's photo in database...")
+        let photoKey = try await updateUserPhoto(key: presignResponse.key)
+        print("📸 uploadPhoto: Photo key saved: \(photoKey)")
         
-        // Update coordinator with photo URL
-        photo = photoURL
+        // Update coordinator with photo key
+        photo = photoKey
+        print("📸 uploadPhoto: Photo upload complete!")
     }
     
     private func getPresignedURL(contentType: String) async throws -> PresignResponse {
@@ -172,7 +210,7 @@ final class SignupFlowCoordinator: ObservableObject {
         }
         
         let photoResponse = try JSONDecoder().decode(PhotoUpdateResponse.self, from: responseData)
-        return photoResponse.photo
+        return photoResponse.profilePhoto
     }
 }
 
@@ -184,5 +222,5 @@ struct PresignResponse: Decodable {
 }
 
 struct PhotoUpdateResponse: Decodable {
-    let photo: String
+    let profilePhoto: String
 }
