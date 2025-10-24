@@ -10,7 +10,7 @@ import SwiftUI
 struct TabBarView: View {
     @ObservedObject var viewModel: TabBarViewModel
     @ObservedObject var feedViewModel: FeedViewModel
-    @AppStorage("newConnectionRequest") private var newConnectionRequest: Bool = true
+    @AppStorage("newConnectionRequest") private var newConnectionRequest: Bool = false
 
     var body: some View {
         let _ = print("🔔 TabBarView - newConnectionRequest: \(newConnectionRequest)")
