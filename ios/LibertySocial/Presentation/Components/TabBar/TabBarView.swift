@@ -55,14 +55,24 @@ struct TabBarView: View {
             Button {
                 // Action for profile
             } label: {
-                Image(systemName: "person.crop.circle")
-                    .font(.system(size: 28, weight: .regular))
-                    .foregroundColor(.primary)
+                if let photoKey = viewModel.currentUserPhotoKey {
+                    ProfilePhotoView(photoKey: photoKey)
+                        .frame(width: 28, height: 28)
+                        .clipShape(Circle())
+                } else {
+                    Image(systemName: "person.crop.circle")
+                        .font(.system(size: 28, weight: .regular))
+                        .foregroundColor(.primary)
+                }
             }
             Spacer(minLength: 0)
         }
         .padding(.vertical, 8)
         .background(.ultraThinMaterial)
+        .task {
+            // Fetch current user's photo when tab bar appears
+            await viewModel.fetchCurrentUserPhoto()
+        }
         .sheet(
             isPresented: Binding(
                 get: { viewModel.isShowingCompose },
