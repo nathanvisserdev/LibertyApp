@@ -17,7 +17,7 @@ struct TabBarView: View {
         HStack {
             Spacer(minLength: 0)
             Button {
-                Task { await feedViewModel.refresh() }
+                viewModel.showNotifications()
             } label: {
                 Image(systemName: newConnectionRequest ? "bell.and.waves.left.and.right.fill" : "bell")
                     .font(.system(size: 28, weight: .regular))
@@ -104,6 +104,14 @@ struct TabBarView: View {
                 // Clear badge when viewing requests
                 newConnectionRequest = false
             })
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { viewModel.isShowingNotifications },
+                set: { viewModel.isShowingNotifications = $0 }
+            )
+        ) {
+            NotificationsView()
         }
         .onReceive(NotificationCenter.default.publisher(for: .connectionRequestReceived)) { _ in
             // Update badge when notification received

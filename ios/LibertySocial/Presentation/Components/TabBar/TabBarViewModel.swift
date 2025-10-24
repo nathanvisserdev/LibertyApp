@@ -12,6 +12,7 @@ final class TabBarViewModel: ObservableObject {
     @Published var isShowingCompose: Bool = false
     @Published var isShowingSearch: Bool = false
     @Published var isShowingConnectionRequests: Bool = false
+    @Published var isShowingNotifications: Bool = false
     @Published var currentUserPhotoKey: String?
 
     func showCompose() { isShowingCompose = true }
@@ -20,6 +21,8 @@ final class TabBarViewModel: ObservableObject {
     func hideSearch() { isShowingSearch = false }
     func showConnectionRequests() { isShowingConnectionRequests = true }
     func hideConnectionRequests() { isShowingConnectionRequests = false }
+    func showNotifications() { isShowingNotifications = true }
+    func hideNotifications() { isShowingNotifications = false }
     
     @MainActor
     func fetchCurrentUserPhoto() async {
