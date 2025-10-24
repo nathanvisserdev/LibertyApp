@@ -9,6 +9,7 @@ import SwiftUI
 
 @main
 struct LibertySocialApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var session = SessionStore()
 

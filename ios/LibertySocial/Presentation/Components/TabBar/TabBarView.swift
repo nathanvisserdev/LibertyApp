@@ -10,8 +10,10 @@ import SwiftUI
 struct TabBarView: View {
     @ObservedObject var viewModel: TabBarViewModel
     @ObservedObject var feedViewModel: FeedViewModel
+    @AppStorage("newConnectionRequest") private var newConnectionRequest: Bool = true
 
     var body: some View {
+        let _ = print("🔔 TabBarView - newConnectionRequest: \(newConnectionRequest)")
         HStack {
             Spacer(minLength: 0)
             Button {
@@ -23,26 +25,29 @@ struct TabBarView: View {
             }
             Spacer(minLength: 0)
             Button {
-                // Action for group/sequence
+                // Action for group/sequence - show connection requests
+                viewModel.showConnectionRequests()
             } label: {
-                Image(systemName: "person.3.sequence")
-                    .font(.system(size: 28, weight: .regular))
-                    .foregroundColor(.primary)
+                ZStack(alignment: .topTrailing) {
+                    Image(systemName: "person.3.sequence")
+                        .font(.system(size: 28, weight: .regular))
+                        .foregroundColor(.primary)
+                    
+                    if newConnectionRequest {
+                        Image(systemName: "bell.circle")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.red)
+                            .offset(x: 8, y: -8)
+                    }
+                }
             }
             Spacer(minLength: 0)
             Button {
                 viewModel.showCompose()
             } label: {
-                ZStack {
-                    Circle()
-                        .fill(Color(.systemBackground))
-                        .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 2)
-                    Image("quill")
-                        .resizable()
-                        .scaledToFit()
-                        .padding(8)
-                }
-                .frame(width: 60, height: 60)
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 28, weight: .regular))
+                    .foregroundColor(.primary)
             }
             .accessibilityLabel("Compose")
             Spacer(minLength: 0)
@@ -84,6 +89,22 @@ struct TabBarView: View {
             )
         ) {
             SearchView(viewModel: SearchViewModel())
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { viewModel.isShowingConnectionRequests },
+                set: { viewModel.isShowingConnectionRequests = $0 }
+            )
+        ) {
+            ConnectionRequestsView(onDismiss: {
+                viewModel.hideConnectionRequests()
+                // Clear badge when viewing requests
+                newConnectionRequest = false
+            })
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .connectionRequestReceived)) { _ in
+            // Update badge when notification received
+            newConnectionRequest = true
         }
     }
 }

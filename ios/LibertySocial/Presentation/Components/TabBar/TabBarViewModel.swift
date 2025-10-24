@@ -11,9 +11,12 @@ import Combine
 final class TabBarViewModel: ObservableObject {
     @Published var isShowingCompose: Bool = false
     @Published var isShowingSearch: Bool = false
+    @Published var isShowingConnectionRequests: Bool = false
 
     func showCompose() { isShowingCompose = true }
     func hideCompose() { isShowingCompose = false }
     func showSearch() { isShowingSearch = true }
     func hideSearch() { isShowingSearch = false }
+    func showConnectionRequests() { isShowingConnectionRequests = true }
+    func hideConnectionRequests() { isShowingConnectionRequests = false }
 }

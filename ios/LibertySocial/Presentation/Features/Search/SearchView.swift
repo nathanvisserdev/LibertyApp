@@ -99,7 +99,7 @@ struct SearchView: View {
                     }
                 }
             }
-            .navigationTitle("Search Users")
+            .navigationTitle("Search for a user or group")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") {

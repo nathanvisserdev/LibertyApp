@@ -74,6 +74,14 @@ struct AvailabilityResponse: Decodable {
 
 struct APIUser: Decodable { let id: String; let email: String }
 
+struct RequesterUser: Decodable {
+    let id: String
+    let firstName: String
+    let lastName: String
+    let username: String?
+    let photo: String?
+}
+
 struct FeedItem: Decodable {
     let id: String
     let userId: String
@@ -97,7 +105,7 @@ struct ConnectionRequestRow: Decodable {
     let type: String
     let status: String
     let createdAt: String
-    let requester: APIUser?
+    let requester: RequesterUser?
 }
 
 struct SearchUser: Decodable {
