@@ -86,21 +86,23 @@ struct ProfileView: View {
                             .cornerRadius(20)
                     }
                     
-                    // Connect Button
-                    Button(action: {
-                        showConnectionTypeSelection = true
-                    }) {
-                        Text("Connect with \(profile.firstName)")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                    }
-                    .padding(.horizontal, 20)
-                    .sheet(isPresented: $showConnectionTypeSelection) {
-                        ConnectView(firstName: profile.firstName, userId: userId)
+                    // Connect Button (only show if not viewing own profile)
+                    if !viewModel.isOwnProfile {
+                        Button(action: {
+                            showConnectionTypeSelection = true
+                        }) {
+                            Text("Connect with \(profile.firstName)")
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                        }
+                        .padding(.horizontal, 20)
+                        .sheet(isPresented: $showConnectionTypeSelection) {
+                            ConnectView(firstName: profile.firstName, userId: userId)
+                        }
                     }
                     
                     Divider()

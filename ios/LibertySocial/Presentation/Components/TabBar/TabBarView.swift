@@ -53,7 +53,7 @@ struct TabBarView: View {
             }
             Spacer(minLength: 0)
             Button {
-                // Action for profile
+                viewModel.showProfile()
             } label: {
                 if let photoKey = viewModel.currentUserPhotoKey {
                     ProfilePhotoView(photoKey: photoKey)
@@ -112,6 +112,16 @@ struct TabBarView: View {
             )
         ) {
             NotificationsView()
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { viewModel.isShowingProfile },
+                set: { viewModel.isShowingProfile = $0 }
+            )
+        ) {
+            if let userId = viewModel.currentUserId {
+                ProfileView(viewModel: ProfileViewModel(), userId: userId)
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .connectionRequestReceived)) { _ in
             // Update badge when notification received

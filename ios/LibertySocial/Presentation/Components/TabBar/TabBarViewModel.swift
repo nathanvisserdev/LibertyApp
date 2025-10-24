@@ -13,7 +13,9 @@ final class TabBarViewModel: ObservableObject {
     @Published var isShowingSearch: Bool = false
     @Published var isShowingConnectionRequests: Bool = false
     @Published var isShowingNotifications: Bool = false
+    @Published var isShowingProfile: Bool = false
     @Published var currentUserPhotoKey: String?
+    @Published var currentUserId: String?
 
     func showCompose() { isShowingCompose = true }
     func hideCompose() { isShowingCompose = false }
@@ -23,6 +25,8 @@ final class TabBarViewModel: ObservableObject {
     func hideConnectionRequests() { isShowingConnectionRequests = false }
     func showNotifications() { isShowingNotifications = true }
     func hideNotifications() { isShowingNotifications = false }
+    func showProfile() { isShowingProfile = true }
+    func hideProfile() { isShowingProfile = false }
     
     @MainActor
     func fetchCurrentUserPhoto() async {
@@ -36,9 +40,13 @@ final class TabBarViewModel: ObservableObject {
             let (data, response) = try await URLSession.shared.data(for: req)
             guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { return }
             
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let photoKey = json["profilePhoto"] as? String {
-                currentUserPhotoKey = photoKey
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let photoKey = json["profilePhoto"] as? String {
+                    currentUserPhotoKey = photoKey
+                }
+                if let userId = json["id"] as? String {
+                    currentUserId = userId
+                }
             }
         } catch {
             print("❌ Failed to fetch current user photo: \(error)")
