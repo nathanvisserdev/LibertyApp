@@ -19,9 +19,9 @@ struct TabBarView: View {
             Button {
                 Task { await feedViewModel.refresh() }
             } label: {
-                Image(systemName: "arrow.clockwise")
+                Image(systemName: newConnectionRequest ? "bell.and.waves.left.and.right.fill" : "bell")
                     .font(.system(size: 28, weight: .regular))
-                    .foregroundColor(.primary)
+                    .foregroundColor(newConnectionRequest ? .red : .primary)
             }
             Spacer(minLength: 0)
             Button {
@@ -32,13 +32,6 @@ struct TabBarView: View {
                     Image(systemName: "person.3.sequence")
                         .font(.system(size: 28, weight: .regular))
                         .foregroundColor(.primary)
-                    
-                    if newConnectionRequest {
-                        Image(systemName: "bell.circle")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.red)
-                            .offset(x: 8, y: -8)
-                    }
                 }
             }
             Spacer(minLength: 0)
