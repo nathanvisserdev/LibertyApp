@@ -33,6 +33,9 @@ final class SignupFlowCoordinator: ObservableObject {
     @Published var about: String = ""
     @Published var phoneNumber: String = ""
     
+    // Store photo data temporarily until after signup
+    @Published var photoData: Data?
+    
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var showWelcome: Bool = false
@@ -68,10 +71,7 @@ final class SignupFlowCoordinator: ObservableObject {
                     let trimmed = phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
                     return trimmed.isEmpty ? nil : trimmed
                 }(),
-                photo: {
-                    let trimmed = photo.trimmingCharacters(in: .whitespacesAndNewlines)
-                    return trimmed.isEmpty ? nil : trimmed
-                }(),
+                photo: nil, // Will be uploaded after login
                 about: {
                     let trimmed = about.trimmingCharacters(in: .whitespacesAndNewlines)
                     return trimmed.isEmpty ? nil : trimmed
@@ -83,6 +83,16 @@ final class SignupFlowCoordinator: ObservableObject {
             // Auto-login after signup
             _ = try await AuthService.login(email: email.trimmingCharacters(in: .whitespacesAndNewlines), password: password)
             
+            // Upload photo if one was selected
+            if let photoData = photoData {
+                do {
+                    try await uploadPhoto(photoData: photoData)
+                } catch {
+                    print("⚠️ Photo upload failed: \(error.localizedDescription)")
+                    // Don't fail signup if photo upload fails
+                }
+            }
+            
             // Successfully signed up - no error
         } catch {
             errorMessage = error.localizedDescription
@@ -90,4 +100,89 @@ final class SignupFlowCoordinator: ObservableObject {
         
         isLoading = false
     }
+    
+    private func uploadPhoto(photoData: Data) async throws {
+        // Get presigned URL
+        let presignResponse = try await getPresignedURL(contentType: "image/jpeg")
+        
+        // Upload to R2
+        try await uploadToR2(imageData: photoData, presignResponse: presignResponse)
+        
+        // Update user's photo URL
+        let photoURL = try await updateUserPhoto(key: presignResponse.key)
+        
+        // Update coordinator with photo URL
+        photo = photoURL
+    }
+    
+    private func getPresignedURL(contentType: String) async throws -> PresignResponse {
+        guard let token = KeychainHelper.read() else {
+            throw NSError(domain: "SignupFlowCoordinator", code: 401, userInfo: [NSLocalizedDescriptionKey: "No auth token"])
+        }
+        
+        let body = ["contentType": contentType]
+        let data = try JSONSerialization.data(withJSONObject: body)
+        
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/uploads/presign"))
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.httpBody = data
+        
+        let (responseData, response) = try await URLSession.shared.data(for: req)
+        
+        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "SignupFlowCoordinator", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to get presigned URL"])
+        }
+        
+        return try JSONDecoder().decode(PresignResponse.self, from: responseData)
+    }
+    
+    private func uploadToR2(imageData: Data, presignResponse: PresignResponse) async throws {
+        var req = URLRequest(url: URL(string: presignResponse.url)!)
+        req.httpMethod = "PUT"
+        req.setValue(presignResponse.headersOrFields["Content-Type"], forHTTPHeaderField: "Content-Type")
+        req.httpBody = imageData
+        
+        let (_, response) = try await URLSession.shared.data(for: req)
+        
+        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "SignupFlowCoordinator", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to upload photo"])
+        }
+    }
+    
+    private func updateUserPhoto(key: String) async throws -> String {
+        guard let token = KeychainHelper.read() else {
+            throw NSError(domain: "SignupFlowCoordinator", code: 401, userInfo: [NSLocalizedDescriptionKey: "No auth token"])
+        }
+        
+        let body = ["key": key]
+        let data = try JSONSerialization.data(withJSONObject: body)
+        
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/users/me/photo"))
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.httpBody = data
+        
+        let (responseData, response) = try await URLSession.shared.data(for: req)
+        
+        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "SignupFlowCoordinator", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to update photo"])
+        }
+        
+        let photoResponse = try JSONDecoder().decode(PhotoUpdateResponse.self, from: responseData)
+        return photoResponse.photo
+    }
+}
+
+struct PresignResponse: Decodable {
+    let url: String
+    let method: String
+    let headersOrFields: [String: String]
+    let key: String
+}
+
+struct PhotoUpdateResponse: Decodable {
+    let photo: String
 }

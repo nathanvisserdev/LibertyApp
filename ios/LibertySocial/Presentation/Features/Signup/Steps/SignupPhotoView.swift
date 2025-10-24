@@ -6,9 +6,12 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct SignupPhotoView: View {
     @ObservedObject var coordinator: SignupFlowCoordinator
+    @State private var selectedItem: PhotosPickerItem?
+    @State private var selectedImageData: Data?
     
     var body: some View {
         VStack(spacing: 20) {
@@ -23,50 +26,68 @@ struct SignupPhotoView: View {
             
             Spacer()
             
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Photo URL")
+            VStack(spacing: 20) {
+                // Photo preview
+                if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 150, height: 150)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.blue, lineWidth: 3))
+                } else {
+                    Circle()
+                        .fill(Color(.systemGray5))
+                        .frame(width: 150, height: 150)
+                        .overlay(
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 60))
+                                .foregroundColor(.gray)
+                        )
+                }
+                
+                // Photo picker
+                PhotosPicker(selection: $selectedItem, matching: .images) {
+                    HStack {
+                        Image(systemName: "photo.on.rectangle.angled")
+                        Text(selectedImageData == nil ? "Choose Photo" : "Change Photo")
+                    }
                     .font(.headline)
-                
-                TextField("Enter a URL to your photo", text: $coordinator.photo)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .keyboardType(.URL)
+                    .foregroundColor(.white)
                     .padding()
-                    .background(Color(.systemGray6))
+                    .frame(maxWidth: .infinity)
+                    .background(Color.blue)
                     .cornerRadius(10)
-                
-                Text("You can add a photo later from your profile")
-                    .font(.caption)
-                    .foregroundColor(.gray)
+                }
+                .onChange(of: selectedItem) { newItem in
+                    Task {
+                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                            selectedImageData = data
+                        }
+                    }
+                }
             }
+            .padding()
             
             Spacer()
             
             VStack(spacing: 12) {
                 Button(action: {
-                    // Just move to next step, don't signup yet
+                    // Store the photo data in the coordinator for upload after signup
+                    coordinator.photoData = selectedImageData
                     coordinator.nextStep()
                 }) {
-                    Text(coordinator.photo.isEmpty ? "Opt-out" : "Continue")
+                    Text(selectedImageData == nil ? "Skip" : "Continue")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
                 }
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
             }
             .padding(.bottom, 20)
         }
         .padding(.horizontal)
-        .alert("Error", isPresented: .constant(coordinator.errorMessage != nil)) {
-            Button("OK") {
-                coordinator.errorMessage = nil
-            }
-        } message: {
-            if let error = coordinator.errorMessage {
-                Text(error)
-            }
-        }
     }
 }
