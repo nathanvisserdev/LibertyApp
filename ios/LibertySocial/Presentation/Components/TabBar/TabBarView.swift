@@ -11,22 +11,20 @@ struct TabBarView: View {
     @ObservedObject var viewModel: TabBarViewModel
     @ObservedObject var coordinator: TabBarCoordinator
     @ObservedObject var feedViewModel: FeedViewModel
-    @AppStorage("newConnectionRequest") private var newConnectionRequest: Bool = false
 
     var body: some View {
-        let _ = print("🔔 TabBarView - newConnectionRequest: \(newConnectionRequest)")
         HStack {
             Spacer(minLength: 0)
             Button {
                 coordinator.showNotifications()
             } label: {
-                Image(systemName: newConnectionRequest ? "bell.and.waves.left.and.right.fill" : "bell")
+                Image(systemName: "bell")
                     .font(.system(size: 28, weight: .regular))
-                    .foregroundColor(newConnectionRequest ? .red : .primary)
+                    .foregroundColor(.primary)
             }
             Spacer(minLength: 0)
             Button {
-                coordinator.showConnectionRequests()
+                // TODO: Show groups view
             } label: {
                 ZStack(alignment: .topTrailing) {
                     Image(systemName: "person.3.sequence")
@@ -95,18 +93,6 @@ struct TabBarView: View {
         }
         .sheet(
             isPresented: Binding(
-                get: { coordinator.isShowingConnectionRequests },
-                set: { coordinator.isShowingConnectionRequests = $0 }
-            )
-        ) {
-            ConnectionRequestsView(onDismiss: {
-                coordinator.hideConnectionRequests()
-                // Clear badge when viewing requests
-                newConnectionRequest = false
-            })
-        }
-        .sheet(
-            isPresented: Binding(
                 get: { coordinator.isShowingNotifications },
                 set: { coordinator.isShowingNotifications = $0 }
             )
@@ -122,10 +108,6 @@ struct TabBarView: View {
             if let userId = coordinator.selectedUserId {
                 ProfileView(viewModel: ProfileViewModel(), userId: userId)
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .connectionRequestReceived)) { _ in
-            // Update badge when notification received
-            newConnectionRequest = true
         }
     }
 }

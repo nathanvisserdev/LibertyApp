@@ -13,7 +13,6 @@ final class TabBarCoordinator: ObservableObject {
     // MARK: - Published Properties (Navigation State)
     @Published var isShowingCompose: Bool = false
     @Published var isShowingSearch: Bool = false
-    @Published var isShowingConnectionRequests: Bool = false
     @Published var isShowingNotifications: Bool = false
     @Published var isShowingProfile: Bool = false
     @Published var selectedUserId: String?
@@ -40,14 +39,6 @@ final class TabBarCoordinator: ObservableObject {
     
     func hideSearch() {
         isShowingSearch = false
-    }
-    
-    func showConnectionRequests() {
-        isShowingConnectionRequests = true
-    }
-    
-    func hideConnectionRequests() {
-        isShowingConnectionRequests = false
     }
     
     func showNotifications() {

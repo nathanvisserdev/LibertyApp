@@ -17,7 +17,7 @@ struct ConnectView: View {
         ScrollView {
             VStack(spacing: 24) {
                 // Header
-                Text("How would you describe the nature of your relationship with \(firstName)?")
+                Text("How do you know \(firstName)?")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
@@ -87,10 +87,10 @@ struct ConnectView: View {
                         .font(.headline)
                         .fontWeight(.bold)
                     
-                    Text("Here at Liberty Social we aspire to make social networking about you, your community and the people that matter to you.")
+                    Text("Sensible users draw a distinction between acquaintances and internet strangers.")
                         .font(.body)
                     
-                    Text("With this in mind we make a point to prioritize people you know personally over strangers and influencers you may not.")
+                    Text("We categorize your connections to reflect that.")
                         .font(.body)
                 }
                 .multilineTextAlignment(.center)
