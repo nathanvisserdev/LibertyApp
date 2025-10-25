@@ -93,9 +93,11 @@ struct SignupView: View {
                                 if vm.isSecure {
                                     SecureField("Password (min 8 characters)", text: $vm.password)
                                         .textContentType(.newPassword)
+                                        .autocorrectionDisabled()
                                 } else {
                                     TextField("Password (min 8 characters)", text: $vm.password)
                                         .textContentType(.newPassword)
+                                        .autocorrectionDisabled()
                                 }
                             }
                             Button { withAnimation(.snappy) { vm.toggleSecure() } } label: {
@@ -112,9 +114,11 @@ struct SignupView: View {
                                 if vm.isSecure {
                                     SecureField("Confirm Password", text: $vm.confirmPassword)
                                         .textContentType(.newPassword)
+                                        .autocorrectionDisabled()
                                 } else {
                                     TextField("Confirm Password", text: $vm.confirmPassword)
                                         .textContentType(.newPassword)
+                                        .autocorrectionDisabled()
                                 }
                             }
                             if !vm.confirmPassword.isEmpty {

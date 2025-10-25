@@ -77,7 +77,7 @@ struct LoginView: View {
                     Task {
                         await vm.login()
                         if vm.me != nil {
-                            session.refresh() // Move user to main app view
+                            await session.refresh()
                         }
                     }
                 } label: {

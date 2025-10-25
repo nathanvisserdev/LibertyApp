@@ -23,11 +23,13 @@ struct LibertySocialApp: App {
                 }
             }
             .environmentObject(session)
-            .onAppear { session.refresh() } // silent re-auth on launch
+            .onAppear { 
+                Task { await session.refresh() }
+            }
         }
         .onChange(of: scenePhase) { phase in
             if phase == .active {
-                session.refresh()            // re-check on foreground
+                Task { await session.refresh() }
             }
         }
     }

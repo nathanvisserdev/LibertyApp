@@ -51,8 +51,10 @@ struct SignupWelcomeView: View {
             Spacer()
             
             Button(action: {
-                sessionStore.refresh()
-                dismiss()
+                Task {
+                    await sessionStore.refresh()
+                    dismiss()
+                }
             }) {
                 Text("Get Started")
                     .fontWeight(.semibold)
