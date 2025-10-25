@@ -13,6 +13,7 @@ struct SignupCredentialsView: View {
     @State private var emailCheckMessage: String = ""
     @State private var isCheckingEmail: Bool = false
     @State private var emailIsValid: Bool? = nil
+    @State private var showEmailTakenAlert: Bool = false
     
     private var passwordsMatch: Bool {
         !coordinator.password.isEmpty && coordinator.password == confirmPassword
@@ -68,8 +69,14 @@ struct SignupCredentialsView: View {
                     }
                 }
                 .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color(.systemGray6))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(emailIsValid == false ? Color.red : Color.clear, lineWidth: 2)
+                )
                 
                 if !emailCheckMessage.isEmpty {
                     Text(emailCheckMessage)
@@ -83,6 +90,8 @@ struct SignupCredentialsView: View {
                     .font(.headline)
                 
                 SecureField("At least 8 characters", text: $coordinator.password)
+                    .textContentType(.newPassword)
+                    .autocorrectionDisabled()
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
@@ -100,6 +109,8 @@ struct SignupCredentialsView: View {
                 
                 HStack {
                     SecureField("Re-enter your password", text: $confirmPassword)
+                        .textContentType(.newPassword)
+                        .autocorrectionDisabled()
                     
                     if !coordinator.password.isEmpty && !confirmPassword.isEmpty {
                         Image(systemName: passwordsMatch ? "checkmark.circle.fill" : "xmark.circle.fill")
@@ -120,6 +131,17 @@ struct SignupCredentialsView: View {
             Spacer()
             
             Button(action: {
+                // Extra safeguard: verify email is available before proceeding
+                if emailIsValid == false {
+                    showEmailTakenAlert = true
+                    return
+                }
+                
+                guard emailIsValid == true else {
+                    emailCheckMessage = "Please wait for email validation to complete"
+                    return
+                }
+                
                 coordinator.nextStep()
             }) {
                 Text("Continue")
@@ -134,20 +156,30 @@ struct SignupCredentialsView: View {
             .padding(.bottom, 20)
         }
         .padding(.horizontal)
+        .alert("Email Already Exists", isPresented: $showEmailTakenAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("This email is already registered. Please use a different email or sign in to your existing account.")
+        }
     }
     
     private func checkEmailAvailability() async {
-        guard !coordinator.email.isEmpty else {
+        let trimmedEmail = coordinator.email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        
+        guard !trimmedEmail.isEmpty else {
             emailCheckMessage = ""
             emailIsValid = nil
             return
         }
         
+        print("📧 Checking email availability for: '\(trimmedEmail)'")
         isCheckingEmail = true
         
         do {
             let model = SignupModel()
-            let isAvailable = try await model.checkAvailability(email: coordinator.email)
+            let isAvailable = try await model.checkAvailability(email: trimmedEmail)
+            
+            print("📧 Email '\(trimmedEmail)' availability result: \(isAvailable)")
             
             if isAvailable {
                 emailCheckMessage = "Email is available"
@@ -157,6 +189,7 @@ struct SignupCredentialsView: View {
                 emailIsValid = false
             }
         } catch {
+            print("❌ Email availability check failed: \(error)")
             emailCheckMessage = "Could not verify email"
             emailIsValid = nil
         }

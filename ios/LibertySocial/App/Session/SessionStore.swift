@@ -12,16 +12,28 @@ import Combine
 final class SessionStore: ObservableObject {
     @Published private(set) var isAuthenticated = false
 
-    init() { refresh() }
+    init() { 
+        Task { await refresh() }
+    }
 
-    func refresh() {
-        if let token = KeychainHelper.read(), !isExpired(token) {
+    func refresh() async {
+        // First check if token exists and isn't expired locally
+        guard let token = KeychainHelper.read(), !isExpired(token) else {
+            KeychainHelper.delete()
+            isAuthenticated = false
+            return
+        }
+        
+        // Verify token is valid on server by calling /user/me
+        do {
+            _ = try await AuthService.shared.fetchCurrentUser()
             isAuthenticated = true
+            
             // Check for pending connection requests when session is active
-            Task {
-                await checkPendingRequests()
-            }
-        } else {
+            await checkPendingRequests()
+        } catch {
+            // Token is invalid or request failed
+            print("⚠️ Token validation failed: \(error.localizedDescription)")
             KeychainHelper.delete()
             isAuthenticated = false
         }
