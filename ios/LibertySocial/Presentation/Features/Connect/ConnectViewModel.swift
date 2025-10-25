@@ -22,7 +22,7 @@ class ConnectViewModel: ObservableObject {
         successMessage = nil
         
         do {
-            _ = try await AuthService.createConnectionRequest(requestedId: userId, type: type)
+            try await ConnectModel.sendConnectionRequest(userId: userId, type: type)
             requestSent = true
             successMessage = "Connection request sent!"
         } catch {
