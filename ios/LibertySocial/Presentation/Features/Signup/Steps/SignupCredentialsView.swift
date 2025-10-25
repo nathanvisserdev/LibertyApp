@@ -146,7 +146,8 @@ struct SignupCredentialsView: View {
         isCheckingEmail = true
         
         do {
-            let isAvailable = try await AuthService.checkAvailability(email: coordinator.email, username: nil)
+            let model = SignupModel()
+            let isAvailable = try await model.checkAvailability(email: coordinator.email)
             
             if isAvailable {
                 emailCheckMessage = "Email is available"

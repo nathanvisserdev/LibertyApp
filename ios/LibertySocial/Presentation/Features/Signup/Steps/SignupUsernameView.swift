@@ -105,7 +105,8 @@ struct SignupUsernameView: View {
         isCheckingUsername = true
         
         do {
-            let isAvailable = try await AuthService.checkAvailability(email: nil, username: coordinator.username)
+            let model = SignupModel()
+            let isAvailable = try await model.checkAvailability(username: coordinator.username)
             
             if isAvailable {
                 usernameCheckMessage = "Username is available"

@@ -10,11 +10,20 @@ import Combine
 
 @MainActor
 class ConnectViewModel: ObservableObject {
+    // MARK: - Dependencies
+    private let model: ConnectModel
+    
+    // MARK: - Published
     @Published var selectedType: String? = nil
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var successMessage: String?
     @Published var requestSent = false
+    
+    // MARK: - Init
+    init(model: ConnectModel = ConnectModel()) {
+        self.model = model
+    }
     
     func sendConnectionRequest(userId: String, type: String) async {
         isLoading = true
@@ -22,7 +31,7 @@ class ConnectViewModel: ObservableObject {
         successMessage = nil
         
         do {
-            try await ConnectModel.sendConnectionRequest(userId: userId, type: type)
+            _ = try await model.sendConnectionRequest(userId: userId, type: type)
             requestSent = true
             successMessage = "Connection request sent!"
         } catch {

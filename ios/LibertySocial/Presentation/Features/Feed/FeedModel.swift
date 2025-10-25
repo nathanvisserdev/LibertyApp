@@ -16,3 +16,16 @@ struct FeedItem: Decodable {
     let relation: String
     struct UserSummary: Decodable { let id: String; let email: String }
 }
+
+struct FeedModel {
+    private let authService: AuthServiceProtocol
+    
+    init(authService: AuthServiceProtocol = AuthService.shared) {
+        self.authService = authService
+    }
+    
+    /// Fetch feed - AuthService handles token
+    func fetchFeed() async throws -> [FeedItem] {
+        return try await authService.fetchFeed()
+    }
+}

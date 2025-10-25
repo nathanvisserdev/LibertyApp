@@ -10,9 +10,18 @@ import Combine
 
 @MainActor
 final class FeedViewModel: ObservableObject {
+    // MARK: - Dependencies
+    private let model: FeedModel
+    
+    // MARK: - Published
     @Published var items: [FeedItem] = []
     @Published var isLoading = false
     @Published var error: String?
+    
+    // MARK: - Init
+    init(model: FeedModel = FeedModel()) {
+        self.model = model
+    }
 
     var mine:          [FeedItem] { items.filter { $0.relation == "SELF" } }
     var acquaintances: [FeedItem] { items.filter { $0.relation == "ACQUAINTANCE" } }
@@ -24,9 +33,9 @@ final class FeedViewModel: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         do {
-            items = try await AuthService.fetchFeed()
+            items = try await model.fetchFeed()
         } catch {
-            self.error = String(describing: error) // fix: use self.error, avoid shadowing
+            self.error = error.localizedDescription
         }
     }
 

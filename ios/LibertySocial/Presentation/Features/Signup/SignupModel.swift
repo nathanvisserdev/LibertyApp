@@ -5,6 +5,8 @@
 //  Created by Nathan Visser on 2025-10-25.
 //
 
+import Foundation
+
 struct AvailabilityRequest: Encodable {
     let email: String?
     let username: String?
@@ -12,6 +14,42 @@ struct AvailabilityRequest: Encodable {
 
 struct AvailabilityResponse: Decodable {
     let available: Bool
+}
+
+struct SignupModel {
+    private let authService: AuthServiceProtocol
+    
+    init(authService: AuthServiceProtocol = AuthService.shared) {
+        self.authService = authService
+    }
+    
+    /// Check if email or username is available
+    func checkAvailability(email: String? = nil, username: String? = nil) async throws -> Bool {
+        let url = AuthService.baseURL.appendingPathComponent("/availability")
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let availabilityReq = AvailabilityRequest(email: email, username: username)
+        req.httpBody = try JSONEncoder().encode(availabilityReq)
+        
+        let (data, response) = try await URLSession.shared.data(for: req)
+        guard let http = response as? HTTPURLResponse else {
+            throw NSError(domain: "SignupModel", code: 500, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        }
+        
+        if http.statusCode == 200 {
+            let decoded = try JSONDecoder().decode(AvailabilityResponse.self, from: data)
+            return decoded.available
+        } else {
+            throw NSError(domain: "SignupModel", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: "Failed to check availability"])
+        }
+    }
+    
+    /// Signup user - AuthService handles token storage
+    func signup(_ request: SignupRequest) async throws {
+        _ = try await authService.signup(request)
+    }
 }
 
 struct SignupRequest: Encodable {
@@ -40,4 +78,8 @@ struct SignupRequest: Encodable {
     }
 }
 
-struct SignupResponse: Decodable { let id: String; let email: String }
+struct SignupResponse: Decodable { 
+    let id: String
+    let email: String
+    let accessToken: String
+}

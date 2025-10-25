@@ -7,72 +7,71 @@
 
 import Foundation
 
+protocol AuthServiceProtocol {
+    func signup(_ request: SignupRequest) async throws -> String
+    func login(email: String, password: String) async throws -> String
+    func fetchCurrentUser() async throws -> [String: Any]
+    func fetchCurrentUserTyped() async throws -> APIUser
+    func fetchFeed() async throws -> [FeedItem]
+    func fetchIncomingConnectionRequests() async throws -> [ConnectionRequestRow]
+    func createConnectionRequest(requestedId: String, type: String) async throws -> ConnectionRequestResponse
+    func searchUsers(query: String) async throws -> SearchResponse
+    func fetchUserProfile(userId: String) async throws -> UserProfile
+}
+
 struct APIUser: Decodable { let id: String; let email: String }
 
 @MainActor
-final class AuthService {
+final class AuthService: AuthServiceProtocol {
     static let baseURL = URL(string: "http://127.0.0.1:3000")!
+    static let shared = AuthService()
     
-    // MARK: - Availability Check
-    static func checkAvailability(email: String? = nil, username: String? = nil) async throws -> Bool {
-        let url = baseURL.appendingPathComponent("/availability")
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let availabilityReq = AvailabilityRequest(email: email, username: username)
-        req.httpBody = try JSONEncoder().encode(availabilityReq)
-        
-        let (data, response) = try await URLSession.shared.data(for: req)
-        guard let http = response as? HTTPURLResponse else {
-            throw APIError.unknown(nil)
+    // MARK: - Token Management (Private - isolated to AuthService)
+    private func getToken() throws -> String {
+        guard let token = KeychainHelper.read() else {
+            throw APIError.unauthorized
         }
-        
-        if http.statusCode == 200 {
-            let decoded = try JSONDecoder().decode(AvailabilityResponse.self, from: data)
-            return decoded.available
-        } else {
-            throw APIError.server("Failed to check availability")
-        }
+        return token
     }
-
-    // MARK: - Signup
-    static func signup(_ request: SignupRequest) async throws {
-        let url = baseURL.appendingPathComponent("/signup")
+    
+    private func saveToken(_ token: String) throws {
+        try KeychainHelper.save(token: token)
+    }
+    
+    func deleteToken() {
+        KeychainHelper.delete()
+    }
+    
+    // MARK: - Signup (returns JWT and saves it)
+    func signup(_ request: SignupRequest) async throws -> String {
+        let url = AuthService.baseURL.appendingPathComponent("/signup")
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
         req.httpBody = try encoder.encode(request)
         
-        // Debug: Print the request body
-        if let jsonString = String(data: req.httpBody!, encoding: .utf8) {
-            print("Signup request JSON:\n\(jsonString)")
-        }
-
         let (data, response) = try await URLSession.shared.data(for: req)
         guard let http = response as? HTTPURLResponse else {
             throw APIError.unknown(nil)
-        }
-        
-        print("Signup response status: \(http.statusCode)")
-        if let responseString = String(data: data, encoding: .utf8) {
-            print("Signup response body: \(responseString)")
         }
         
         guard http.statusCode == 201 else {
             let errorMessage = String(data: data, encoding: .utf8) ?? "Signup failed"
             throw APIError.server(errorMessage)
         }
+        
+        let decoded = try JSONDecoder().decode(SignupResponse.self, from: data)
+        try saveToken(decoded.accessToken)
+        return decoded.accessToken
     }
 
-    // MARK: - Login
-    static func login(email: String, password: String) async throws -> String {
+    // MARK: - Login (returns JWT and saves it)
+    func login(email: String, password: String) async throws -> String {
         let payload = ["email": email, "password": password]
         let data = try JSONSerialization.data(withJSONObject: payload)
-        var req = URLRequest(url: baseURL.appendingPathComponent("/login"))
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/login"))
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = data
@@ -85,14 +84,15 @@ final class AuthService {
         }
 
         let decoded = try JSONDecoder().decode(LoginResponse.self, from: respData)
-        try? KeychainHelper.save(token: decoded.accessToken)
+        try saveToken(decoded.accessToken)
         return decoded.accessToken
     }
 
-    // MARK: - /user/me (JSON dictionary as you had)
-    static func fetchCurrentUser() async throws -> [String: Any] {
-        guard let token = KeychainHelper.read() else { throw APIError.unauthorized }
-        var req = URLRequest(url: baseURL.appendingPathComponent("/user/me"))
+    // MARK: - /user/me (gets token internally)
+    func fetchCurrentUser() async throws -> [String: Any] {
+        let token = try getToken()
+        
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/user/me"))
         req.httpMethod = "GET"
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
@@ -104,10 +104,11 @@ final class AuthService {
         return json ?? [:]
     }
 
-    // Optional typed variant if you want it:
-    static func fetchCurrentUserTyped() async throws -> APIUser {
-        guard let token = KeychainHelper.read() else { throw APIError.unauthorized }
-        var req = URLRequest(url: baseURL.appendingPathComponent("/user/me"))
+    // Typed variant
+    func fetchCurrentUserTyped() async throws -> APIUser {
+        let token = try getToken()
+        
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/user/me"))
         req.httpMethod = "GET"
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         let (data, response) = try await URLSession.shared.data(for: req)
@@ -117,9 +118,10 @@ final class AuthService {
     }
 
     // MARK: - Feed
-    static func fetchFeed() async throws -> [FeedItem] {
-        guard let token = KeychainHelper.read() else { throw APIError.unauthorized }
-        var req = URLRequest(url: baseURL.appendingPathComponent("/feed"))
+    func fetchFeed() async throws -> [FeedItem] {
+        let token = try getToken()
+        
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/feed"))
         req.httpMethod = "GET"
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
@@ -132,9 +134,10 @@ final class AuthService {
     }
 
     // MARK: - Connections (incoming requests)
-    static func fetchIncomingConnectionRequests() async throws -> [ConnectionRequestRow] {
-        guard let token = KeychainHelper.read() else { throw APIError.unauthorized }
-        var req = URLRequest(url: baseURL.appendingPathComponent("/connections/requests/incoming"))
+    func fetchIncomingConnectionRequests() async throws -> [ConnectionRequestRow] {
+        let token = try getToken()
+        
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/connections/requests/incoming"))
         req.httpMethod = "GET"
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
@@ -147,15 +150,15 @@ final class AuthService {
     }
 
     // Create a connection request
-    static func createConnectionRequest(requestedId: String, type: String) async throws -> ConnectionRequestResponse {
-        guard let token = KeychainHelper.read() else { throw APIError.unauthorized }
+    func createConnectionRequest(requestedId: String, type: String) async throws -> ConnectionRequestResponse {
+        let token = try getToken()
         
         // Map IS_FOLLOWING to FOLLOW for server compatibility
         let requestType = type == "IS_FOLLOWING" ? "FOLLOW" : type
         let body = ["requestedId": requestedId, "requestType": requestType]
         let data = try JSONSerialization.data(withJSONObject: body)
 
-        var req = URLRequest(url: baseURL.appendingPathComponent("/connections/request"))
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/connections/request"))
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -174,10 +177,10 @@ final class AuthService {
     }
 
     // MARK: - Search
-    static func searchUsers(query: String) async throws -> SearchResponse {
-        guard let token = KeychainHelper.read() else { throw APIError.unauthorized }
+    func searchUsers(query: String) async throws -> SearchResponse {
+        let token = try getToken()
         
-        var components = URLComponents(url: baseURL.appendingPathComponent("/search/users"), resolvingAgainstBaseURL: true)
+        var components = URLComponents(url: AuthService.baseURL.appendingPathComponent("/search/users"), resolvingAgainstBaseURL: true)
         components?.queryItems = [URLQueryItem(name: "q", value: query)]
         
         guard let url = components?.url else { throw APIError.badURL }
@@ -196,10 +199,10 @@ final class AuthService {
     }
 
     // MARK: - Profile
-    static func fetchUserProfile(userId: String) async throws -> UserProfile {
-        guard let token = KeychainHelper.read() else { throw APIError.unauthorized }
+    func fetchUserProfile(userId: String) async throws -> UserProfile {
+        let token = try getToken()
         
-        var req = URLRequest(url: baseURL.appendingPathComponent("/users/\(userId)"))
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/users/\(userId)"))
         req.httpMethod = "GET"
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
@@ -211,8 +214,4 @@ final class AuthService {
         do { return try JSONDecoder().decode(UserProfile.self, from: data) }
         catch { throw APIError.decoding }
     }
-
-    // MARK: - Logout
-    static func logout() { KeychainHelper.delete() }
 }
-

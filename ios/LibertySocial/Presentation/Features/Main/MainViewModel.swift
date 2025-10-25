@@ -23,7 +23,7 @@ final class MainViewModel: ObservableObject {
 
     func loadMe() async {
         do {
-            let me = try await AuthService.fetchCurrentUser()
+            let me = try await AuthService.shared.fetchCurrentUser()
             let id = me["id"] as? String ?? "unknown"
             let email = me["email"] as? String ?? "unknown"
             meResult = "id=\(id), email=\(email)"

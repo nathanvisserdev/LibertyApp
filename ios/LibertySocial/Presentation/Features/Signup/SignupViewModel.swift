@@ -11,6 +11,9 @@ import Combine
 @MainActor
 final class SignupViewModel: ObservableObject {
     
+    // MARK: - Dependencies
+    private let model: SignupModel
+    
     // MARK: - Published
     @Published var firstName: String = ""
     @Published var lastName: String = ""
@@ -30,6 +33,11 @@ final class SignupViewModel: ObservableObject {
     @Published var successMessage: String?
     @Published var emailCheckMessage: String?
     @Published var usernameCheckMessage: String?
+    
+    // MARK: - Init
+    init(model: SignupModel = SignupModel()) {
+        self.model = model
+    }
     
     // MARK: - Computed
     var canSubmit: Bool {
@@ -61,7 +69,7 @@ final class SignupViewModel: ObservableObject {
         
         do {
             // First, check if email is available
-            let emailAvailable = try await AuthService.checkAvailability(email: email.trimmed)
+            let emailAvailable = try await model.checkAvailability(email: email.trimmed)
             
             if !emailAvailable {
                 errorMessage = "Email already exists. Please use a different email or sign in."
@@ -70,7 +78,7 @@ final class SignupViewModel: ObservableObject {
             }
             
             // Check if username is available
-            let usernameAvailable = try await AuthService.checkAvailability(username: username.trimmed.lowercased())
+            let usernameAvailable = try await model.checkAvailability(username: username.trimmed.lowercased())
             
             if !usernameAvailable {
                 errorMessage = "Username already exists. Please choose a different username."
@@ -92,8 +100,8 @@ final class SignupViewModel: ObservableObject {
                 about: about.trimmed.isEmpty ? nil : about.trimmed
             )
             
-            try await AuthService.signup(request)
-            successMessage = "Account created successfully! Please sign in."
+            try await model.signup(request)
+            successMessage = "Account created successfully! You are now logged in."
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -108,7 +116,7 @@ final class SignupViewModel: ObservableObject {
         }
         
         do {
-            let available = try await AuthService.checkAvailability(email: email.trimmed)
+            let available = try await model.checkAvailability(email: email.trimmed)
             emailCheckMessage = available ? "✓ Email is available" : "✗ Email already exists"
         } catch {
             emailCheckMessage = nil
@@ -122,7 +130,7 @@ final class SignupViewModel: ObservableObject {
         }
         
         do {
-            let available = try await AuthService.checkAvailability(username: username.trimmed.lowercased())
+            let available = try await model.checkAvailability(username: username.trimmed.lowercased())
             usernameCheckMessage = available ? "✓ Username is available" : "✗ Username already taken"
         } catch {
             usernameCheckMessage = nil

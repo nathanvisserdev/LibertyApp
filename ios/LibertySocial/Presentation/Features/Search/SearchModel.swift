@@ -26,3 +26,16 @@ struct SearchResponse: Decodable {
     let users: [SearchUser]
     let groups: [SearchGroup]
 }
+
+struct SearchModel {
+    private let authService: AuthServiceProtocol
+    
+    init(authService: AuthServiceProtocol = AuthService.shared) {
+        self.authService = authService
+    }
+    
+    /// Search users - AuthService handles token
+    func searchUsers(query: String) async throws -> SearchResponse {
+        return try await authService.searchUsers(query: query)
+    }
+}

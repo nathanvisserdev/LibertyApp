@@ -32,8 +32,14 @@ struct ConnectionRequestRow: Decodable {
 }
 
 struct ConnectModel {
-    /// Send a connection request to another user
-    static func sendConnectionRequest(userId: String, type: String) async throws {
-        _ = try await AuthService.createConnectionRequest(requestedId: userId, type: type)
+    private let authService: AuthServiceProtocol
+    
+    init(authService: AuthServiceProtocol = AuthService.shared) {
+        self.authService = authService
+    }
+    
+    /// Send a connection request - AuthService handles token
+    func sendConnectionRequest(userId: String, type: String) async throws -> ConnectionRequestResponse {
+        return try await authService.createConnectionRequest(requestedId: userId, type: type)
     }
 }

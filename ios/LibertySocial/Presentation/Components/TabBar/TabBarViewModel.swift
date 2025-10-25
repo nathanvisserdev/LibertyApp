@@ -10,11 +10,19 @@ import Combine
 
 @MainActor
 final class TabBarViewModel: ObservableObject {
+    // MARK: - Dependencies
+    private let model: TabBarModel
+    
     // MARK: - Published Properties (State Only)
     @Published var currentUserPhotoKey: String?
     @Published var currentUserId: String?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    
+    // MARK: - Init
+    init(model: TabBarModel = TabBarModel()) {
+        self.model = model
+    }
     
     // MARK: - Public Methods
     
@@ -24,7 +32,7 @@ final class TabBarViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let userInfo = try await TabBarModel.fetchCurrentUserInfo()
+            let userInfo = try await model.fetchCurrentUserInfo()
             currentUserPhotoKey = userInfo.photoKey
             currentUserId = userInfo.userId
             isLoading = false

@@ -87,13 +87,12 @@ final class SignupFlowCoordinator: ObservableObject {
             )
             
             print("📝 completeSignup: Calling signup endpoint...")
-            try await AuthService.signup(request)
+            let model = SignupModel()
+            try await model.signup(request)
             print("✅ completeSignup: Signup successful!")
             
-            // Auto-login after signup
-            print("🔐 completeSignup: Auto-logging in...")
-            _ = try await AuthService.login(email: email.trimmingCharacters(in: .whitespacesAndNewlines), password: password)
-            print("✅ completeSignup: Login successful!")
+            // Auto-login is now handled by SignupModel (token is saved)
+            print("✅ completeSignup: User is now logged in!")
             
             // Upload photo if one was selected
             if let photoData = photoData {

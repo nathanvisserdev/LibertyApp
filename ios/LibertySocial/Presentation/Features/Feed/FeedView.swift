@@ -44,7 +44,7 @@ struct FeedView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Log out") {
-                        AuthService.logout()
+                        AuthService.shared.deleteToken()
                         session.refresh()
                     }
                 }

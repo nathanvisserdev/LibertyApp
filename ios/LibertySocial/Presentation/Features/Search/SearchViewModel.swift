@@ -10,11 +10,20 @@ import Combine
 
 @MainActor
 class SearchViewModel: ObservableObject {
+    // MARK: - Dependencies
+    private let model: SearchModel
+    
+    // MARK: - Published
     @Published var query: String = ""
     @Published var users: [SearchUser] = []
     @Published var groups: [SearchGroup] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    
+    // MARK: - Init
+    init(model: SearchModel = SearchModel()) {
+        self.model = model
+    }
 
     func searchUsers(query: String) async {
         guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -27,7 +36,7 @@ class SearchViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let result = try await AuthService.searchUsers(query: query.trimmingCharacters(in: .whitespacesAndNewlines))
+            let result = try await model.searchUsers(query: query.trimmingCharacters(in: .whitespacesAndNewlines))
             users = result.users
             groups = result.groups
         } catch {
