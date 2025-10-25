@@ -35,7 +35,9 @@
 			membershipExceptions = (
 				Presentation/Features/CreatePost/CreatePostModel.swift,
 				Presentation/Features/CreatePost/CreatePostViewModel.swift,
+				Presentation/Features/Feed/FeedModel.swift,
 				Presentation/Features/Feed/FeedViewModel.swift,
+				Presentation/Features/Login/LoginModel.swift,
 				Presentation/Features/Login/LoginViewModel.swift,
 				Presentation/Features/Main/MainViewModel.swift,
 				Services/AuthService.swift,
@@ -49,6 +51,7 @@
 				Presentation/Features/CreatePost/CreatePostModel.swift,
 				Presentation/Features/CreatePost/CreatePostView.swift,
 				Presentation/Features/CreatePost/CreatePostViewModel.swift,
+				Presentation/Features/Feed/FeedModel.swift,
 				Presentation/Features/Feed/FeedView.swift,
 				Presentation/Features/Feed/FeedViewModel.swift,
 				Presentation/Features/Login/LoginView.swift,
