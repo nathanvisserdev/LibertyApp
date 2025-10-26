@@ -22,7 +22,7 @@ final class SignupViewModel: ObservableObject {
     @Published var password: String = ""
     @Published var confirmPassword: String = ""
     @Published var dateOfBirth: Date = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
-    @Published var gender: String = "PREFER_NOT_TO_SAY" // MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY
+    @Published var gender: String = "" // MALE, FEMALE, OTHER (required)
     @Published var phoneNumber: String = ""
     @Published var photo: String = ""
     @Published var about: String = ""
@@ -152,7 +152,7 @@ final class SignupViewModel: ObservableObject {
         photo = ""
         about = ""
         dateOfBirth = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
-        gender = "PREFER_NOT_TO_SAY"
+        gender = ""
         errorMessage = nil
         successMessage = nil
         emailCheckMessage = nil

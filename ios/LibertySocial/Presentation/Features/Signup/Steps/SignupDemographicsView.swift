@@ -14,8 +14,7 @@ struct SignupDemographicsView: View {
     private let genderOptions = [
         ("MALE", "Male"),
         ("FEMALE", "Female"),
-        ("NON_BINARY", "Non-binary"),
-        ("PREFER_NOT_TO_SAY", "Prefer not to say")
+        ("OTHER", "Other")
     ]
     
     private var age: Int {
@@ -24,6 +23,10 @@ struct SignupDemographicsView: View {
     
     private var isAtLeast13: Bool {
         age >= 13
+    }
+    
+    private var canProceed: Bool {
+        isAtLeast13 && !coordinator.gender.isEmpty
     }
     
     var body: some View {
@@ -64,12 +67,38 @@ struct SignupDemographicsView: View {
                     .font(.headline)
                 
                 Picker("Select your gender", selection: $coordinator.gender) {
+                    Text("Select...").tag("")
                     ForEach(genderOptions, id: \.0) { option in
                         Text(option.1).tag(option.0)
                     }
                 }
                 .pickerStyle(.segmented)
+                
+                if coordinator.gender.isEmpty {
+                    Text("Please select your gender")
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
             }
+            
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Profile Privacy")
+                    .font(.headline)
+                
+                Toggle(isOn: $coordinator.isPrivate) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Private Account")
+                            .font(.subheadline)
+                        Text(coordinator.isPrivate ? "Only connections can see your posts" : "Anyone can see your posts")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                }
+                .toggleStyle(SwitchToggleStyle(tint: .blue))
+            }
+            .padding()
+            .background(Color(.systemGray6))
+            .cornerRadius(10)
             
             Spacer()
             
@@ -80,11 +109,11 @@ struct SignupDemographicsView: View {
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(isAtLeast13 ? Color.blue : Color.gray)
+                    .background(canProceed ? Color.blue : Color.gray)
                     .foregroundColor(.white)
                     .cornerRadius(10)
             }
-            .disabled(!isAtLeast13)
+            .disabled(!canProceed)
             .padding(.bottom, 20)
         }
         .padding(.horizontal)

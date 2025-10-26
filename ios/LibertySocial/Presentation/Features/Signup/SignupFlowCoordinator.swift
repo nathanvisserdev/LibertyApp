@@ -28,7 +28,8 @@ final class SignupFlowCoordinator: ObservableObject {
     @Published var lastName: String = ""
     @Published var username: String = ""
     @Published var dateOfBirth: Date = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
-    @Published var gender: String = "PREFER_NOT_TO_SAY"
+    @Published var gender: String = ""
+    @Published var isPrivate: Bool = true
     @Published var photo: String = ""
     @Published var about: String = ""
     @Published var phoneNumber: String = ""
@@ -75,6 +76,7 @@ final class SignupFlowCoordinator: ObservableObject {
                 password: password,
                 dateOfBirth: formatter.string(from: dateOfBirth),
                 gender: gender,
+                isPrivate: isPrivate,
                 phoneNumber: {
                     let trimmed = phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
                     return trimmed.isEmpty ? nil : trimmed

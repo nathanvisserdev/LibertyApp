@@ -20,7 +20,7 @@ struct SignupPhotoView: View {
                 .fontWeight(.bold)
                 .padding(.top, 40)
             
-            Text("Step 5 of 7 (Optional)")
+            Text("Step 5 of 7")
                 .font(.subheadline)
                 .foregroundColor(.gray)
             
@@ -77,14 +77,21 @@ struct SignupPhotoView: View {
                     coordinator.photoData = selectedImageData
                     coordinator.nextStep()
                 }) {
-                    Text(selectedImageData == nil ? "Skip" : "Continue")
+                    Text("Continue")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding()
                 }
-                .background(Color.blue)
+                .background(selectedImageData != nil ? Color.blue : Color.gray)
                 .foregroundColor(.white)
                 .cornerRadius(10)
+                .disabled(selectedImageData == nil)
+                
+                if selectedImageData == nil {
+                    Text("Please select a profile photo")
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
             }
             .padding(.bottom, 20)
         }

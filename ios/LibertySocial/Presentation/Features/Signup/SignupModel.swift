@@ -60,11 +60,12 @@ struct SignupRequest: Encodable {
     let password: String
     let dateOfBirth: String
     let gender: String
+    let isPrivate: Bool
     let phoneNumber: String?
     let profilePhoto: String?
     let about: String?
     
-    init(firstName: String, lastName: String, email: String, username: String, password: String, dateOfBirth: String, gender: String, phoneNumber: String? = nil, profilePhoto: String? = nil, about: String? = nil) {
+    init(firstName: String, lastName: String, email: String, username: String, password: String, dateOfBirth: String, gender: String, isPrivate: Bool, phoneNumber: String? = nil, profilePhoto: String? = nil, about: String? = nil) {
         self.firstName = firstName
         self.lastName = lastName
         self.email = email
@@ -72,6 +73,7 @@ struct SignupRequest: Encodable {
         self.password = password
         self.dateOfBirth = dateOfBirth
         self.gender = gender
+        self.isPrivate = isPrivate
         self.phoneNumber = phoneNumber
         self.profilePhoto = profilePhoto
         self.about = about
