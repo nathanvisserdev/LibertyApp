@@ -11,6 +11,7 @@ struct ConnectView: View {
     @StateObject var viewModel = ConnectViewModel()
     let firstName: String
     let userId: String
+    let isPrivate: Bool
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -42,11 +43,14 @@ struct ConnectView: View {
                         action: { viewModel.selectedType = "STRANGER" }
                     )
                     
-                    ConnectionTypeButton(
-                        title: "I just want to follow this person",
-                        isSelected: viewModel.selectedType == "IS_FOLLOWING",
-                        action: { viewModel.selectedType = "IS_FOLLOWING" }
-                    )
+                    // Only show follow option if the user's account is public
+                    if !isPrivate {
+                        ConnectionTypeButton(
+                            title: "I just want to follow this person",
+                            isSelected: viewModel.selectedType == "IS_FOLLOWING",
+                            action: { viewModel.selectedType = "IS_FOLLOWING" }
+                        )
+                    }
                 }
                 .padding(.horizontal)
                 
@@ -170,5 +174,5 @@ struct ConnectionTypeButton: View {
 }
 
 #Preview {
-    ConnectView(firstName: "John", userId: "123")
+    ConnectView(firstName: "John", userId: "123", isPrivate: false)
 }

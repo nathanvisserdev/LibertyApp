@@ -101,7 +101,7 @@ struct ProfileView: View {
                         }
                         .padding(.horizontal, 20)
                         .sheet(isPresented: $showConnectionTypeSelection) {
-                            ConnectView(firstName: profile.firstName, userId: userId)
+                            ConnectView(firstName: profile.firstName, userId: userId, isPrivate: profile.isPrivate)
                         }
                     }
                     

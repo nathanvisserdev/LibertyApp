@@ -15,6 +15,7 @@ struct UserProfile: Decodable {
     let profilePhoto: String?
     let about: String?
     let gender: String?
+    let isPrivate: Bool
     let connectionStatus: String?
     let requestType: String?
 }

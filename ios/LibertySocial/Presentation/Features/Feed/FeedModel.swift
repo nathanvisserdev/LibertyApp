@@ -14,7 +14,14 @@ struct FeedItem: Decodable {
     let createdAt: String
     let user: UserSummary
     let relation: String
-    struct UserSummary: Decodable { let id: String; let email: String }
+    
+    struct UserSummary: Decodable {
+        let id: String
+        let username: String
+        let firstName: String
+        let lastName: String
+        let profilePhoto: String
+    }
 }
 
 struct FeedModel {

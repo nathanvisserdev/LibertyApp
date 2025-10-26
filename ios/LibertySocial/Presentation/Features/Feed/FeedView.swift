@@ -62,7 +62,9 @@ struct FeedView: View {
     @ViewBuilder private func rows(_ items: [FeedItem]) -> some View {
         ForEach(items, id: \.id) { item in
             VStack(alignment: .leading, spacing: 6) {
-                Text(item.user.email).font(.footnote).foregroundStyle(.secondary)
+                Text("\(item.user.firstName) \(item.user.lastName) (@\(item.user.username))")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
                 Text(item.content).font(.body)
                 Text(DateFormatter.feed.string(fromISO: item.createdAt))
                     .font(.caption2).foregroundStyle(.secondary)
