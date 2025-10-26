@@ -17,8 +17,8 @@ struct RequesterUser: Decodable {
     let id: String
     let firstName: String
     let lastName: String
-    let username: String?
-    let photo: String?
+    let username: String
+    let profilePhoto: String
 }
 
 struct ConnectionRequestRow: Decodable {
