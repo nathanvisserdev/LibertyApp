@@ -190,7 +190,7 @@ struct SignupCredentialsView: View {
             }
         } catch {
             print("❌ Email availability check failed: \(error)")
-            emailCheckMessage = "Could not verify email"
+            emailCheckMessage = "Enter a valid email address"
             emailIsValid = nil
         }
         
