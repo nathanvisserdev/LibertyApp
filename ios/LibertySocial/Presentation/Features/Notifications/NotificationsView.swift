@@ -37,7 +37,14 @@ struct NotificationsView: View {
                 } else {
                     List {
                         ForEach(viewModel.notifications) { notification in
-                            NotificationRow(notification: notification)
+                            NotificationRow(
+                                notification: notification,
+                                onAccept: { requestId in
+                                    Task {
+                                        await viewModel.acceptConnectionRequest(requestId: requestId)
+                                    }
+                                }
+                            )
                         }
                     }
                     .listStyle(.insetGrouped)
@@ -56,6 +63,9 @@ struct NotificationsView: View {
 
 struct NotificationRow: View {
     let notification: NotificationItem
+    let onAccept: (String) -> Void
+    
+    @State private var isProcessing = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -116,17 +126,26 @@ struct NotificationRow: View {
             if notification.type == .connectionRequest {
                 HStack(spacing: 12) {
                     Button(action: {
-                        // TODO: Accept connection request
+                        isProcessing = true
+                        onAccept(notification.id)
                     }) {
-                        Text("Accept")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
+                        if isProcessing {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                        } else {
+                            Text("Accept")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                        }
                     }
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                    .disabled(isProcessing)
                     
                     Button(action: {
                         // TODO: Decline connection request
@@ -136,14 +155,16 @@ struct NotificationRow: View {
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
-                            .background(Color.gray.opacity(0.2))
-                            .foregroundColor(.primary)
-                            .cornerRadius(8)
                     }
+                    .background(Color.gray.opacity(0.2))
+                    .foregroundColor(.primary)
+                    .cornerRadius(8)
+                    .disabled(isProcessing)
                 }
             }
         }
         .padding(.vertical, 8)
+        .opacity(isProcessing ? 0.6 : 1.0)
     }
     
     private func badgeColor(for type: NotificationItem.NotificationType) -> Color {

@@ -79,21 +79,29 @@ struct NotificationsModel {
     
     /// Fetch incoming connection requests - AuthService handles token
     private func fetchIncomingConnectionRequests() async throws -> [IncomingConnectionRequest] {
-        guard let token = KeychainHelper.read() else {
-            throw NSError(domain: "NotificationsModel", code: 401, userInfo: [NSLocalizedDescriptionKey: "No auth token"])
+        let requests = try await authService.fetchIncomingConnectionRequests()
+        return requests.compactMap { req in
+            guard let requester = req.requester else { return nil }
+            return IncomingConnectionRequest(
+                id: req.id,
+                requesterId: req.requesterId,
+                requestedId: req.requestedId,
+                type: req.type,
+                status: req.status,
+                createdAt: req.createdAt,
+                requester: NotificationUser(
+                    id: requester.id,
+                    firstName: requester.firstName,
+                    lastName: requester.lastName,
+                    username: requester.username,
+                    profilePhoto: requester.profilePhoto
+                )
+            )
         }
-        
-        var request = URLRequest(url: AuthService.baseURL.appendingPathComponent("/connections/pending/incoming"))
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw NSError(domain: "NotificationsModel", code: (response as? HTTPURLResponse)?.statusCode ?? 500)
-        }
-        
-        let decoded = try JSONDecoder().decode(IncomingConnectionRequestsResponse.self, from: data)
-        return decoded.incomingRequests
+    }
+    
+    /// Accept a connection request
+    func acceptConnectionRequest(requestId: String) async throws {
+        try await authService.acceptConnectionRequest(requestId: requestId)
     }
 }

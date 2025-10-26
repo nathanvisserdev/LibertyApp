@@ -15,6 +15,8 @@ protocol AuthServiceProtocol {
     func fetchFeed() async throws -> [FeedItem]
     func fetchIncomingConnectionRequests() async throws -> [ConnectionRequestRow]
     func createConnectionRequest(requestedId: String, type: String) async throws -> ConnectionRequestResponse
+    func acceptConnectionRequest(requestId: String) async throws
+    func declineConnectionRequest(requestId: String) async throws
     func searchUsers(query: String) async throws -> SearchResponse
     func fetchUserProfile(userId: String) async throws -> UserProfile
 }
@@ -137,7 +139,7 @@ final class AuthService: AuthServiceProtocol {
     func fetchIncomingConnectionRequests() async throws -> [ConnectionRequestRow] {
         let token = try getToken()
         
-        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/connections/requests/incoming"))
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/connections/pending/incoming"))
         req.httpMethod = "GET"
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
@@ -145,7 +147,16 @@ final class AuthService: AuthServiceProtocol {
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             throw APIError.server("Failed to load incoming requests")
         }
-        do { return try JSONDecoder().decode([ConnectionRequestRow].self, from: data) }
+        
+        // Server returns { incomingRequests: [...] }
+        struct Response: Decodable {
+            let incomingRequests: [ConnectionRequestRow]
+        }
+        
+        do { 
+            let decoded = try JSONDecoder().decode(Response.self, from: data)
+            return decoded.incomingRequests
+        }
         catch { throw APIError.decoding }
     }
 
@@ -213,5 +224,34 @@ final class AuthService: AuthServiceProtocol {
         
         do { return try JSONDecoder().decode(UserProfile.self, from: data) }
         catch { throw APIError.decoding }
+    }
+    
+    // MARK: - Connection Request Actions
+    func acceptConnectionRequest(requestId: String) async throws {
+        let token = try getToken()
+        
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/connections/\(requestId)/accept"))
+        req.httpMethod = "POST"
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: req)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Failed to accept request"
+            throw APIError.server(errorMessage)
+        }
+    }
+    
+    func declineConnectionRequest(requestId: String) async throws {
+        let token = try getToken()
+        
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/connections/\(requestId)/decline"))
+        req.httpMethod = "DELETE"
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: req)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Failed to decline request"
+            throw APIError.server(errorMessage)
+        }
     }
 }

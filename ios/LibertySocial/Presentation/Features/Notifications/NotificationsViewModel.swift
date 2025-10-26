@@ -36,4 +36,14 @@ class NotificationsViewModel: ObservableObject {
     func refresh() async {
         await loadNotifications()
     }
+    
+    func acceptConnectionRequest(requestId: String) async {
+        do {
+            try await model.acceptConnectionRequest(requestId: requestId)
+            // Remove the accepted request from the list
+            notifications.removeAll { $0.id == requestId }
+        } catch {
+            errorMessage = "Failed to accept request: \(error.localizedDescription)"
+        }
+    }
 }
