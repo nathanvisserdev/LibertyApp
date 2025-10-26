@@ -23,7 +23,7 @@ struct APIUser: Decodable { let id: String; let email: String }
 
 @MainActor
 final class AuthService: AuthServiceProtocol {
-    static let baseURL = URL(string: "http://127.0.0.1:3000")!
+    static let baseURL = AppConfig.baseURL
     static let shared = AuthService()
     
     // MARK: - Token Management (Private - isolated to AuthService)

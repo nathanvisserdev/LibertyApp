@@ -21,7 +21,7 @@ struct CreatePostResponse: Codable {
 struct PostsAPI {
     static func createPost(content: String) async throws -> CreatePostResponse {
         // Build relative to the app's base URL
-        let url = URL(string: "/posts", relativeTo: AppConfig.base)!
+        let url = URL(string: "/posts", relativeTo: AppConfig.baseURL)!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
