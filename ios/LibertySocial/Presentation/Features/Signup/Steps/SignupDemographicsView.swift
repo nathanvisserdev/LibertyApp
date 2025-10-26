@@ -26,7 +26,7 @@ struct SignupDemographicsView: View {
     }
     
     private var canProceed: Bool {
-        isAtLeast13 && !coordinator.gender.isEmpty
+        isAtLeast13
     }
     
     var body: some View {
@@ -67,18 +67,11 @@ struct SignupDemographicsView: View {
                     .font(.headline)
                 
                 Picker("Select your gender", selection: $coordinator.gender) {
-                    Text("Select...").tag("")
                     ForEach(genderOptions, id: \.0) { option in
                         Text(option.1).tag(option.0)
                     }
                 }
                 .pickerStyle(.segmented)
-                
-                if coordinator.gender.isEmpty {
-                    Text("Please select your gender")
-                        .font(.caption)
-                        .foregroundColor(.red)
-                }
             }
             
             VStack(alignment: .leading, spacing: 8) {
@@ -87,7 +80,7 @@ struct SignupDemographicsView: View {
                 
                 Toggle(isOn: $coordinator.isPrivate) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Private Account")
+                        Text(coordinator.isPrivate ? "Private Account" : "Public Account")
                             .font(.subheadline)
                         Text(coordinator.isPrivate ? "Only connections can see your posts" : "Anyone can see your posts")
                             .font(.caption)

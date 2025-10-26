@@ -28,7 +28,7 @@ final class SignupFlowCoordinator: ObservableObject {
     @Published var lastName: String = ""
     @Published var username: String = ""
     @Published var dateOfBirth: Date = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
-    @Published var gender: String = ""
+    @Published var gender: String = "MALE"
     @Published var isPrivate: Bool = true
     @Published var photo: String = ""
     @Published var about: String = ""
@@ -65,8 +65,18 @@ final class SignupFlowCoordinator: ObservableObject {
         errorMessage = nil
         
         do {
+            // Check if we have photo data - it's now required
+            guard photoData != nil else {
+                errorMessage = "Profile photo is required. Please select a photo."
+                isLoading = false
+                return
+            }
+            
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
+            
+            // Use a placeholder URL for now - we'll upload the real photo after signup
+            let placeholderPhotoURL = "https://placeholder.com/profile-photo-pending"
             
             let request = SignupRequest(
                 firstName: firstName.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -81,7 +91,7 @@ final class SignupFlowCoordinator: ObservableObject {
                     let trimmed = phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
                     return trimmed.isEmpty ? nil : trimmed
                 }(),
-                profilePhoto: nil, // Will be uploaded after login
+                profilePhoto: placeholderPhotoURL,
                 about: {
                     let trimmed = about.trimmingCharacters(in: .whitespacesAndNewlines)
                     return trimmed.isEmpty ? nil : trimmed
@@ -96,7 +106,7 @@ final class SignupFlowCoordinator: ObservableObject {
             // Auto-login is now handled by SignupModel (token is saved)
             print("✅ completeSignup: User is now logged in!")
             
-            // Upload photo if one was selected
+            // Now upload the actual photo since we have a token
             if let photoData = photoData {
                 do {
                     print("📸 completeSignup: Starting photo upload with \(photoData.count) bytes...")

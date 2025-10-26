@@ -23,6 +23,7 @@ final class SignupViewModel: ObservableObject {
     @Published var confirmPassword: String = ""
     @Published var dateOfBirth: Date = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
     @Published var gender: String = "" // MALE, FEMALE, OTHER (required)
+    @Published var isPrivate: Bool = true // Default to private account
     @Published var phoneNumber: String = ""
     @Published var photo: String = ""
     @Published var about: String = ""
@@ -95,6 +96,7 @@ final class SignupViewModel: ObservableObject {
                 password: password,
                 dateOfBirth: formattedDateOfBirth,
                 gender: gender,
+                isPrivate: isPrivate,
                 phoneNumber: phoneNumber.trimmed.isEmpty ? nil : phoneNumber.trimmed,
                 profilePhoto: photo.trimmed.isEmpty ? nil : photo.trimmed,
                 about: about.trimmed.isEmpty ? nil : about.trimmed
@@ -153,6 +155,7 @@ final class SignupViewModel: ObservableObject {
         about = ""
         dateOfBirth = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
         gender = ""
+        isPrivate = true
         errorMessage = nil
         successMessage = nil
         emailCheckMessage = nil
