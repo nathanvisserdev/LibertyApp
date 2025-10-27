@@ -7,8 +7,13 @@
 
 import SwiftUI
 
+struct UserIdWrapper: Identifiable {
+    let id: String
+}
+
 struct ConnectionsView: View {
     @StateObject private var viewModel = ConnectionsViewModel()
+    @State private var selectedUserId: String?
     
     var body: some View {
         NavigationView {
@@ -42,7 +47,9 @@ struct ConnectionsView: View {
                     }
                 } else {
                     List(viewModel.connections) { connection in
-                        NavigationLink(destination: ProfileView(viewModel: ProfileViewModel(), userId: connection.userId)) {
+                        Button {
+                            selectedUserId = connection.userId
+                        } label: {
                             HStack(spacing: 12) {
                                 // Profile Photo
                                 if let photoKey = connection.profilePhoto, !photoKey.isEmpty {
@@ -86,6 +93,7 @@ struct ConnectionsView: View {
                             }
                             .padding(.vertical, 4)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -93,6 +101,14 @@ struct ConnectionsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 await viewModel.loadConnections()
+            }
+            .sheet(item: Binding(
+                get: { selectedUserId.map { UserIdWrapper(id: $0) } },
+                set: { selectedUserId = $0?.id }
+            )) { wrapper in
+                ProfileView(viewModel: ProfileViewModel(), userId: wrapper.id)
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
             }
         }
     }
