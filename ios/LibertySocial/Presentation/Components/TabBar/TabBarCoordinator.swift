@@ -15,6 +15,7 @@ final class TabBarCoordinator: ObservableObject {
     @Published var isShowingSearch: Bool = false
     @Published var isShowingNotifications: Bool = false
     @Published var isShowingProfile: Bool = false
+    @Published var isShowingGroups: Bool = false
     @Published var selectedUserId: String?
     
     // MARK: - Dependencies
@@ -47,6 +48,14 @@ final class TabBarCoordinator: ObservableObject {
     
     func hideNotifications() {
         isShowingNotifications = false
+    }
+    
+    func showGroups() {
+        isShowingGroups = true
+    }
+    
+    func hideGroups() {
+        isShowingGroups = false
     }
     
     func showProfile(userId: String) {
