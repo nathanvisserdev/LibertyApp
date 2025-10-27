@@ -9,6 +9,7 @@ import SwiftUI
 
 struct NetworkView: View {
     @Environment(\.dismiss) var dismiss
+    @StateObject private var viewModel = NetworkViewModel()
     @State private var showConnections = false
     @State private var showCreateGroup = false
     
@@ -128,13 +129,66 @@ struct NetworkView: View {
                 }
                 
                 Section {
-                    // TODO: Fetch and display user's groups from API
-                    // Placeholder for now
-                    Text("No other groups yet")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .center)
+                    if viewModel.isLoading {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
                         .padding(.vertical, 8)
+                    } else if let errorMessage = viewModel.errorMessage {
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 8)
+                    } else if viewModel.userGroups.isEmpty {
+                        Text("No other groups yet")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 8)
+                    } else {
+                        ForEach(viewModel.userGroups) { group in
+                            Button {
+                                // TODO: Navigate to group detail
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: group.groupType == "PUBLIC" ? "globe" : "lock.fill")
+                                        .font(.title2)
+                                        .foregroundColor(group.groupType == "PUBLIC" ? .blue : .orange)
+                                    
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(group.name)
+                                            .font(.body)
+                                            .fontWeight(.medium)
+                                            .foregroundColor(.primary)
+                                        
+                                        if let description = group.description, !description.isEmpty {
+                                            Text(description)
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                                .lineLimit(1)
+                                        }
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    if group.isHidden {
+                                        Image(systemName: "eye.slash.fill")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.vertical, 4)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
                 } header: {
                     Text("My Groups")
                 }
@@ -148,6 +202,9 @@ struct NetworkView: View {
                     }
                 }
             }
+            .task {
+                await viewModel.fetchUserGroups()
+            }
             .sheet(isPresented: $showConnections) {
                 ConnectionsView()
                     .presentationDetents([.large])
@@ -157,6 +214,14 @@ struct NetworkView: View {
                 CreateGroupView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
+            }
+            .onChange(of: showCreateGroup) { isShowing in
+                if !isShowing {
+                    // Refresh groups when sheet is dismissed
+                    Task {
+                        await viewModel.fetchUserGroups()
+                    }
+                }
             }
         }
     }
