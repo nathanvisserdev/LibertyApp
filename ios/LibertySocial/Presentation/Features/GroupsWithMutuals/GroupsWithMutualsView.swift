@@ -10,6 +10,7 @@ import SwiftUI
 struct GroupsWithMutualsView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel = GroupsWithMutualsViewModel()
+    @State private var selectedGroup: UserGroup?
     
     var body: some View {
         NavigationStack {
@@ -66,7 +67,12 @@ struct GroupsWithMutualsView: View {
                 } else {
                     List {
                         ForEach(viewModel.joinableGroups) { group in
-                            GroupRow(group: group)
+                            Button {
+                                selectedGroup = group
+                            } label: {
+                                GroupRow(group: group)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                     .listStyle(.insetGrouped)
@@ -83,6 +89,9 @@ struct GroupsWithMutualsView: View {
             }
             .task {
                 await viewModel.fetchJoinableGroups()
+            }
+            .sheet(item: $selectedGroup) { group in
+                GroupDetailView(group: group)
             }
         }
     }
