@@ -19,6 +19,7 @@ protocol AuthServiceProtocol {
     func declineConnectionRequest(requestId: String) async throws
     func searchUsers(query: String) async throws -> SearchResponse
     func fetchUserProfile(userId: String) async throws -> UserProfile
+    func fetchConnections() async throws -> [Connection]
 }
 
 struct APIUser: Decodable { let id: String; let email: String }
@@ -252,6 +253,33 @@ final class AuthService: AuthServiceProtocol {
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
             let errorMessage = String(data: data, encoding: .utf8) ?? "Failed to decline request"
             throw APIError.server(errorMessage)
+        }
+    }
+    
+    // MARK: - Connections List
+    func fetchConnections() async throws -> [Connection] {
+        let token = try getToken()
+        
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/connections"))
+        req.httpMethod = "GET"
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: req)
+        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            throw APIError.server("Failed to load connections")
+        }
+        
+        // Server returns { connectionsList: [...] }
+        struct Response: Decodable {
+            let connectionsList: [Connection]
+        }
+        
+        do {
+            let decoded = try JSONDecoder().decode(Response.self, from: data)
+            return decoded.connectionsList
+        }
+        catch {
+            throw APIError.decoding
         }
     }
 }
