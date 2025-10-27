@@ -104,4 +104,9 @@ struct NotificationsModel {
     func acceptConnectionRequest(requestId: String) async throws {
         try await authService.acceptConnectionRequest(requestId: requestId)
     }
+    
+    /// Decline a connection request
+    func declineConnectionRequest(requestId: String) async throws {
+        try await authService.declineConnectionRequest(requestId: requestId)
+    }
 }

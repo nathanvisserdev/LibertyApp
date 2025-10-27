@@ -46,4 +46,14 @@ class NotificationsViewModel: ObservableObject {
             errorMessage = "Failed to accept request: \(error.localizedDescription)"
         }
     }
+    
+    func declineConnectionRequest(requestId: String) async {
+        do {
+            try await model.declineConnectionRequest(requestId: requestId)
+            // Remove the declined request from the list
+            notifications.removeAll { $0.id == requestId }
+        } catch {
+            errorMessage = "Failed to decline request: \(error.localizedDescription)"
+        }
+    }
 }

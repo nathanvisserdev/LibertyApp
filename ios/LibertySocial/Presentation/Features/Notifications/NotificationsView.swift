@@ -43,6 +43,11 @@ struct NotificationsView: View {
                                     Task {
                                         await viewModel.acceptConnectionRequest(requestId: requestId)
                                     }
+                                },
+                                onDecline: { requestId in
+                                    Task {
+                                        await viewModel.declineConnectionRequest(requestId: requestId)
+                                    }
                                 }
                             )
                         }
@@ -64,6 +69,7 @@ struct NotificationsView: View {
 struct NotificationRow: View {
     let notification: NotificationItem
     let onAccept: (String) -> Void
+    let onDecline: (String) -> Void
     
     @State private var isProcessing = false
     
@@ -125,10 +131,12 @@ struct NotificationRow: View {
             // Action buttons
             if notification.type == .connectionRequest {
                 HStack(spacing: 12) {
-                    Button(action: {
+                    // Accept Button
+                    Button {
+                        guard !isProcessing else { return }
                         isProcessing = true
                         onAccept(notification.id)
-                    }) {
+                    } label: {
                         if isProcessing {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
@@ -142,23 +150,30 @@ struct NotificationRow: View {
                                 .padding(.vertical, 8)
                         }
                     }
+                    .buttonStyle(.plain)
                     .background(Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(8)
+                    .contentShape(Rectangle())
                     .disabled(isProcessing)
                     
-                    Button(action: {
-                        // TODO: Decline connection request
-                    }) {
+                    // Decline Button
+                    Button {
+                        guard !isProcessing else { return }
+                        isProcessing = true
+                        onDecline(notification.id)
+                    } label: {
                         Text("Decline")
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
                     }
+                    .buttonStyle(.plain)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.primary)
                     .cornerRadius(8)
+                    .contentShape(Rectangle())
                     .disabled(isProcessing)
                 }
             }

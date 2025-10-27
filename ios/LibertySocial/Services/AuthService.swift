@@ -245,7 +245,7 @@ final class AuthService: AuthServiceProtocol {
         let token = try getToken()
         
         var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/connections/\(requestId)/decline"))
-        req.httpMethod = "DELETE"
+        req.httpMethod = "POST"
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: req)
