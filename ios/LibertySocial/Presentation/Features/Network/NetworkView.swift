@@ -13,6 +13,7 @@ struct NetworkView: View {
     @State private var showConnections = false
     @State private var showCreateGroup = false
     @State private var showGroupsWithMutuals = false
+    @State private var selectedGroup: UserGroup?
     
     var body: some View {
         NavigationStack {
@@ -152,7 +153,7 @@ struct NetworkView: View {
                     } else {
                         ForEach(viewModel.userGroups) { group in
                             Button {
-                                // TODO: Navigate to group detail
+                                selectedGroup = group
                             } label: {
                                 HStack(spacing: 12) {
                                     Image(systemName: group.groupType == "PUBLIC" ? "globe" : "lock.fill")
@@ -218,6 +219,11 @@ struct NetworkView: View {
             }
             .sheet(isPresented: $showGroupsWithMutuals) {
                 GroupsWithMutualsView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(item: $selectedGroup) { group in
+                GroupView(group: group)
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
