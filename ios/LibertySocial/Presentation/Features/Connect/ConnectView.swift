@@ -18,7 +18,7 @@ struct ConnectView: View {
         ScrollView {
             VStack(spacing: 24) {
                 // Header
-                Text("How do you know \(firstName)?")
+                Text("Connection Type")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
@@ -32,13 +32,13 @@ struct ConnectView: View {
                 // Connection Type Options
                 VStack(spacing: 16) {
                     ConnectionTypeButton(
-                        title: "I know \(firstName) personally",
+                        title: "Friendly acquaintances",
                         isSelected: viewModel.selectedType == "ACQUAINTANCE",
                         action: { viewModel.selectedType = "ACQUAINTANCE" }
                     )
                     
                     ConnectionTypeButton(
-                        title: "We're strangers but I'd like to connect!",
+                        title: "Cordial strangers",
                         isSelected: viewModel.selectedType == "STRANGER",
                         action: { viewModel.selectedType = "STRANGER" }
                     )
@@ -46,7 +46,7 @@ struct ConnectView: View {
                     // Only show follow option if the user's account is public
                     if !isPrivate {
                         ConnectionTypeButton(
-                            title: "I just want to follow this person",
+                            title: "Follow",
                             isSelected: viewModel.selectedType == "IS_FOLLOWING",
                             action: { viewModel.selectedType = "IS_FOLLOWING" }
                         )
@@ -91,10 +91,13 @@ struct ConnectView: View {
                         .font(.headline)
                         .fontWeight(.bold)
                     
-                    Text("Sensible users draw a distinction between acquaintances and internet strangers.")
+                    Text("We want our users to draw a distinction between people they know personally and friendly strangers they don't.")
                         .font(.body)
                     
-                    Text("We categorize your connections to reflect that.")
+                    Text("We categorize your connections to emphasize that.")
+                        .font(.body)
+                    
+                    Text("Stay safe")
                         .font(.body)
                 }
                 .multilineTextAlignment(.center)

@@ -53,15 +53,9 @@ struct TabBarView: View {
             Button {
                 coordinator.showCurrentUserProfile()
             } label: {
-                if let photoKey = viewModel.currentUserPhotoKey {
-                    ProfilePhotoView(photoKey: photoKey)
-                        .frame(width: 28, height: 28)
-                        .clipShape(Circle())
-                } else {
-                    Image(systemName: "person.crop.circle")
-                        .font(.system(size: 28, weight: .regular))
-                        .foregroundColor(.primary)
-                }
+                Image(systemName: "person.crop.circle")
+                    .font(.system(size: 28, weight: .regular))
+                    .foregroundColor(.primary)
             }
             Spacer(minLength: 0)
         }

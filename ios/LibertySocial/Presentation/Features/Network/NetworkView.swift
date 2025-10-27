@@ -123,7 +123,7 @@ struct NetworkView: View {
                     }
                     .buttonStyle(.plain)
                 } header: {
-                    Text("Default Groups")
+                    Text("Personal Groups")
                 }
                 
                 Section {
@@ -140,7 +140,6 @@ struct NetworkView: View {
             }
             .listStyle(.insetGrouped)
             .navigationTitle("Network")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
