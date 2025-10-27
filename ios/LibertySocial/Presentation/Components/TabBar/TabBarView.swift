@@ -106,7 +106,7 @@ struct TabBarView: View {
             )
         ) {
             GroupsView()
-                .presentationDetents([.medium])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
         .sheet(

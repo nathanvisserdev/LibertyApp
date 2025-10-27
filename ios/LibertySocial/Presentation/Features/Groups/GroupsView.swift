@@ -8,8 +8,116 @@
 import SwiftUI
 
 struct GroupsView: View {
+    @Environment(\.dismiss) var dismiss
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationStack {
+            List {
+                // Create Group option
+                Button {
+                    // TODO: Show create group view
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.blue)
+                        
+                        Text("Create Group")
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+                .buttonStyle(.plain)
+                
+                // Join Group option
+                Button {
+                    // TODO: Show join group view
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "person.badge.plus")
+                            .font(.title2)
+                            .foregroundColor(.green)
+                        
+                        Text("Join Group")
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+                .buttonStyle(.plain)
+                
+                Section {
+                    // Social Circle
+                    Button {
+                        // TODO: Navigate to social circle
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "person.3.fill")
+                                .font(.title2)
+                                .foregroundColor(.purple)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Social Circle")
+                                    .font(.body)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.primary)
+                                
+                                Text("Your personal network")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
+                } header: {
+                    Text("Default Groups")
+                }
+                
+                Section {
+                    // TODO: Fetch and display user's groups from API
+                    // Placeholder for now
+                    Text("No other groups yet")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 8)
+                } header: {
+                    Text("My Groups")
+                }
+            }
+            .listStyle(.insetGrouped)
+            .navigationTitle("Groups")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
     }
 }
 
