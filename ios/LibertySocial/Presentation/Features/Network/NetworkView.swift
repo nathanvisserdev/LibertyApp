@@ -12,6 +12,7 @@ struct NetworkView: View {
     @StateObject private var viewModel = NetworkViewModel()
     @State private var showConnections = false
     @State private var showCreateGroup = false
+    @State private var showGroupsWithMutuals = false
     
     var body: some View {
         NavigationStack {
@@ -42,7 +43,7 @@ struct NetworkView: View {
                 
                 // Join Group option
                 Button {
-                    // TODO: Show join group view
+                    showGroupsWithMutuals = true
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "person.badge.plus")
@@ -212,6 +213,11 @@ struct NetworkView: View {
             }
             .sheet(isPresented: $showCreateGroup) {
                 CreateGroupView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showGroupsWithMutuals) {
+                GroupsWithMutualsView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
