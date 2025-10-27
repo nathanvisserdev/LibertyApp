@@ -38,8 +38,17 @@ class NotificationsViewModel: ObservableObject {
     }
     
     func acceptConnectionRequest(requestId: String) async {
+        // Find the notification to determine its type
+        guard let notification = notifications.first(where: { $0.id == requestId }) else {
+            return
+        }
+        
         do {
-            try await model.acceptConnectionRequest(requestId: requestId)
+            if notification.type == .connectionRequest {
+                try await model.acceptConnectionRequest(requestId: requestId)
+            } else if notification.type == .groupJoinRequest {
+                try await model.acceptGroupJoinRequest(requestId: requestId)
+            }
             // Remove the accepted request from the list
             notifications.removeAll { $0.id == requestId }
         } catch {
@@ -48,8 +57,17 @@ class NotificationsViewModel: ObservableObject {
     }
     
     func declineConnectionRequest(requestId: String) async {
+        // Find the notification to determine its type
+        guard let notification = notifications.first(where: { $0.id == requestId }) else {
+            return
+        }
+        
         do {
-            try await model.declineConnectionRequest(requestId: requestId)
+            if notification.type == .connectionRequest {
+                try await model.declineConnectionRequest(requestId: requestId)
+            } else if notification.type == .groupJoinRequest {
+                try await model.declineGroupJoinRequest(requestId: requestId)
+            }
             // Remove the declined request from the list
             notifications.removeAll { $0.id == requestId }
         } catch {

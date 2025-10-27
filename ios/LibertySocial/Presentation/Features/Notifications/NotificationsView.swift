@@ -122,6 +122,13 @@ struct NotificationRow: View {
                                 .font(.caption)
                                 .foregroundStyle(.blue)
                         }
+                        
+                        // Show group name for group join requests
+                        if notification.type == .groupJoinRequest, let groupName = notification.groupName {
+                            Text("Wants to join: \(groupName)")
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                        }
                     }
                     
                     Spacer()
@@ -129,7 +136,7 @@ struct NotificationRow: View {
             }
             
             // Action buttons
-            if notification.type == .connectionRequest {
+            if notification.type == .connectionRequest || notification.type == .groupJoinRequest {
                 HStack(spacing: 12) {
                     // Accept Button
                     Button {
@@ -151,7 +158,7 @@ struct NotificationRow: View {
                         }
                     }
                     .buttonStyle(.plain)
-                    .background(Color.blue)
+                    .background(notification.type == .groupJoinRequest ? Color.orange : Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(8)
                     .contentShape(Rectangle())
