@@ -48,7 +48,7 @@ struct CreatePostView: View {
                 Spacer(minLength: 0)
             }
             .padding()
-            .navigationTitle("Compose Post")
+            .navigationTitle("Post")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: onCancel)

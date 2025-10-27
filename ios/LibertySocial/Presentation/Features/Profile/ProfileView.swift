@@ -12,7 +12,6 @@ struct ProfileView: View {
     @StateObject var viewModel: ProfileViewModel
     let userId: String
     @State private var showConnectionTypeSelection = false
-    @State private var showConnections = false
     
     var body: some View {
         ScrollView {
@@ -137,43 +136,6 @@ struct ProfileView: View {
                     }
                     .padding(.horizontal, 20)
                     
-                    Divider()
-                        .padding(.horizontal)
-                    
-                    // Connections Section
-                    VStack(spacing: 0) {
-                        Button {
-                            showConnections = true
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Connections")
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                    
-                                    Text("View all connections")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                
-                                Spacer()
-                                
-                                Image(systemName: "person.2.fill")
-                                    .font(.title2)
-                                    .foregroundColor(.blue)
-                                
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding()
-                            .background(Color.secondary.opacity(0.1))
-                            .cornerRadius(12)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .padding(.horizontal, 20)
-                    
                     Spacer()
                 }
                 .padding(.top, 20)
@@ -183,11 +145,6 @@ struct ProfileView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await viewModel.loadProfile(userId: userId)
-        }
-        .sheet(isPresented: $showConnections) {
-            ConnectionsView()
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
         }
     }
     

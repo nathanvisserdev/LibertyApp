@@ -9,6 +9,7 @@ import SwiftUI
 
 struct GroupsView: View {
     @Environment(\.dismiss) var dismiss
+    @State private var showConnections = false
     
     var body: some View {
         NavigationStack {
@@ -50,6 +51,36 @@ struct GroupsView: View {
                             .font(.body)
                             .fontWeight(.medium)
                             .foregroundColor(.primary)
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+                .buttonStyle(.plain)
+                
+                // Connections Section
+                Button {
+                    showConnections = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "person.2.fill")
+                            .font(.title2)
+                            .foregroundColor(.blue)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Connections")
+                                .font(.body)
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
+                            
+                            Text("View your connections")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                         
                         Spacer()
                         
@@ -116,6 +147,11 @@ struct GroupsView: View {
                         dismiss()
                     }
                 }
+            }
+            .sheet(isPresented: $showConnections) {
+                ConnectionsView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
         }
     }

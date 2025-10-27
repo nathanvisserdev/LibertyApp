@@ -15,7 +15,7 @@ struct SearchView: View {
     var body: some View {
         NavigationView {
             VStack {
-                TextField("Search", text: $viewModel.query)
+                TextField("User or Group", text: $viewModel.query)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -99,7 +99,7 @@ struct SearchView: View {
                     }
                 }
             }
-            .navigationTitle("Search for a user or group")
+            .navigationTitle("Search")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") {
