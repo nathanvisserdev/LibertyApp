@@ -20,6 +20,7 @@ protocol AuthServiceProtocol {
     func searchUsers(query: String) async throws -> SearchResponse
     func fetchUserProfile(userId: String) async throws -> UserProfile
     func fetchConnections() async throws -> [Connection]
+    func createGroup(name: String, description: String?, groupType: String, isHidden: Bool) async throws -> CreateGroupResponse
 }
 
 struct APIUser: Decodable { let id: String; let email: String }
@@ -281,5 +282,15 @@ final class AuthService: AuthServiceProtocol {
         catch {
             throw APIError.decoding
         }
+    }
+    
+    // MARK: - Create Group
+    func createGroup(name: String, description: String?, groupType: String, isHidden: Bool) async throws -> CreateGroupResponse {
+        return try await CreateGroupModel.createGroup(
+            name: name,
+            description: description,
+            groupType: groupType,
+            isHidden: isHidden
+        )
     }
 }
