@@ -82,6 +82,8 @@ struct TabBarView: View {
                 onCancel: { coordinator.hideCompose() },
                 onPosted: { coordinator.hideCompose() }
             )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(
             isPresented: Binding(
@@ -90,6 +92,8 @@ struct TabBarView: View {
             )
         ) {
             SearchView(viewModel: SearchViewModel())
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(
             isPresented: Binding(
@@ -98,6 +102,8 @@ struct TabBarView: View {
             )
         ) {
             NotificationsView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(
             isPresented: Binding(
