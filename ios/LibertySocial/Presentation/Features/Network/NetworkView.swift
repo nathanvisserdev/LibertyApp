@@ -1,5 +1,5 @@
 //
-//  GroupsView.swift
+//  NetworkView.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct GroupsView: View {
+struct NetworkView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showConnections = false
     
@@ -139,7 +139,7 @@ struct GroupsView: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Groups")
+            .navigationTitle("Network")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -158,5 +158,5 @@ struct GroupsView: View {
 }
 
 #Preview {
-    GroupsView()
+    NetworkView()
 }

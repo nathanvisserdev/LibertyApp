@@ -24,7 +24,7 @@ struct TabBarView: View {
             }
             Spacer(minLength: 0)
             Button {
-                coordinator.showGroups()
+                coordinator.showNetwork()
             } label: {
                 ZStack(alignment: .topTrailing) {
                     Image(systemName: "person.3.sequence")
@@ -107,11 +107,11 @@ struct TabBarView: View {
         }
         .sheet(
             isPresented: Binding(
-                get: { coordinator.isShowingGroups },
-                set: { coordinator.isShowingGroups = $0 }
+                get: { coordinator.isShowingNetwork },
+                set: { coordinator.isShowingNetwork = $0 }
             )
         ) {
-            GroupsView()
+            NetworkView()
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
