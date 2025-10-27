@@ -10,13 +10,14 @@ import SwiftUI
 struct NetworkView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showConnections = false
+    @State private var showCreateGroup = false
     
     var body: some View {
         NavigationStack {
             List {
                 // Create Group option
                 Button {
-                    // TODO: Show create group view
+                    showCreateGroup = true
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "plus.circle.fill")
@@ -149,6 +150,11 @@ struct NetworkView: View {
             }
             .sheet(isPresented: $showConnections) {
                 ConnectionsView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showCreateGroup) {
+                CreateGroupView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
