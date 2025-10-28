@@ -39,6 +39,13 @@ final class FeedViewModel: ObservableObject {
         }
     }
 
-    func refresh() async { await load() }
+    func refresh() async {
+        do {
+            items = try await model.fetchFeed()
+            error = nil
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
 }
 
