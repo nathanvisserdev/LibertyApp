@@ -15,6 +15,8 @@ final class CreatePostViewModel: ObservableObject {
     struct Draft {
         var text: String = ""
         var localMedia: [URL] = []   // temp file URLs from picker
+        var imageWidth: CGFloat?
+        var imageHeight: CGFloat?
     }
     
     @Published var draft = Draft()
@@ -34,6 +36,12 @@ final class CreatePostViewModel: ObservableObject {
         
         do {
             if let data = try await selectedPhoto.loadTransferable(type: Data.self) {
+                // Get image dimensions
+                if let uiImage = UIImage(data: data) {
+                    draft.imageWidth = uiImage.size.width
+                    draft.imageHeight = uiImage.size.height
+                }
+                
                 // Save to temporary file
                 let tempURL = FileManager.default.temporaryDirectory
                     .appendingPathComponent(UUID().uuidString)
@@ -109,7 +117,9 @@ final class CreatePostViewModel: ObservableObject {
             // Create the post with content and/or media
             _ = try await PostsAPI.createPost(
                 content: trimmed.isEmpty ? nil : trimmed,
-                media: mediaKey
+                media: mediaKey,
+                imageWidth: draft.imageWidth,
+                imageHeight: draft.imageHeight
             )
             
             // Clear the form on success

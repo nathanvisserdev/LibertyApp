@@ -12,6 +12,7 @@ struct FeedItem: Decodable {
     let userId: String
     let content: String?
     let media: String?
+    let orientation: String?
     let createdAt: String
     let user: UserSummary
     let relation: String

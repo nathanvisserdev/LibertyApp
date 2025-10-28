@@ -69,9 +69,7 @@ struct FeedView: View {
                 
                 // Display media if available
                 if let mediaKey = item.media {
-                    MediaImageView(mediaKey: mediaKey)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 200)
+                    MediaImageView(mediaKey: mediaKey, orientation: item.orientation)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
                 
@@ -90,9 +88,11 @@ struct FeedView: View {
 
 struct MediaImageView: View {
     @StateObject private var viewModel: MediaViewModel
+    let orientation: String?
     
-    init(mediaKey: String) {
+    init(mediaKey: String, orientation: String?) {
         _viewModel = StateObject(wrappedValue: MediaViewModel(mediaKey: mediaKey))
+        self.orientation = orientation
     }
     
     var body: some View {
@@ -105,9 +105,18 @@ struct MediaImageView: View {
                             .fill(Color.gray.opacity(0.3))
                             .overlay(ProgressView())
                     case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFit()
+                        if orientation == "PORTRAIT" {
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 200)
+                        }
                     case .failure(let error):
                         let _ = print("📸 MediaImageView: AsyncImage failed to load from URL: \(url)")
                         let _ = print("📸 MediaImageView: Error: \(error.localizedDescription)")
