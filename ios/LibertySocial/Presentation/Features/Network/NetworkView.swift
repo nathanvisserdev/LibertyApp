@@ -127,7 +127,7 @@ struct NetworkView: View {
                     }
                     .buttonStyle(.plain)
                 } header: {
-                    Text("Personal Groups")
+                    Text("Subnetworks")
                 }
                 
                 Section {

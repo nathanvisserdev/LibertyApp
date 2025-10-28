@@ -53,7 +53,7 @@ struct TabBarView: View {
             Button {
                 coordinator.showCurrentUserProfile()
             } label: {
-                Image(systemName: "person.crop.circle")
+                Image(systemName: "person")
                     .font(.system(size: 28, weight: .regular))
                     .foregroundColor(.primary)
             }

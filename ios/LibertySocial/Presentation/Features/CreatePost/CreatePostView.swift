@@ -45,6 +45,10 @@ struct CreatePostView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
+                Image(systemName: "camera")
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
+
                 Spacer(minLength: 0)
             }
             .padding()
