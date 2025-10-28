@@ -7,6 +7,8 @@
 
 import Foundation
 import Combine
+import SwiftUI
+import PhotosUI
 
 @MainActor
 final class CreatePostViewModel: ObservableObject {
@@ -14,19 +16,21 @@ final class CreatePostViewModel: ObservableObject {
     @Published var isSubmitting: Bool = false
     @Published var errorMessage: String?
     @Published var presignedUploadData: PresignedUploadResponse?
+    @Published var selectedPhoto: PhotosPickerItem?
     let maxCharacters = 1000
-    private let useCase = CreatePostUseCase()
 
     var remainingCharacters: Int {
         maxCharacters - text.count
     }
 
-    func requestPresignedUpload() async {
+    func requestPresignedUpload() async -> Bool {
         errorMessage = nil
         do {
             presignedUploadData = try await PostsAPI.getPresignedUploadURL(contentType: "image/jpeg")
+            return true
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = "Failed to prepare upload: \(error.localizedDescription)"
+            return false
         }
     }
 
@@ -34,32 +38,42 @@ final class CreatePostViewModel: ObservableObject {
         guard !isSubmitting else { return }
         isSubmitting = true
         errorMessage = nil
+        
         do {
-            try await useCase.execute(text: text)
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            let mediaKey = presignedUploadData?.key
+            
+            // Validate that we have either content or media
+            guard !trimmed.isEmpty || mediaKey != nil else {
+                throw ValidationError.empty
+            }
+            
+            // Validate content length if provided
+            if !trimmed.isEmpty && trimmed.count > maxCharacters {
+                throw ValidationError.tooLong
+            }
+            
+            // Create the post with content and/or media
+            _ = try await PostsAPI.createPost(
+                content: trimmed.isEmpty ? nil : trimmed,
+                media: mediaKey
+            )
+            
+            // Clear the form on success
             text = ""
+            presignedUploadData = nil
+            selectedPhoto = nil
         } catch {
             errorMessage = error.localizedDescription
         }
+        
         isSubmitting = false
     }
-}
-
-struct CreatePostUseCase {
-    let maxCharacters = 1000
-    func execute(text: String) async throws {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
-            throw ValidationError.empty
-        }
-        guard trimmed.count <= maxCharacters else {
-            throw ValidationError.tooLong
-        }
-        _ = try await PostsAPI.createPost(content: trimmed)
-    }
-
+    
     enum ValidationError: LocalizedError {
         case empty
         case tooLong
+        
         var errorDescription: String? {
             switch self {
             case .empty: return "Post cannot be empty."
@@ -68,5 +82,4 @@ struct CreatePostUseCase {
         }
     }
 }
-
 

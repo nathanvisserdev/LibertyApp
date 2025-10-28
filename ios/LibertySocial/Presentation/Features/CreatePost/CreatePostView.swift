@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct CreatePostView: View {
     @StateObject var vm: CreatePostViewModel
+    @State private var showPhotoPicker = false
     var onCancel: () -> Void
     var onPosted: () -> Void
 
@@ -47,13 +49,17 @@ struct CreatePostView: View {
 
                 Button(action: {
                     Task {
-                        await vm.requestPresignedUpload()
+                        let success = await vm.requestPresignedUpload()
+                        if success {
+                            showPhotoPicker = true
+                        }
                     }
                 }) {
                     Image(systemName: "camera")
                         .font(.title2)
                         .foregroundStyle(.secondary)
                 }
+                .photosPicker(isPresented: $showPhotoPicker, selection: $vm.selectedPhoto, matching: .images)
 
                 Spacer(minLength: 0)
             }

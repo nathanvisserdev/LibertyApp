@@ -19,12 +19,14 @@ struct PresignedUploadResponse: Codable {
 }
 
 struct CreatePostRequest: Codable {
-    let content: String
+    let content: String?
+    let media: String?
 }
 
 struct CreatePostResponse: Codable {
     let id: String
-    let content: String
+    let content: String?
+    let media: String?
     let createdAt: String
     let userId: String
 }
@@ -54,7 +56,7 @@ struct PostsAPI {
         }
     }
     
-    static func createPost(content: String) async throws -> CreatePostResponse {
+    static func createPost(content: String?, media: String? = nil) async throws -> CreatePostResponse {
         // Build relative to the app's base URL
         let url = URL(string: "/posts", relativeTo: AppConfig.baseURL)!
         var request = URLRequest(url: url)
@@ -65,8 +67,8 @@ struct PostsAPI {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
-        // Backend now expects only { content }
-        let body = CreatePostRequest(content: content)
+        // Backend expects { content?, media? }
+        let body = CreatePostRequest(content: content, media: media)
         request.httpBody = try JSONEncoder().encode(body)
 
         let (data, response) = try await URLSession.shared.data(for: request)
