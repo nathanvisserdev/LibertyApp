@@ -27,6 +27,10 @@ final class FeedViewModel: ObservableObject {
     var acquaintances: [FeedItem] { items.filter { $0.relation == "ACQUAINTANCE" } }
     var strangers:     [FeedItem] { items.filter { $0.relation == "STRANGER" } }
     var following:     [FeedItem] { items.filter { $0.relation == "FOLLOWING" } }
+    
+    func isUsersPost(_ item: FeedItem) -> Bool {
+        return item.relation == "SELF"
+    }
 
     func load() async {
         guard !isLoading else { return }

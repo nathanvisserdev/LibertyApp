@@ -63,9 +63,19 @@ struct FeedView: View {
     @ViewBuilder private func rows(_ items: [FeedItem]) -> some View {
         ForEach(items, id: \.id) { item in
             VStack(alignment: .leading, spacing: 6) {
-                Text("\(item.user.firstName) \(item.user.lastName) (@\(item.user.username))")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                HStack {
+                    Text("\(item.user.firstName) \(item.user.lastName) (@\(item.user.username))")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    
+                    Spacer()
+                    
+                    if vm.isUsersPost(item) {
+                        Image(systemName: "ellipsis")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 
                 // Display media if available
                 if let mediaKey = item.media {
