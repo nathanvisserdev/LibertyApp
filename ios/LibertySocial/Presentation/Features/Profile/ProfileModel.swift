@@ -27,11 +27,6 @@ struct ProfileModel {
         self.authService = authService
     }
     
-    /// Fetch current user info - AuthService handles token
-    func fetchCurrentUser() async throws -> [String: Any] {
-        return try await authService.fetchCurrentUser()
-    }
-    
     /// Fetch a specific user's profile - AuthService handles token
     func fetchUserProfile(userId: String) async throws -> UserProfile {
         return try await authService.fetchUserProfile(userId: userId)

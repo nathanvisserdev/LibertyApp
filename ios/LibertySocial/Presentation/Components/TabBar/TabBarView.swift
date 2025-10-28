@@ -116,7 +116,7 @@ struct TabBarView: View {
             )
         ) {
             if let userId = coordinator.selectedUserId {
-                ProfileView(viewModel: ProfileViewModel(), userId: userId)
+                ProfileMenuView(userId: userId)
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }

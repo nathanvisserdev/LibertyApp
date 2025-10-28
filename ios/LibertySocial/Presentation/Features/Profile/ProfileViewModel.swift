@@ -31,7 +31,7 @@ class ProfileViewModel: ObservableObject {
         do {
             profile = try await model.fetchUserProfile(userId: userId)
             
-            // Check if this is the current user's profile
+            // Check if this is the current user's profile by fetching their own profile
             isOwnProfile = await checkIfOwnProfile(userId: userId)
         } catch {
             errorMessage = error.localizedDescription
@@ -42,7 +42,8 @@ class ProfileViewModel: ObservableObject {
     
     private func checkIfOwnProfile(userId: String) async -> Bool {
         do {
-            let currentUser = try await model.fetchCurrentUser()
+            // Fetch current user info to get their ID
+            let currentUser = try await AuthService.shared.fetchCurrentUser()
             if let currentUserId = currentUser["id"] as? String {
                 return currentUserId == userId
             }
