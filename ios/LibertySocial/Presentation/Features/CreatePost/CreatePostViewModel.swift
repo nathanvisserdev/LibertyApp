@@ -12,6 +12,12 @@ import PhotosUI
 
 @MainActor
 final class CreatePostViewModel: ObservableObject {
+    struct Draft {
+        var text: String = ""
+        var localMedia: [URL] = []   // temp file URLs from picker
+    }
+    
+    @Published var draft = Draft()
     @Published var text: String = ""
     @Published var isSubmitting: Bool = false
     @Published var errorMessage: String?
@@ -20,7 +26,25 @@ final class CreatePostViewModel: ObservableObject {
     let maxCharacters = 1000
 
     var remainingCharacters: Int {
-        maxCharacters - text.count
+        maxCharacters - draft.text.count
+    }
+    
+    func loadSelectedPhoto() async {
+        guard let selectedPhoto = selectedPhoto else { return }
+        
+        do {
+            if let data = try await selectedPhoto.loadTransferable(type: Data.self) {
+                // Save to temporary file
+                let tempURL = FileManager.default.temporaryDirectory
+                    .appendingPathComponent(UUID().uuidString)
+                    .appendingPathExtension("jpg")
+                
+                try data.write(to: tempURL)
+                draft.localMedia = [tempURL]
+            }
+        } catch {
+            errorMessage = "Failed to load image: \(error.localizedDescription)"
+        }
     }
 
     func requestPresignedUpload() async -> Bool {
@@ -40,7 +64,7 @@ final class CreatePostViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmed = draft.text.trimmingCharacters(in: .whitespacesAndNewlines)
             let mediaKey = presignedUploadData?.key
             
             // Validate that we have either content or media
@@ -60,6 +84,7 @@ final class CreatePostViewModel: ObservableObject {
             )
             
             // Clear the form on success
+            draft = Draft()
             text = ""
             presignedUploadData = nil
             selectedPhoto = nil

@@ -25,13 +25,40 @@ struct CreatePostView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 12) {
-                TextEditor(text: $vm.text)
-                    .frame(minHeight: 160)
-                    .padding(8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .strokeBorder(.secondary.opacity(0.3))
-                    )
+                ZStack(alignment: .topLeading) {
+                    TextEditor(text: $vm.draft.text)
+                        .frame(minHeight: 160)
+                        .padding(8)
+                        .padding(.top, vm.draft.localMedia.isEmpty ? 0 : 128)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .strokeBorder(.secondary.opacity(0.3))
+                        )
+                    
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Display selected photo if available
+                        if let photoURL = vm.draft.localMedia.first {
+                            AsyncImage(url: photoURL) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(maxHeight: 120)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .padding(8)
+                        }
+                        
+                        if vm.draft.text.isEmpty {
+                            Text(vm.draft.localMedia.isEmpty ? "What's on your mind?" : "Add a caption...")
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 12)
+                                .padding(.top, vm.draft.localMedia.isEmpty ? 8 : 0)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                }
 
                 HStack {
                     Spacer()
@@ -60,6 +87,11 @@ struct CreatePostView: View {
                         .foregroundStyle(.secondary)
                 }
                 .photosPicker(isPresented: $showPhotoPicker, selection: $vm.selectedPhoto, matching: .images)
+                .onChange(of: vm.selectedPhoto) { _, _ in
+                    Task {
+                        await vm.loadSelectedPhoto()
+                    }
+                }
 
                 Spacer(minLength: 0)
             }
@@ -76,7 +108,7 @@ struct CreatePostView: View {
                             onPosted()
                         }
                     }
-                    .disabled(vm.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    .disabled((vm.draft.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && vm.draft.localMedia.isEmpty)
                               || vm.remainingCharacters < 0
                               || vm.isSubmitting)
                 }
