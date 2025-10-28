@@ -13,11 +13,21 @@ final class CreatePostViewModel: ObservableObject {
     @Published var text: String = ""
     @Published var isSubmitting: Bool = false
     @Published var errorMessage: String?
+    @Published var presignedUploadData: PresignedUploadResponse?
     let maxCharacters = 1000
     private let useCase = CreatePostUseCase()
 
     var remainingCharacters: Int {
         maxCharacters - text.count
+    }
+
+    func requestPresignedUpload() async {
+        errorMessage = nil
+        do {
+            presignedUploadData = try await PostsAPI.getPresignedUploadURL(contentType: "image/jpeg")
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     func submit() async {
