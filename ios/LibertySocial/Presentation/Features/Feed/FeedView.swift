@@ -105,18 +105,10 @@ struct MediaImageView: View {
                             .fill(Color.gray.opacity(0.3))
                             .overlay(ProgressView())
                     case .success(let image):
-                        if orientation == "PORTRAIT" {
-                            image
-                                .resizable()
-                                .scaledToFit()
-                                .frame(maxWidth: .infinity)
-                        } else {
-                            image
-                                .resizable()
-                                .scaledToFit()
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 200)
-                        }
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity)
                     case .failure(let error):
                         let _ = print("📸 MediaImageView: AsyncImage failed to load from URL: \(url)")
                         let _ = print("📸 MediaImageView: Error: \(error.localizedDescription)")
