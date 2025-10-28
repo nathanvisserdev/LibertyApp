@@ -7,6 +7,17 @@
 
 import Foundation
 
+struct ProfilePost: Decodable {
+    let id: String
+    let content: String?
+    let media: String?
+    let orientation: String?
+    let createdAt: String
+    let visibility: String
+    let groupId: String?
+    let userId: String
+}
+
 struct UserProfile: Decodable {
     let id: String
     let firstName: String
@@ -18,6 +29,7 @@ struct UserProfile: Decodable {
     let isPrivate: Bool
     let connectionStatus: String?
     let requestType: String?
+    let posts: [ProfilePost]?
 }
 
 struct ProfileModel {

@@ -81,6 +81,8 @@ struct ProfileMenuView: View {
             .sheet(isPresented: $showProfile) {
                 if let userId = userId {
                     ProfileView(viewModel: ProfileViewModel(), userId: userId)
+                        .presentationDetents([.large])
+                        .presentationDragIndicator(.visible)
                 }
             }
         }

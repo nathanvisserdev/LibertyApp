@@ -110,17 +110,6 @@ struct ProfileView: View {
                     
                     // Profile Information
                     VStack(alignment: .leading, spacing: 16) {
-                        if let about = profile.about {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Label("About", systemImage: "info.circle")
-                                    .font(.headline)
-                                    .foregroundColor(.secondary)
-                                
-                                Text(about)
-                                    .font(.body)
-                            }
-                        }
-                        
                         if let gender = profile.gender {
                             HStack {
                                 Label("Gender", systemImage: "person.circle")
@@ -133,8 +122,61 @@ struct ProfileView: View {
                                     .font(.body)
                             }
                         }
+                        
+                        if let about = profile.about {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label("About", systemImage: "info.circle")
+                                    .font(.headline)
+                                    .foregroundColor(.secondary)
+                                
+                                Text(about)
+                                    .font(.body)
+                            }
+                        }
                     }
                     .padding(.horizontal, 20)
+                    
+                    // Posts Section
+                    if let posts = profile.posts, !posts.isEmpty {
+                        Divider()
+                            .padding(.horizontal)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label("Posts", systemImage: "square.and.pencil")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 20)
+                            
+                            ForEach(posts, id: \.id) { post in
+                                VStack(alignment: .leading, spacing: 6) {
+                                    // Display media if available
+                                    if let mediaKey = post.media {
+                                        MediaImageView(mediaKey: mediaKey, orientation: post.orientation)
+                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                                            .padding(.horizontal, 20)
+                                    }
+                                    
+                                    // Display content if available
+                                    if let content = post.content {
+                                        Text(content)
+                                            .font(.body)
+                                            .padding(.horizontal, 20)
+                                    }
+                                    
+                                    Text(DateFormatters.string(fromISO: post.createdAt))
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                        .padding(.horizontal, 20)
+                                }
+                                .padding(.vertical, 8)
+                                
+                                if post.id != posts.last?.id {
+                                    Divider()
+                                        .padding(.horizontal)
+                                }
+                            }
+                        }
+                    }
                     
                     Spacer()
                 }
