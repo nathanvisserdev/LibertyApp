@@ -41,10 +41,39 @@ final class CreatePostViewModel: ObservableObject {
                 
                 try data.write(to: tempURL)
                 draft.localMedia = [tempURL]
+                
+                // Upload the photo to R2 using the presigned URL
+                if let uploadData = presignedUploadData {
+                    try await uploadPhoto(data: data, uploadData: uploadData)
+                }
             }
         } catch {
             errorMessage = "Failed to load image: \(error.localizedDescription)"
         }
+    }
+    
+    private func uploadPhoto(data: Data, uploadData: PresignedUploadResponse) async throws {
+        guard let url = URL(string: uploadData.url) else {
+            throw NSError(domain: "CreatePostViewModel", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid upload URL"])
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = uploadData.method
+        
+        // Set headers from presigned response
+        for (key, value) in uploadData.headersOrFields {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+        
+        request.httpBody = data
+        
+        let (_, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "CreatePostViewModel", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to upload photo"])
+        }
+        
+        print("📸 CreatePostViewModel: Successfully uploaded photo to R2")
     }
 
     func requestPresignedUpload() async -> Bool {

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct FeedView: View {
     @StateObject private var vm = FeedViewModel()
@@ -65,11 +66,102 @@ struct FeedView: View {
                 Text("\(item.user.firstName) \(item.user.lastName) (@\(item.user.username))")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                Text(item.content).font(.body)
+                
+                // Display media if available
+                if let mediaKey = item.media {
+                    MediaImageView(mediaKey: mediaKey)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 200)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                
+                // Display content if available
+                if let content = item.content {
+                    Text(content).font(.body)
+                }
+                
                 Text(DateFormatter.feed.string(fromISO: item.createdAt))
                     .font(.caption2).foregroundStyle(.secondary)
             }
             .padding(.vertical, 4)
+        }
+    }
+}
+
+struct MediaImageView: View {
+    @StateObject private var viewModel: MediaViewModel
+    
+    init(mediaKey: String) {
+        _viewModel = StateObject(wrappedValue: MediaViewModel(mediaKey: mediaKey))
+    }
+    
+    var body: some View {
+        Group {
+            if let url = viewModel.presignedURL {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .overlay(ProgressView())
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFit()
+                    case .failure(let error):
+                        let _ = print("📸 MediaImageView: AsyncImage failed to load from URL: \(url)")
+                        let _ = print("📸 MediaImageView: Error: \(error.localizedDescription)")
+                        Rectangle()
+                            .fill(.secondary.opacity(0.2))
+                            .overlay(
+                                VStack {
+                                    Text("Failed to load image").font(.caption).foregroundStyle(.secondary)
+                                    Text(error.localizedDescription).font(.caption2).foregroundStyle(.secondary)
+                                }
+                            )
+                    @unknown default:
+                        Rectangle()
+                            .fill(.secondary.opacity(0.2))
+                            .overlay(Text("Unknown state").font(.caption).foregroundStyle(.secondary))
+                    }
+                }
+            } else if viewModel.isLoading {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .overlay(ProgressView())
+            } else {
+                Rectangle()
+                    .fill(.secondary.opacity(0.2))
+                    .overlay(Text("No URL available").font(.caption).foregroundStyle(.secondary))
+            }
+        }
+        .task {
+            await viewModel.fetchPresignedURL()
+        }
+    }
+}
+
+@MainActor
+class MediaViewModel: ObservableObject {
+    @Published var presignedURL: URL?
+    @Published var isLoading = true
+    
+    let mediaKey: String
+    
+    init(mediaKey: String) {
+        self.mediaKey = mediaKey
+    }
+    
+    func fetchPresignedURL() async {
+        do {
+            print("📸 MediaViewModel: Fetching presigned URL for key: \(mediaKey)")
+            let result = try await MediaModel.fetchPresignedReadURL(for: mediaKey)
+            print("📸 MediaViewModel: Got presigned URL: \(result.url)")
+            presignedURL = result.url
+            isLoading = false
+        } catch {
+            print("📸 MediaViewModel: Error fetching presigned URL: \(error.localizedDescription)")
+            isLoading = false
         }
     }
 }

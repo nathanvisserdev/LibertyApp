@@ -10,7 +10,8 @@ import Foundation
 struct FeedItem: Decodable {
     let id: String
     let userId: String
-    let content: String
+    let content: String?
+    let media: String?
     let createdAt: String
     let user: UserSummary
     let relation: String
