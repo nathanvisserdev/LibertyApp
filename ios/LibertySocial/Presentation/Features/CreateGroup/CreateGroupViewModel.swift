@@ -12,13 +12,26 @@ import Combine
 final class CreateGroupViewModel: ObservableObject {
     @Published var name: String = ""
     @Published var description: String = ""
-    @Published var selectedGroupType: GroupType = .publicGroup
+    @Published var selectedGroupType: GroupType = .autocratic
+    @Published var selectedGroupPrivacy: GroupPrivacy = .publicGroup {
+        didSet {
+            // Force autocratic type when personal privacy is selected
+            if selectedGroupPrivacy == .personalGroup && selectedGroupType == .roundTable {
+                selectedGroupType = .autocratic
+            }
+            // Force requires approval when private privacy is selected
+            if selectedGroupPrivacy == .privateGroup {
+                requiresApproval = true
+            }
+        }
+    }
     @Published var isHidden: Bool = false
+    @Published var requiresApproval: Bool = true
     @Published var isSubmitting: Bool = false
     @Published var errorMessage: String?
     
     let maxNameCharacters = 100
-    let maxDescriptionCharacters = 500
+    let maxDescriptionCharacters = 250
     
     private let authService: AuthServiceProtocol
     
@@ -53,6 +66,7 @@ final class CreateGroupViewModel: ObservableObject {
                 name: name.trimmingCharacters(in: .whitespacesAndNewlines),
                 description: description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : description.trimmingCharacters(in: .whitespacesAndNewlines),
                 groupType: selectedGroupType.rawValue,
+                groupPrivacy: selectedGroupPrivacy.rawValue,
                 isHidden: isHidden
             )
             isSubmitting = false

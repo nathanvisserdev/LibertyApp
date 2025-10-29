@@ -97,7 +97,7 @@ struct ConnectView: View {
                     Text("We categorize your connections to emphasize that.")
                         .font(.body)
                     
-                    Text("Stay safe")
+                    Text("Stay safe.")
                         .font(.body)
                 }
                 .multilineTextAlignment(.center)

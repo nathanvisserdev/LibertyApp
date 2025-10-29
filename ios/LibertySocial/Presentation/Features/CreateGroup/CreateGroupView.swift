@@ -10,6 +10,9 @@ import SwiftUI
 struct CreateGroupView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel: CreateGroupViewModel
+    @State private var showAdminSelection = false
+    @State private var showPersonalGroupAlert = false
+    @State private var showPrivateGroupJoinPolicyAlert = false
     
     init(authService: AuthServiceProtocol = AuthService.shared) {
         _viewModel = StateObject(wrappedValue: CreateGroupViewModel(authService: authService))
@@ -22,61 +25,123 @@ struct CreateGroupView: View {
                     TextField("Group Name", text: $viewModel.name)
                         .autocorrectionDisabled()
                     
-                    HStack {
-                        Spacer()
-                        Text("\(viewModel.remainingNameCharacters)")
+                    if viewModel.remainingNameCharacters < 0 {
+                        Text("Maximum character count exceeded.")
                             .font(.caption)
-                            .foregroundStyle(viewModel.remainingNameCharacters < 0 ? .red : .secondary)
+                            .foregroundStyle(.red)
                     }
                 } header: {
                     Text("Name")
-                } footer: {
-                    Text("Maximum \(viewModel.maxNameCharacters) characters")
-                        .font(.caption)
                 }
                 
                 Section {
-                    TextEditor(text: $viewModel.description)
-                        .frame(minHeight: 100)
-                    
-                    HStack {
-                        Spacer()
-                        Text("\(viewModel.remainingDescriptionCharacters)")
-                            .font(.caption)
-                            .foregroundStyle(viewModel.remainingDescriptionCharacters < 0 ? .red : .secondary)
-                    }
-                } header: {
-                    Text("Description (Optional)")
-                } footer: {
-                    Text("Maximum \(viewModel.maxDescriptionCharacters) characters")
-                        .font(.caption)
-                }
-                
-                Section {
-                    Picker("Privacy", selection: $viewModel.selectedGroupType) {
-                        ForEach(GroupType.allCases, id: \.self) { type in
-                            VStack(alignment: .leading) {
-                                Text(type.displayName)
-                                    .font(.body)
-                                Text(type.description)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(GroupPrivacy.allCases, id: \.self) { privacy in
+                            Button(action: {
+                                viewModel.selectedGroupPrivacy = privacy
+                            }) {
+                                HStack(alignment: .top, spacing: 12) {
+                                    Image(systemName: viewModel.selectedGroupPrivacy == privacy ? "largecircle.fill.circle" : "circle")
+                                        .foregroundColor(viewModel.selectedGroupPrivacy == privacy ? .accentColor : .gray)
+                                        .imageScale(.large)
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(privacy.displayName)
+                                            .foregroundColor(.primary)
+                                            .font(.body)
+                                        
+                                        Text(privacy.description)
+                                            .foregroundColor(.secondary)
+                                            .font(.caption)
+                                    }
+                                    
+                                    Spacer()
+                                }
+                                .contentShape(Rectangle())
                             }
-                            .tag(type)
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
-                    .pickerStyle(.inline)
+                    .padding(.vertical, 4)
                 } header: {
                     Text("Privacy")
                 }
                 
                 Section {
-                    Toggle("Hidden Group", isOn: $viewModel.isHidden)
+                    Toggle(isOn: Binding(
+                        get: { viewModel.selectedGroupType == .roundTable },
+                        set: { newValue in
+                            if newValue && viewModel.selectedGroupPrivacy == .personalGroup {
+                                showPersonalGroupAlert = true
+                            } else {
+                                viewModel.selectedGroupType = newValue ? .roundTable : .autocratic
+                            }
+                        }
+                    )) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(viewModel.selectedGroupType == .roundTable ? "Round Table" : "Autocratic")
+                                .font(.body)
+                            Text(viewModel.selectedGroupType == .roundTable ? "Decisions made democratically by members" : "You have sole administrative control")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 } header: {
-                    Text("Visibility")
-                } footer: {
-                    Text("Hidden groups are not visible in search results and require premium membership")
-                        .font(.caption)
+                    Text("Type")
+                }
+                
+                Section {
+                    Toggle(isOn: Binding(
+                        get: { viewModel.requiresApproval },
+                        set: { newValue in
+                            if !newValue && viewModel.selectedGroupPrivacy == .privateGroup {
+                                showPrivateGroupJoinPolicyAlert = true
+                            } else {
+                                viewModel.requiresApproval = newValue
+                            }
+                        }
+                    )) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(viewModel.requiresApproval ? "Requires Approval" : "Open to All")
+                                .font(.body)
+                            if !viewModel.requiresApproval {
+                                Text("Personal rules still apply")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Join Policy")
+                }
+                
+                Section {
+                    Button(action: {
+                        if viewModel.selectedGroupType == .roundTable {
+                            showAdminSelection = true
+                        } else {
+                            Task {
+                                let success = await viewModel.submit()
+                                if success {
+                                    dismiss()
+                                }
+                            }
+                        }
+                    }) {
+                        HStack {
+                            Spacer()
+                            Text(viewModel.selectedGroupType == .roundTable ? "Select Board Members" : "Create Group")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            Spacer()
+                        }
+                        .padding(.vertical, 8)
+                        .background(viewModel.isValid && !viewModel.isSubmitting ? Color.blue : Color.gray)
+                        .cornerRadius(8)
+                    }
+                    .disabled(!viewModel.isValid || viewModel.isSubmitting)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
                 }
                 
                 if let errorMessage = viewModel.errorMessage {
@@ -95,19 +160,21 @@ struct CreateGroupView: View {
                         dismiss()
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Create") {
-                        Task {
-                            let success = await viewModel.submit()
-                            if success {
-                                dismiss()
-                            }
-                        }
-                    }
-                    .disabled(!viewModel.isValid || viewModel.isSubmitting)
-                }
             }
             .disabled(viewModel.isSubmitting)
+            .sheet(isPresented: $showAdminSelection) {
+                SelectRoundTableAdminsView(
+                    groupName: viewModel.name,
+                    groupPrivacy: viewModel.selectedGroupPrivacy,
+                    requiresApproval: viewModel.requiresApproval
+                )
+            }
+            .alert("Select public or private for a democratic group type.", isPresented: $showPersonalGroupAlert) {
+                Button("OK", role: .cancel) { }
+            }
+            .alert("Select public or personal to allow open membership.", isPresented: $showPrivateGroupJoinPolicyAlert) {
+                Button("OK", role: .cancel) { }
+            }
         }
     }
 }

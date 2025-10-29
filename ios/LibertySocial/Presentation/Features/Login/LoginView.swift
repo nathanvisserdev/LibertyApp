@@ -12,6 +12,8 @@ struct LoginView: View {
     @StateObject private var vm = LoginViewModel()
     @EnvironmentObject private var session: SessionStore
     @State private var showSignup = false
+    @State private var testUsersMessage: String?
+    @State private var showTestUsersAlert = false
 
     var body: some View {
         NavigationStack {
@@ -105,6 +107,19 @@ struct LoginView: View {
                 .frame(maxWidth: .infinity)
 
                 Spacer(minLength: 0)
+                
+                // MARK: - Test Users Button (Development Only)
+                Button {
+                    Task {
+                        let result = await CreateTestUsers.createAllUsers()
+                        testUsersMessage = result.message
+                        showTestUsersAlert = true
+                    }
+                } label: {
+                    Text("Create Test Users").font(.caption)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
             }
             .padding(24)
             .alert(isPresented: .constant(vm.errorMessage != nil)) {
@@ -113,6 +128,11 @@ struct LoginView: View {
                     message: Text(vm.errorMessage ?? ""),
                     dismissButton: .default(Text("OK")) { vm.errorMessage = nil }
                 )
+            }
+            .alert("Test Users", isPresented: $showTestUsersAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(testUsersMessage ?? "")
             }
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {

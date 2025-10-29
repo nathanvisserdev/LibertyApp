@@ -9,20 +9,42 @@ import Foundation
 
 // MARK: - Domain Model
 enum GroupType: String, CaseIterable {
-    case publicGroup = "PUBLIC"
-    case privateGroup = "PRIVATE"
+    case autocratic = "AUTOCRATIC"
+    case roundTable = "ROUND_TABLE"
     
     var displayName: String {
         switch self {
-        case .publicGroup: return "Public"
-        case .privateGroup: return "Private"
+        case .autocratic: return "Autocratic"
+        case .roundTable: return "Round Table"
         }
     }
     
     var description: String {
         switch self {
-        case .publicGroup: return "Anyone can join and view content"
-        case .privateGroup: return "Requires approval to join"
+        case .autocratic: return "Group admin has full control"
+        case .roundTable: return "Decisions made democratically by members"
+        }
+    }
+}
+
+enum GroupPrivacy: String, CaseIterable {
+    case publicGroup = "PUBLIC"
+    case privateGroup = "PRIVATE"
+    case personalGroup = "PERSONAL"
+    
+    var displayName: String {
+        switch self {
+        case .publicGroup: return "Public"
+        case .privateGroup: return "Private"
+        case .personalGroup: return "Personal"
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .publicGroup: return "Publicly visible to everyone"
+        case .privateGroup: return "Only members can see content"
+        case .personalGroup: return "Only acquaintances can join"
         }
     }
 }
@@ -32,6 +54,7 @@ struct CreateGroupRequest: Codable {
     let name: String
     let description: String?
     let groupType: String
+    let groupPrivacy: String
     let isHidden: Bool
 }
 
@@ -39,12 +62,13 @@ struct CreateGroupResponse: Codable {
     let id: String
     let name: String
     let groupType: String
+    let groupPrivacy: String
     let isHidden: Bool
 }
 
 // MARK: - API
 struct CreateGroupModel {
-    static func createGroup(name: String, description: String?, groupType: String, isHidden: Bool) async throws -> CreateGroupResponse {
+    static func createGroup(name: String, description: String?, groupType: String, groupPrivacy: String, isHidden: Bool) async throws -> CreateGroupResponse {
         guard let url = URL(string: "\(AppConfig.baseURL)/groups") else {
             throw URLError(.badURL)
         }
@@ -58,6 +82,7 @@ struct CreateGroupModel {
             name: name,
             description: description,
             groupType: groupType,
+            groupPrivacy: groupPrivacy,
             isHidden: isHidden
         )
         request.httpBody = try JSONEncoder().encode(body)

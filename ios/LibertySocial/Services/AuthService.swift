@@ -20,7 +20,8 @@ protocol AuthServiceProtocol {
     func searchUsers(query: String) async throws -> SearchResponse
     func fetchUserProfile(userId: String) async throws -> UserProfile
     func fetchConnections() async throws -> [Connection]
-    func createGroup(name: String, description: String?, groupType: String, isHidden: Bool) async throws -> CreateGroupResponse
+    func createGroup(name: String, description: String?, groupType: String, groupPrivacy: String, isHidden: Bool) async throws -> CreateGroupResponse
+    func createRoundTableGroup(name: String, groupPrivacy: String, viceChairId: String, admins: [[String: Any]], electionCycle: String?) async throws
 }
 
 struct APIUser: Decodable { let id: String; let email: String }
@@ -285,12 +286,47 @@ final class AuthService: AuthServiceProtocol {
     }
     
     // MARK: - Create Group
-    func createGroup(name: String, description: String?, groupType: String, isHidden: Bool) async throws -> CreateGroupResponse {
+    func createGroup(name: String, description: String?, groupType: String, groupPrivacy: String, isHidden: Bool) async throws -> CreateGroupResponse {
         return try await CreateGroupModel.createGroup(
             name: name,
             description: description,
             groupType: groupType,
+            groupPrivacy: groupPrivacy,
             isHidden: isHidden
         )
+    }
+    
+    func createRoundTableGroup(name: String, groupPrivacy: String, viceChairId: String, admins: [[String: Any]], electionCycle: String?) async throws {
+        let token = try getToken()
+        
+        let url = AppConfig.baseURL.appendingPathComponent("groups")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        var body: [String: Any] = [
+            "name": name,
+            "groupType": "ROUND_TABLE",
+            "groupPrivacy": groupPrivacy,
+            "viceChairId": viceChairId,
+            "admins": admins
+        ]
+        
+        if let electionCycle = electionCycle {
+            body["electionCycle"] = electionCycle
+        }
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        
+        let (_, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NSError(domain: "AuthService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "AuthService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Failed to create group"])
+        }
     }
 }

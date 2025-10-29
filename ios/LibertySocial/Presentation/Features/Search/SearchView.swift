@@ -11,6 +11,7 @@ struct SearchView: View {
     @ObservedObject var viewModel: SearchViewModel
     @Environment(\.dismiss) var dismiss
     @FocusState private var isTextFieldFocused: Bool
+    @State private var selectedUserId: String?
 
     var body: some View {
         NavigationView {
@@ -68,7 +69,9 @@ struct SearchView: View {
                         if !viewModel.users.isEmpty {
                             Section(header: Text("Users")) {
                                 ForEach(viewModel.users, id: \.id) { user in
-                                    NavigationLink(destination: ProfileView(viewModel: ProfileViewModel(), userId: user.id)) {
+                                    Button(action: {
+                                        selectedUserId = user.id
+                                    }) {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text("\(user.firstName) \(user.lastName)")
                                                 .font(.headline)
@@ -78,6 +81,7 @@ struct SearchView: View {
                                         }
                                         .padding(.vertical, 4)
                                     }
+                                    .buttonStyle(PlainButtonStyle())
                                 }
                             }
                         }
@@ -106,6 +110,14 @@ struct SearchView: View {
                         dismiss()
                     }
                 }
+            }
+            .sheet(item: Binding(
+                get: { selectedUserId.map { UserIdWrapper(id: $0) } },
+                set: { selectedUserId = $0?.id }
+            )) { wrapper in
+                ProfileView(viewModel: ProfileViewModel(), userId: wrapper.id)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
         }
     }
