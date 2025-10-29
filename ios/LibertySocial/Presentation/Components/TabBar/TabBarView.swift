@@ -74,7 +74,12 @@ struct TabBarView: View {
             CreatePostView(
                 vm: CreatePostViewModel(),
                 onCancel: { coordinator.hideCompose() },
-                onPosted: { coordinator.hideCompose() }
+                onPosted: { 
+                    coordinator.hideCompose()
+                    Task {
+                        await feedViewModel.refresh()
+                    }
+                }
             )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)

@@ -95,8 +95,8 @@ final class CreatePostViewModel: ObservableObject {
         }
     }
 
-    func submit() async {
-        guard !isSubmitting else { return }
+    func submit() async -> Bool {
+        guard !isSubmitting else { return false }
         isSubmitting = true
         errorMessage = nil
         
@@ -127,11 +127,14 @@ final class CreatePostViewModel: ObservableObject {
             text = ""
             presignedUploadData = nil
             selectedPhoto = nil
+            
+            isSubmitting = false
+            return true
         } catch {
             errorMessage = error.localizedDescription
+            isSubmitting = false
+            return false
         }
-        
-        isSubmitting = false
     }
     
     enum ValidationError: LocalizedError {

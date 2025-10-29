@@ -104,8 +104,10 @@ struct CreatePostView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Post") {
                         Task {
-                            await vm.submit()
-                            onPosted()
+                            let success = await vm.submit()
+                            if success {
+                                onPosted()
+                            }
                         }
                     }
                     .disabled((vm.draft.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && vm.draft.localMedia.isEmpty)
