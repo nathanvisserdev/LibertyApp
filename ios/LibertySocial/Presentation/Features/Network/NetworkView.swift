@@ -127,7 +127,7 @@ struct NetworkView: View {
                     }
                     .buttonStyle(.plain)
                 } header: {
-                    Text("Sub-Networks")
+                    Text("SubNetworks")
                 }
                 
                 Section {
