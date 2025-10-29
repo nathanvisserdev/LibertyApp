@@ -29,23 +29,30 @@ struct RoundTableAdmin: Identifiable {
 
 struct SelectRoundTableAdminsView: View {
     @Environment(\.dismiss) var dismiss
-    @StateObject private var viewModel: SelectRoundTableAdminsViewModel
+    @ObservedObject var viewModel: CreateGroupViewModel
+    @State private var connections: [Connection] = []
+    @State private var isLoading: Bool = false
+    @State private var errorMessage: String?
+    @State private var showSuccessAlert = false
+    @State private var successMessage = ""
     
-    let groupName: String
-    let groupPrivacy: GroupPrivacy
-    let requiresApproval: Bool
+    private let authService: AuthServiceProtocol
     
-    init(groupName: String, groupPrivacy: GroupPrivacy, requiresApproval: Bool = true, authService: AuthServiceProtocol = AuthService.shared) {
-        self.groupName = groupName
-        self.groupPrivacy = groupPrivacy
-        self.requiresApproval = requiresApproval
-        _viewModel = StateObject(wrappedValue: SelectRoundTableAdminsViewModel(authService: authService))
+    init(viewModel: CreateGroupViewModel, authService: AuthServiceProtocol = AuthService.shared) {
+        self.viewModel = viewModel
+        self.authService = authService
+    }
+    
+    var availableConnections: [Connection] {
+        connections.filter { connection in
+            !viewModel.selectedAdmins.contains(where: { $0.userId == connection.userId })
+        }
     }
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                if viewModel.isLoading {
+                if isLoading {
                     ProgressView("Loading connections...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
@@ -67,7 +74,7 @@ struct SelectRoundTableAdminsView: View {
                                 .font(.callout)
                                 .foregroundStyle(.secondary)
                             
-                            ForEach(viewModel.connections.filter { connection in
+                            ForEach(connections.filter { connection in
                                 viewModel.selectedAdmins.contains(where: { $0.userId == connection.userId })
                             }) { connection in
                                 if let admin = viewModel.selectedAdmins.first(where: { $0.userId == connection.userId }) {
@@ -85,9 +92,9 @@ struct SelectRoundTableAdminsView: View {
                             if viewModel.selectedAdmins.isEmpty {
                                 if viewModel.selectedAdmins.count < 4 {
                                     Menu {
-                                        ForEach(viewModel.availableConnections) { connection in
+                                        ForEach(availableConnections) { connection in
                                             Button(action: {
-                                                viewModel.addAdmin(connection)
+                                                viewModel.addAdmin(RoundTableAdmin(from: connection))
                                             }) {
                                                 HStack {
                                                     Text("\(connection.firstName) \(connection.lastName)")
@@ -100,10 +107,10 @@ struct SelectRoundTableAdminsView: View {
                                         Label("Add Board Member", systemImage: "plus.circle.fill")
                                             .foregroundStyle(.blue)
                                     }
-                                    .disabled(viewModel.availableConnections.isEmpty)
+                                    .disabled(availableConnections.isEmpty)
                                 }
                             } else {
-                                Text(requiresApproval 
+                                Text(viewModel.requiresApproval 
                                     ? "**Moderators** can approve join requests, invite new members in and kick problem members out. They can also call for a vote to add or dismiss board members from the round table."
                                     : "**Moderators** can kick problem members out of the group. They can also call for a vote to add or dismiss a board member from the round table.")
                                     .font(.callout)
@@ -112,9 +119,9 @@ struct SelectRoundTableAdminsView: View {
                                 
                                 if viewModel.selectedAdmins.count < 4 {
                                     Menu {
-                                        ForEach(viewModel.availableConnections) { connection in
+                                        ForEach(availableConnections) { connection in
                                             Button(action: {
-                                                viewModel.addAdmin(connection)
+                                                viewModel.addAdmin(RoundTableAdmin(from: connection))
                                             }) {
                                                 HStack {
                                                     Text("\(connection.firstName) \(connection.lastName)")
@@ -127,7 +134,7 @@ struct SelectRoundTableAdminsView: View {
                                         Label("Add Board Member", systemImage: "plus.circle.fill")
                                             .foregroundStyle(.blue)
                                     }
-                                    .disabled(viewModel.availableConnections.isEmpty)
+                                    .disabled(availableConnections.isEmpty)
                                 }
                             }
                         } header: {
@@ -181,12 +188,10 @@ struct SelectRoundTableAdminsView: View {
                         Section {
                             Button(action: {
                                 Task {
-                                    let success = await viewModel.createGroup(
-                                        name: groupName,
-                                        groupPrivacy: groupPrivacy
-                                    )
+                                    let success = await viewModel.submit()
                                     if success {
-                                        dismiss()
+                                        successMessage = "\(viewModel.name) group created successfully!"
+                                        showSuccessAlert = true
                                     }
                                 }
                             }) {
@@ -198,10 +203,10 @@ struct SelectRoundTableAdminsView: View {
                                     Spacer()
                                 }
                                 .padding(.vertical, 8)
-                                .background(viewModel.canCreateGroup ? Color.blue : Color.gray)
+                                .background(viewModel.canCreateRoundTable && !viewModel.isSubmitting ? Color.blue : Color.gray)
                                 .cornerRadius(8)
                             }
-                            .disabled(!viewModel.canCreateGroup || viewModel.isSubmitting)
+                            .disabled(!viewModel.canCreateRoundTable || viewModel.isSubmitting)
                             .listRowInsets(EdgeInsets())
                             .listRowBackground(Color.clear)
                         }
@@ -226,8 +231,28 @@ struct SelectRoundTableAdminsView: View {
                 }
             }
             .task {
-                await viewModel.loadConnections()
+                await loadConnections()
             }
+            .alert("Success", isPresented: $showSuccessAlert) {
+                Button("OK", role: .cancel) {
+                    dismiss()
+                }
+            } message: {
+                Text(successMessage)
+            }
+        }
+    }
+    
+    private func loadConnections() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            connections = try await authService.fetchConnections()
+            isLoading = false
+        } catch {
+            errorMessage = "Failed to load connections: \(error.localizedDescription)"
+            isLoading = false
         }
     }
     
@@ -268,6 +293,11 @@ enum ElectionCycle: String, CaseIterable {
     case fourYears = "FOUR_YEARS"
 }
 
+// Mock preview
 #Preview {
-    SelectRoundTableAdminsView(groupName: "Test Group", groupPrivacy: .publicGroup)
+    let viewModel = CreateGroupViewModel(authService: AuthService.shared)
+    viewModel.name = "Test Group"
+    viewModel.selectedGroupPrivacy = .publicGroup
+    
+    return SelectRoundTableAdminsView(viewModel: viewModel)
 }

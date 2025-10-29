@@ -18,8 +18,10 @@ struct TestUserData {
     let email: String
     let password: String
     let username: String
-    let description: String
+    let dateOfBirth: String
+    let gender: String
     let isPrivate: Bool
+    let profilePhoto: String
 }
 
 class CreateTestUsers {
@@ -27,47 +29,13 @@ class CreateTestUsers {
         TestUserData(
             firstName: "Jack",
             lastName: "Johnson",
-            email: "jack@johnson.com",
+            email: "Jack@johnson.com",
             password: "Password1",
-            username: "jackjohnson",
-            description: "jack johnson description",
-            isPrivate: false
-        ),
-        TestUserData(
-            firstName: "Jon",
-            lastName: "Smith",
-            email: "jon@smith.com",
-            password: "Password1",
-            username: "jonsmith",
-            description: "jon smith description",
-            isPrivate: true
-        ),
-        TestUserData(
-            firstName: "Bob",
-            lastName: "Riley",
-            email: "bob@riley.com",
-            password: "Password1",
-            username: "bobriley",
-            description: "bob riley description",
-            isPrivate: false
-        ),
-        TestUserData(
-            firstName: "Ed",
-            lastName: "Norton",
-            email: "ed@norton.com",
-            password: "Password1",
-            username: "ednorton",
-            description: "ed norton description",
-            isPrivate: true
-        ),
-        TestUserData(
-            firstName: "Sam",
-            lastName: "Dunkin",
-            email: "sam@dunkin.com",
-            password: "Password1",
-            username: "samdunkin",
-            description: "sam dunkin description",
-            isPrivate: false
+            username: "JackJohnson",
+            dateOfBirth: "1990-10-22",
+            gender: "MALE",
+            isPrivate: false,
+            profilePhoto: "default_profile.jpg"
         )
     ]
     
@@ -116,8 +84,10 @@ class CreateTestUsers {
             "email": user.email,
             "password": user.password,
             "username": user.username,
-            "description": user.description,
-            "isPrivate": user.isPrivate
+            "dateOfBirth": user.dateOfBirth,
+            "gender": user.gender,
+            "isPrivate": user.isPrivate,
+            "profilePhoto": user.profilePhoto
         ]
         
         do {

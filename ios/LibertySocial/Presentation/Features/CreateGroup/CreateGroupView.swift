@@ -13,6 +13,8 @@ struct CreateGroupView: View {
     @State private var showAdminSelection = false
     @State private var showPersonalGroupAlert = false
     @State private var showPrivateGroupJoinPolicyAlert = false
+    @State private var showSuccessAlert = false
+    @State private var successMessage = ""
     
     init(authService: AuthServiceProtocol = AuthService.shared) {
         _viewModel = StateObject(wrappedValue: CreateGroupViewModel(authService: authService))
@@ -123,7 +125,8 @@ struct CreateGroupView: View {
                             Task {
                                 let success = await viewModel.submit()
                                 if success {
-                                    dismiss()
+                                    successMessage = "\(viewModel.name) group created successfully!"
+                                    showSuccessAlert = true
                                 }
                             }
                         }
@@ -163,17 +166,20 @@ struct CreateGroupView: View {
             }
             .disabled(viewModel.isSubmitting)
             .sheet(isPresented: $showAdminSelection) {
-                SelectRoundTableAdminsView(
-                    groupName: viewModel.name,
-                    groupPrivacy: viewModel.selectedGroupPrivacy,
-                    requiresApproval: viewModel.requiresApproval
-                )
+                SelectRoundTableAdminsView(viewModel: viewModel)
             }
-            .alert("Select public or private for a democratic group type.", isPresented: $showPersonalGroupAlert) {
+            .alert("Select public or private for democratic group type.", isPresented: $showPersonalGroupAlert) {
                 Button("OK", role: .cancel) { }
             }
             .alert("Select public or personal to allow open membership.", isPresented: $showPrivateGroupJoinPolicyAlert) {
                 Button("OK", role: .cancel) { }
+            }
+            .alert("Success", isPresented: $showSuccessAlert) {
+                Button("OK", role: .cancel) {
+                    dismiss()
+                }
+            } message: {
+                Text(successMessage)
             }
         }
     }
