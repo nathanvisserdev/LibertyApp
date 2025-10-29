@@ -107,7 +107,7 @@ struct ConnectionsView: View {
                 set: { selectedUserId = $0?.id }
             )) { wrapper in
                 ProfileView(viewModel: ProfileViewModel(), userId: wrapper.id)
-                    .presentationDetents([.medium])
+                    .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
         }
