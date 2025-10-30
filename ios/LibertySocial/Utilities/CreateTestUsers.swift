@@ -60,7 +60,7 @@ class CreateTestUsers {
             dateOfBirth: "1988-11-08",
             gender: "MALE",
             isPrivate: true,
-            profilePhoto: "https://i.pravatar.cc/150?img=52",
+            profilePhoto: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Harry_S_Truman_-_NARA_-_530677_%282%29.jpg/440px-Harry_S_Truman_-_NARA_-_530677_%282%29.jpg",
             about: "History buff and lifelong learner. Enjoy reading biographies and discussing political philosophy over coffee."
         ),
         TestUserData(
@@ -74,6 +74,66 @@ class CreateTestUsers {
             isPrivate: false,
             profilePhoto: "https://i.pravatar.cc/150?img=47",
             about: "Creative designer and artist. Passionate about visual storytelling and creating meaningful user experiences."
+        ),
+        TestUserData(
+            firstName: "Jack",
+            lastName: "Johnson",
+            email: "jack@johnson.com",
+            password: "Password1",
+            username: "JackJohnson",
+            dateOfBirth: "1990-09-14",
+            gender: "MALE",
+            isPrivate: false,
+            profilePhoto: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Jack_Johnson_playing_guitar_%28cropped%29.jpg/440px-Jack_Johnson_playing_guitar_%28cropped%29.jpg",
+            about: "Music lover and guitar enthusiast. Always jamming and looking for the next great concert to attend."
+        ),
+        TestUserData(
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@doe.com",
+            password: "Password1",
+            username: "JohnDoe",
+            dateOfBirth: "1987-12-03",
+            gender: "MALE",
+            isPrivate: true,
+            profilePhoto: "https://i.pravatar.cc/150?img=68",
+            about: "Software engineer and problem solver. Enjoy building things that make people's lives easier."
+        ),
+        TestUserData(
+            firstName: "Dave",
+            lastName: "Chappelle",
+            email: "dave@chappelle.com",
+            password: "Password1",
+            username: "DaveChappelle",
+            dateOfBirth: "1973-08-24",
+            gender: "MALE",
+            isPrivate: false,
+            profilePhoto: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Dave_Chappelle_2017.jpg/440px-Dave_Chappelle_2017.jpg",
+            about: "Comedian and storyteller. Love making people laugh and sharing perspectives on life."
+        ),
+        TestUserData(
+            firstName: "John",
+            lastName: "Kennedy",
+            email: "john@kennedy.com",
+            password: "Password1",
+            username: "JohnKennedy",
+            dateOfBirth: "1985-05-29",
+            gender: "MALE",
+            isPrivate: true,
+            profilePhoto: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/John_F._Kennedy%2C_White_House_color_photo_portrait.jpg/440px-John_F._Kennedy%2C_White_House_color_photo_portrait.jpg",
+            about: "Public servant and history enthusiast. Believe in the power of community and civic engagement."
+        ),
+        TestUserData(
+            firstName: "Tom",
+            lastName: "Brady",
+            email: "tom@brady.com",
+            password: "Password1",
+            username: "TomBrady",
+            dateOfBirth: "1977-08-03",
+            gender: "MALE",
+            isPrivate: false,
+            profilePhoto: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Tom_Brady_2021.jpg/440px-Tom_Brady_2021.jpg",
+            about: "Athlete and competitor. Passionate about fitness, discipline, and striving for excellence in everything."
         )
     ]
     
@@ -131,13 +191,18 @@ class CreateTestUsers {
         guard let billyToken = userTokens["billy@bob.com"],
               let harryToken = userTokens["harry@truman.com"],
               let janeToken = userTokens["jane@doe.com"],
-              let johnToken = userTokens["john@smith.com"] else {
+              let johnSmithToken = userTokens["john@smith.com"],
+              let jackToken = userTokens["jack@johnson.com"],
+              let johnDoeToken = userTokens["john@doe.com"],
+              let daveToken = userTokens["dave@chappelle.com"],
+              let jfkToken = userTokens["john@kennedy.com"],
+              let tomToken = userTokens["tom@brady.com"] else {
             print("❌ Missing user tokens for connection setup")
             return
         }
         
-        // Get John Smith's user ID and the other users' IDs
-        guard let johnUserId = await getUserId(token: johnToken) else {
+        // Get all user IDs
+        guard let johnSmithUserId = await getUserId(token: johnSmithToken) else {
             print("❌ Failed to get John Smith's user ID")
             return
         }
@@ -157,70 +222,190 @@ class CreateTestUsers {
             return
         }
         
-        // Track which requests were successfully sent
-        var sentRequests: [String: (userId: String, type: String, name: String)] = [:]
+        guard let jackUserId = await getUserId(token: jackToken) else {
+            print("❌ Failed to get Jack Johnson's user ID")
+            return
+        }
+        
+        guard let johnDoeUserId = await getUserId(token: johnDoeToken) else {
+            print("❌ Failed to get John Doe's user ID")
+            return
+        }
+        
+        guard let daveUserId = await getUserId(token: daveToken) else {
+            print("❌ Failed to get Dave Chappelle's user ID")
+            return
+        }
+        
+        guard let jfkUserId = await getUserId(token: jfkToken) else {
+            print("❌ Failed to get John Kennedy's user ID")
+            return
+        }
+        
+        guard let tomUserId = await getUserId(token: tomToken) else {
+            print("❌ Failed to get Tom Brady's user ID")
+            return
+        }
+        
+        // Track which requests were successfully sent to John Smith
+        var sentRequestsToJohnSmith: [String: (userId: String, type: String, name: String)] = [:]
         
         // Billy Bob sends ACQUAINTANCE request to John Smith
         if await sendConnectionRequest(
             token: billyToken,
-            requestedId: johnUserId,
+            requestedId: johnSmithUserId,
             type: "ACQUAINTANCE",
             senderName: "Billy Bob"
         ) {
-            sentRequests[billyUserId] = (billyUserId, "ACQUAINTANCE", "Billy Bob")
+            sentRequestsToJohnSmith[billyUserId] = (billyUserId, "ACQUAINTANCE", "Billy Bob")
         }
         
         // Harry Truman sends STRANGER request to John Smith
         if await sendConnectionRequest(
             token: harryToken,
-            requestedId: johnUserId,
+            requestedId: johnSmithUserId,
             type: "STRANGER",
             senderName: "Harry Truman"
         ) {
-            sentRequests[harryUserId] = (harryUserId, "STRANGER", "Harry Truman")
+            sentRequestsToJohnSmith[harryUserId] = (harryUserId, "STRANGER", "Harry Truman")
         }
         
         // Jane Doe sends FOLLOW request to John Smith
         if await sendConnectionRequest(
             token: janeToken,
-            requestedId: johnUserId,
+            requestedId: johnSmithUserId,
             type: "FOLLOW",
             senderName: "Jane Doe"
         ) {
-            sentRequests[janeUserId] = (janeUserId, "FOLLOW", "Jane Doe")
+            sentRequestsToJohnSmith[janeUserId] = (janeUserId, "FOLLOW", "Jane Doe")
+        }
+        
+        // Jack Johnson sends ACQUAINTANCE request to John Smith
+        if await sendConnectionRequest(
+            token: jackToken,
+            requestedId: johnSmithUserId,
+            type: "ACQUAINTANCE",
+            senderName: "Jack Johnson"
+        ) {
+            sentRequestsToJohnSmith[jackUserId] = (jackUserId, "ACQUAINTANCE", "Jack Johnson")
+        }
+        
+        // John Doe sends STRANGER request to John Smith
+        if await sendConnectionRequest(
+            token: johnDoeToken,
+            requestedId: johnSmithUserId,
+            type: "STRANGER",
+            senderName: "John Doe"
+        ) {
+            sentRequestsToJohnSmith[johnDoeUserId] = (johnDoeUserId, "STRANGER", "John Doe")
+        }
+        
+        // Dave Chappelle sends ACQUAINTANCE request to John Smith
+        if await sendConnectionRequest(
+            token: daveToken,
+            requestedId: johnSmithUserId,
+            type: "ACQUAINTANCE",
+            senderName: "Dave Chappelle"
+        ) {
+            sentRequestsToJohnSmith[daveUserId] = (daveUserId, "ACQUAINTANCE", "Dave Chappelle")
+        }
+        
+        // John Kennedy sends STRANGER request to John Smith
+        if await sendConnectionRequest(
+            token: jfkToken,
+            requestedId: johnSmithUserId,
+            type: "STRANGER",
+            senderName: "John Kennedy"
+        ) {
+            sentRequestsToJohnSmith[jfkUserId] = (jfkUserId, "STRANGER", "John Kennedy")
+        }
+        
+        // Tom Brady sends ACQUAINTANCE request to John Smith
+        if await sendConnectionRequest(
+            token: tomToken,
+            requestedId: johnSmithUserId,
+            type: "ACQUAINTANCE",
+            senderName: "Tom Brady"
+        ) {
+            sentRequestsToJohnSmith[tomUserId] = (tomUserId, "ACQUAINTANCE", "Tom Brady")
         }
         
         // Wait a moment for requests to settle
         print("\n⏳ Waiting for requests to settle...")
         try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
         
-        // Get John's pending requests
-        print("\n📥 Fetching John's pending connection requests...")
-        guard let pendingRequests = await getPendingRequests(token: johnToken) else {
-            print("❌ Failed to get John's pending requests")
+        // Get John Smith's pending requests
+        print("\n📥 Fetching John Smith's pending connection requests...")
+        guard let pendingRequestsJohnSmith = await getPendingRequests(token: johnSmithToken) else {
+            print("❌ Failed to get John Smith's pending requests")
             return
         }
         
-        print("   Found \(pendingRequests.count) pending request(s)")
+        print("   Found \(pendingRequestsJohnSmith.count) pending request(s) for John Smith")
         
-        // John accepts Billy's and Jane's requests, leaves Harry's pending
-        print("\n✋ Processing acceptances...")
-        for request in pendingRequests {
+        // John Smith accepts specific requests
+        print("\n✋ Processing John Smith's acceptances...")
+        for request in pendingRequestsJohnSmith {
             if let requesterId = request["requesterId"] as? String,
                let requestId = request["id"] as? String,
-               let senderInfo = sentRequests[requesterId] {
+               let senderInfo = sentRequestsToJohnSmith[requesterId] {
                 
-                // Accept Billy's ACQUAINTANCE request
+                // Accept all ACQUAINTANCE requests (Billy, Jack, Dave, Tom)
                 if senderInfo.type == "ACQUAINTANCE" {
-                    await acceptConnectionRequest(token: johnToken, requestId: requestId, senderName: senderInfo.name)
+                    await acceptConnectionRequest(token: johnSmithToken, requestId: requestId, senderName: senderInfo.name)
                 }
                 // Accept Jane's FOLLOW request
                 else if senderInfo.type == "FOLLOW" {
-                    await acceptConnectionRequest(token: johnToken, requestId: requestId, senderName: senderInfo.name)
+                    await acceptConnectionRequest(token: johnSmithToken, requestId: requestId, senderName: senderInfo.name)
+                }
+                // Accept STRANGER requests from John Doe and John Kennedy
+                else if senderInfo.type == "STRANGER" && (senderInfo.name == "John Doe" || senderInfo.name == "John Kennedy") {
+                    await acceptConnectionRequest(token: johnSmithToken, requestId: requestId, senderName: senderInfo.name)
                 }
                 // Leave Harry's STRANGER request pending (do nothing)
-                else if senderInfo.type == "STRANGER" {
+                else if senderInfo.type == "STRANGER" && senderInfo.name == "Harry Truman" {
                     print("⏸️  Leaving STRANGER request from \(senderInfo.name) pending")
+                }
+            }
+        }
+        
+        // Wait for acceptances to settle
+        print("\n⏳ Waiting for acceptances to settle...")
+        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+        
+        // Now set up John Doe -> Jane Doe connection
+        print("\n🔗 Setting up John Doe -> Jane Doe connection...")
+        
+        // John Doe sends ACQUAINTANCE request to Jane Doe
+        let johnDoeToJaneSuccess = await sendConnectionRequest(
+            token: johnDoeToken,
+            requestedId: janeUserId,
+            type: "ACQUAINTANCE",
+            senderName: "John Doe to Jane Doe"
+        )
+        
+        if johnDoeToJaneSuccess {
+            // Wait for request to settle
+            print("⏳ Waiting for John Doe's request to settle...")
+            try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
+            
+            // Get Jane's pending requests
+            print("📥 Fetching Jane Doe's pending connection requests...")
+            guard let pendingRequestsJane = await getPendingRequests(token: janeToken) else {
+                print("❌ Failed to get Jane Doe's pending requests")
+                return
+            }
+            
+            print("   Found \(pendingRequestsJane.count) pending request(s) for Jane Doe")
+            
+            // Jane accepts John Doe's request
+            print("✋ Processing Jane Doe's acceptances...")
+            for request in pendingRequestsJane {
+                if let requesterId = request["requesterId"] as? String,
+                   let requestId = request["id"] as? String,
+                   requesterId == johnDoeUserId {
+                    await acceptConnectionRequest(token: janeToken, requestId: requestId, senderName: "John Doe")
+                    break
                 }
             }
         }
@@ -355,7 +540,7 @@ class CreateTestUsers {
     private static func createUser(_ user: TestUserData, index: Int) async -> (Bool, String?) {
         let url = AppConfig.baseURL.appendingPathComponent("signup")
         
-        print("🔄 [\(index)/4] Creating user: \(user.username)...")
+        print("🔄 [\(index)/9] Creating user: \(user.username)...")
         print("   URL: \(url.absoluteString)")
         
         var request = URLRequest(url: url)
@@ -382,7 +567,7 @@ class CreateTestUsers {
             
             if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 201 {
-                    print("✅ [\(index)/4] Created user: \(user.username) (private: \(user.isPrivate))")
+                    print("✅ [\(index)/9] Created user: \(user.username) (private: \(user.isPrivate))")
                     
                     // Extract accessToken from response (server returns "accessToken" not "token")
                     if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -395,17 +580,17 @@ class CreateTestUsers {
                     }
                     return (true, nil)
                 } else {
-                    print("❌ [\(index)/4] Failed to create \(user.username): HTTP \(httpResponse.statusCode)")
+                    print("❌ [\(index)/9] Failed to create \(user.username): HTTP \(httpResponse.statusCode)")
                     if let responseString = String(data: data, encoding: .utf8) {
                         print("   Server response: \(responseString)")
                     }
                     return (false, nil)
                 }
             }
-            print("❌ [\(index)/4] Invalid response type for \(user.username)")
+            print("❌ [\(index)/9] Invalid response type for \(user.username)")
             return (false, nil)
         } catch let error as NSError {
-            print("❌ [\(index)/4] Network error creating \(user.username):")
+            print("❌ [\(index)/9] Network error creating \(user.username):")
             print("   Domain: \(error.domain)")
             print("   Code: \(error.code)")
             print("   Description: \(error.localizedDescription)")

@@ -1,5 +1,5 @@
 //
-//  SubNetworkListView.swift
+//  SubNetListView.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-29.
@@ -7,12 +7,12 @@
 
 import SwiftUI
 
-struct SubNetworkListView: View {
+struct SubNetListView: View {
     var body: some View {
-        Text("SubNetwork List View")
+        Text("SubNet List View")
     }
 }
 
 #Preview {
-    SubNetworkListView()
+    SubNetListView()
 }
