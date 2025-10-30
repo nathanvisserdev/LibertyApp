@@ -6,3 +6,13 @@
 //
 
 import Foundation
+import Combine
+
+@MainActor
+final class SubNetViewModel: ObservableObject {
+    @Published var subnetId: String?
+    
+    func setSubnetId(_ id: String) {
+        self.subnetId = id
+    }
+}

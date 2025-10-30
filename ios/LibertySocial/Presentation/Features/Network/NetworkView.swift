@@ -15,7 +15,7 @@ struct NetworkView: View {
     @State private var showCreateGroup = false
     @State private var showGroupsWithMutuals = false
     @State private var selectedGroup: UserGroup?
-    @State private var selectedSubNet: SubNet?
+    @State private var showSubNetView = false
     
     var body: some View {
         NavigationStack {
@@ -121,7 +121,8 @@ struct NetworkView: View {
                     } else {
                         ForEach(subNetViewModel.subNets) { subnet in
                             Button {
-                                selectedSubNet = subnet
+                                subNetViewModel.selectSubnet(subnet.id)
+                                showSubNetView = true
                             } label: {
                                 HStack(spacing: 12) {
                                     // Icon based on visibility or default status
@@ -264,6 +265,11 @@ struct NetworkView: View {
             }
             .sheet(item: $selectedGroup) { group in
                 GroupView(group: group)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showSubNetView) {
+                SubNetView(subNetListViewModel: subNetViewModel)
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
