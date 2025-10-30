@@ -15,6 +15,10 @@ final class AddSubnetMembersViewModel: ObservableObject {
     @Published var selectedUserIds: Set<String> = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var isAddingMembers: Bool = false
+    @Published var showSuccessAlert: Bool = false
+    @Published var showErrorAlert: Bool = false
+    @Published var alertMessage: String = ""
     
     private let model: AddSubnetMembersModel
     
@@ -53,5 +57,29 @@ final class AddSubnetMembersViewModel: ObservableObject {
     
     func isSelected(userId: String) -> Bool {
         selectedUserIds.contains(userId)
+    }
+    
+    func addSelectedMembers() async -> Bool {
+        guard let subnetId = subnetId else { return false }
+        guard !selectedUserIds.isEmpty else { return false }
+        
+        isAddingMembers = true
+        
+        do {
+            let userIdsArray = Array(selectedUserIds)
+            try await model.addMembers(subnetId: subnetId, userIds: userIdsArray)
+            
+            let count = selectedUserIds.count
+            alertMessage = count == 1 ? "Successfully added 1 member" : "Successfully added \(count) members"
+            showSuccessAlert = true
+            isAddingMembers = false
+            return true
+        } catch {
+            alertMessage = error.localizedDescription
+            showErrorAlert = true
+            isAddingMembers = false
+            print("Error adding members: \(error)")
+            return false
+        }
     }
 }

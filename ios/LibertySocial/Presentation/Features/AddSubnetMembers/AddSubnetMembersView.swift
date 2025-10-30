@@ -62,12 +62,32 @@ struct AddSubnetMembersView: View {
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Add (\(viewModel.selectedUserIds.count))") {
-                        // TODO: Add members
-                        dismiss()
+                    Button {
+                        Task {
+                            let success = await viewModel.addSelectedMembers()
+                            if success {
+                                dismiss()
+                            }
+                        }
+                    } label: {
+                        if viewModel.isAddingMembers {
+                            ProgressView()
+                        } else {
+                            Text("Add (\(viewModel.selectedUserIds.count))")
+                        }
                     }
-                    .disabled(viewModel.selectedUserIds.isEmpty)
+                    .disabled(viewModel.selectedUserIds.isEmpty || viewModel.isAddingMembers)
                 }
+            }
+            .alert("Success", isPresented: $viewModel.showSuccessAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(viewModel.alertMessage)
+            }
+            .alert("Error", isPresented: $viewModel.showErrorAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(viewModel.alertMessage)
             }
             .onAppear {
                 viewModel.setSubnetId(subnetId)
