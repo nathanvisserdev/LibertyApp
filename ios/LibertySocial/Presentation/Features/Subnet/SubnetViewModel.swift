@@ -52,4 +52,23 @@ final class SubnetViewModel: ObservableObject {
     func showAddMembers() {
         showAddMembersSheet = true
     }
+    
+    func deleteMember(_ member: SubnetMember) async -> (success: Bool, message: String) {
+        guard let subnet = subnet else {
+            return (false, "No subnet selected")
+        }
+        
+        do {
+            try await model.deleteMember(subnetId: subnet.id, userId: member.userId)
+            
+            // Remove from local array
+            members.removeAll { $0.id == member.id }
+            
+            let memberName = "\(member.user.firstName ?? "") \(member.user.lastName ?? "")".trimmingCharacters(in: .whitespaces)
+            let displayName = memberName.isEmpty ? "@\(member.user.username)" : memberName
+            return (true, "'\(displayName)' removed")
+        } catch {
+            return (false, error.localizedDescription)
+        }
+    }
 }

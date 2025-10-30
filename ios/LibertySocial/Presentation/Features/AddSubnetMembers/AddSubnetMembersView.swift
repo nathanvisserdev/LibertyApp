@@ -10,6 +10,7 @@ import SwiftUI
 struct AddSubnetMembersView: View {
     @StateObject private var viewModel = AddSubnetMembersViewModel()
     let subnetId: String
+    let onMembersAdded: () -> Void
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -66,6 +67,7 @@ struct AddSubnetMembersView: View {
                         Task {
                             let success = await viewModel.addSelectedMembers()
                             if success {
+                                onMembersAdded()
                                 dismiss()
                             }
                         }
@@ -148,5 +150,6 @@ struct AddSubnetMembersView: View {
 }
 
 #Preview {
-    AddSubnetMembersView(subnetId: "preview-subnet-id")
+    AddSubnetMembersView(subnetId: "preview-subnet-id", onMembersAdded: {})
 }
+

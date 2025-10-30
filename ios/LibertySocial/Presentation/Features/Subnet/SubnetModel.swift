@@ -82,4 +82,34 @@ struct SubnetModel {
             throw NSError(domain: "SubnetModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
         }
     }
+    
+    /// Delete subnet member
+    func deleteMember(subnetId: String, userId: String) async throws {
+        guard let url = URL(string: "\(AppConfig.baseURL)/subnets/\(subnetId)/members/\(userId)") else {
+            throw URLError(.badURL)
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        if let token = KeychainHelper.read() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+        
+        if !(200...299).contains(httpResponse.statusCode) {
+            // Try to decode error message from server
+            if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
+               let errorMsg = errorResponse["error"] {
+                throw NSError(domain: "SubnetModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
+            } else {
+                throw NSError(domain: "SubnetModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Failed to delete member"])
+            }
+        }
+    }
 }

@@ -10,6 +10,9 @@ import SwiftUI
 struct SubnetView: View {
     @ObservedObject var subnetListViewModel: SubnetListViewModel
     @StateObject private var viewModel = SubnetViewModel()
+    @State private var showAlert = false
+    @State private var alertTitle = ""
+    @State private var alertMessage = ""
     
     var body: some View {
         NavigationStack {
@@ -29,9 +32,22 @@ struct SubnetView: View {
             }
             .navigationTitle(viewModel.subnet?.name ?? "Subnet")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        viewModel.showAddMembers()
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
             .sheet(isPresented: $viewModel.showAddMembersSheet) {
                 if let subnetId = viewModel.subnet?.id {
-                    AddSubnetMembersView(subnetId: subnetId)
+                    AddSubnetMembersView(subnetId: subnetId) {
+                        Task {
+                            await viewModel.fetchMembers()
+                        }
+                    }
                 }
             }
             .onAppear {
@@ -152,9 +168,25 @@ struct SubnetView: View {
                     }
                     .padding(.vertical, 4)
                 }
+                .onDelete { indexSet in
+                    guard let index = indexSet.first else { return }
+                    let member = viewModel.members[index]
+                    
+                    Task {
+                        let result = await viewModel.deleteMember(member)
+                        alertTitle = result.success ? "Success" : "Error"
+                        alertMessage = result.message
+                        showAlert = true
+                    }
+                }
             }
         }
         .listStyle(.insetGrouped)
+        .alert(alertTitle, isPresented: $showAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(alertMessage)
+        }
     }
     
     // Helper functions
