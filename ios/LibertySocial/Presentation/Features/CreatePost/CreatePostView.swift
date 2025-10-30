@@ -25,6 +25,33 @@ struct CreatePostView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 12) {
+                // Post to selector
+                HStack(spacing: 6) {
+                    Text("Post to")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    
+                    Menu {
+                        Button("Public") { }
+                        Button("Connections") { }
+                        Button("Subnet") { }
+                        Button("Group") { }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text("Public")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                            Image(systemName: "chevron.down")
+                                .font(.caption)
+                        }
+                    }
+                    
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .background(Color(.systemGray6))
+                
                 ZStack(alignment: .topLeading) {
                     TextEditor(text: $vm.draft.text)
                         .frame(minHeight: 160)
