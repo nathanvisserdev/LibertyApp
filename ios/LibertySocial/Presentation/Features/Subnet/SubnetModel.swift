@@ -11,11 +11,21 @@ import Foundation
 struct SubnetMember: Codable, Identifiable {
     let id: String
     let role: String
-    let subnetId: String
+    let subNetId: String
     let userId: String
     let connectionId: String
     let createdAt: Date
     let user: SubnetMemberUser
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case role
+        case subNetId
+        case userId
+        case connectionId
+        case createdAt
+        case user
+    }
 }
 
 struct SubnetMemberUser: Codable {
@@ -40,6 +50,8 @@ struct SubnetModel {
             throw URLError(.badURL)
         }
         
+        print("📡 GET \(url)")
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
@@ -53,10 +65,17 @@ struct SubnetModel {
             throw URLError(.badServerResponse)
         }
         
+        print("📡 Response status: \(httpResponse.statusCode)")
+        
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("📡 Response data: \(responseString)")
+        }
+        
         if (200...299).contains(httpResponse.statusCode) {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
             let members = try decoder.decode([SubnetMember].self, from: data)
+            print("📡 Decoded \(members.count) members")
             return members
         } else {
             let errorMsg = (try? JSONDecoder().decode([String: String].self, from: data)["error"]) ?? "Failed to fetch members"

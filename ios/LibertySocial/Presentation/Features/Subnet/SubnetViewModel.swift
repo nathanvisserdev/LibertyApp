@@ -29,15 +29,21 @@ final class SubnetViewModel: ObservableObject {
     func fetchMembers() async {
         guard let subnet = subnet else { return }
         
+        print("🔍 Fetching members for subnet: \(subnet.id)")
+        
         isLoading = true
         errorMessage = nil
         
         do {
             let fetchedMembers = try await model.fetchMembers(subnetId: subnet.id)
             members = fetchedMembers
+            print("✅ Fetched \(fetchedMembers.count) members")
+            if !fetchedMembers.isEmpty {
+                print("Members: \(fetchedMembers.map { "\($0.user.firstName ?? "") \($0.user.lastName ?? "")" })")
+            }
         } catch {
             errorMessage = error.localizedDescription
-            print("Error fetching subnet members: \(error)")
+            print("❌ Error fetching subnet members: \(error)")
         }
         
         isLoading = false
