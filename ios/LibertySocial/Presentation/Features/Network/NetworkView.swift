@@ -10,12 +10,12 @@ import SwiftUI
 struct NetworkView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel = NetworkViewModel()
-    @StateObject private var subNetViewModel = SubNetListViewModel()
+    @StateObject private var subnetViewModel = SubnetListViewModel()
     @State private var showConnections = false
     @State private var showCreateGroup = false
     @State private var showGroupsWithMutuals = false
     @State private var selectedGroup: UserGroup?
-    @State private var showSubNetView = false
+    @State private var showSubnetView = false
     
     var body: some View {
         NavigationStack {
@@ -99,30 +99,30 @@ struct NetworkView: View {
                 .buttonStyle(.plain)
                 
                 Section {
-                    if subNetViewModel.isLoading {
+                    if subnetViewModel.isLoading {
                         HStack {
                             Spacer()
                             ProgressView()
                             Spacer()
                         }
                         .padding(.vertical, 8)
-                    } else if let errorMessage = subNetViewModel.errorMessage {
+                    } else if let errorMessage = subnetViewModel.errorMessage {
                         Text(errorMessage)
                             .font(.caption)
                             .foregroundColor(.red)
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.vertical, 8)
-                    } else if subNetViewModel.subNets.isEmpty {
+                    } else if subnetViewModel.subnets.isEmpty {
                         Text("No subnets yet")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.vertical, 8)
                     } else {
-                        ForEach(subNetViewModel.subNets) { subnet in
+                        ForEach(subnetViewModel.subnets) { subnet in
                             Button {
-                                subNetViewModel.selectSubnet(subnet)
-                                showSubNetView = true
+                                subnetViewModel.selectSubnet(subnet)
+                                showSubnetView = true
                             } label: {
                                 HStack(spacing: 12) {
                                     // Icon based on visibility or default status
@@ -167,7 +167,7 @@ struct NetworkView: View {
                         }
                     }
                 } header: {
-                    Text("SubNets")
+                    Text("Subnets")
                 }
                 
                 Section {
@@ -246,7 +246,7 @@ struct NetworkView: View {
             }
             .task {
                 await viewModel.fetchUserGroups()
-                await subNetViewModel.fetchSubNets()
+                await subnetViewModel.fetchSubnets()
             }
             .sheet(isPresented: $showConnections) {
                 ConnectionsView()
@@ -268,8 +268,8 @@ struct NetworkView: View {
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
-            .sheet(isPresented: $showSubNetView) {
-                SubNetView(subNetListViewModel: subNetViewModel)
+            .sheet(isPresented: $showSubnetView) {
+                SubnetView(subnetListViewModel: subnetViewModel)
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }

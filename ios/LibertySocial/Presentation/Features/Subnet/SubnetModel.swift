@@ -1,5 +1,5 @@
 //
-//  SubNetModel.swift
+//  SubnetModel.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-30.
@@ -7,18 +7,18 @@
 
 import Foundation
 
-// MARK: - SubNet Member Models
-struct SubNetMember: Codable, Identifiable {
+// MARK: - Subnet Member Models
+struct SubnetMember: Codable, Identifiable {
     let id: String
     let role: String
-    let subNetId: String
+    let subnetId: String
     let userId: String
     let connectionId: String
     let createdAt: Date
-    let user: SubNetMemberUser
+    let user: SubnetMemberUser
 }
 
-struct SubNetMemberUser: Codable {
+struct SubnetMemberUser: Codable {
     let id: String
     let username: String
     let firstName: String?
@@ -27,8 +27,15 @@ struct SubNetMemberUser: Codable {
 }
 
 // MARK: - API
-struct SubNetModel {
-    static func fetchMembers(subnetId: String) async throws -> [SubNetMember] {
+struct SubnetModel {
+    private let authService: AuthServiceProtocol
+    
+    init(authService: AuthServiceProtocol = AuthService.shared) {
+        self.authService = authService
+    }
+    
+    /// Fetch subnet members
+    func fetchMembers(subnetId: String) async throws -> [SubnetMember] {
         guard let url = URL(string: "\(AppConfig.baseURL)/me/subnets/\(subnetId)/members") else {
             throw URLError(.badURL)
         }
@@ -49,11 +56,11 @@ struct SubNetModel {
         if (200...299).contains(httpResponse.statusCode) {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
-            let members = try decoder.decode([SubNetMember].self, from: data)
+            let members = try decoder.decode([SubnetMember].self, from: data)
             return members
         } else {
             let errorMsg = (try? JSONDecoder().decode([String: String].self, from: data)["error"]) ?? "Failed to fetch members"
-            throw NSError(domain: "SubNetModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
+            throw NSError(domain: "SubnetModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
         }
     }
 }

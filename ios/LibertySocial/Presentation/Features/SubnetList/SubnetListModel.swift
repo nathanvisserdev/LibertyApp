@@ -1,14 +1,14 @@
 //
-//  SubNetListModel.swift
+//  SubnetListModel.swift
 //  LibertySocial
 //
-//  Created by Nathan Visser on 2025-10-29.
+//  Created by Nathan Visser on 2025-10-30.
 //
 
 import Foundation
 
-// MARK: - SubNet Models
-struct SubNet: Codable, Identifiable {
+// MARK: - Subnet Models
+struct Subnet: Codable, Identifiable {
     let id: String
     let name: String
     let slug: String
@@ -22,33 +22,33 @@ struct SubNet: Codable, Identifiable {
     let parentId: String?
     let createdAt: Date
     let updatedAt: Date
-    let owner: SubNetOwner
-    let parent: SubNetParent?
-    let children: [SubNetChild]
+    let owner: SubnetOwner
+    let parent: SubnetParent?
+    let children: [SubnetChild]
 }
 
-struct SubNetOwner: Codable {
+struct SubnetOwner: Codable {
     let id: String
     let username: String
     let firstName: String?
     let lastName: String?
 }
 
-struct SubNetParent: Codable {
+struct SubnetParent: Codable, Identifiable {
     let id: String
     let name: String
     let slug: String
 }
 
-struct SubNetChild: Codable {
+struct SubnetChild: Codable, Identifiable {
     let id: String
     let name: String
     let slug: String
 }
 
 // MARK: - API
-struct SubNetListModel {
-    static func fetchSubNets() async throws -> [SubNet] {
+struct SubnetListModel {
+    static func fetchSubnets() async throws -> [Subnet] {
         guard let url = URL(string: "\(AppConfig.baseURL)/subnets") else {
             throw URLError(.badURL)
         }
@@ -69,11 +69,11 @@ struct SubNetListModel {
         if (200...299).contains(httpResponse.statusCode) {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
-            let subnets = try decoder.decode([SubNet].self, from: data)
+            let subnets = try decoder.decode([Subnet].self, from: data)
             return subnets
         } else {
             let errorMsg = (try? JSONDecoder().decode([String: String].self, from: data)["error"]) ?? "Failed to fetch subnets"
-            throw NSError(domain: "SubNetListModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
+            throw NSError(domain: "SubnetListModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
         }
     }
 }

@@ -1,5 +1,5 @@
 //
-//  SubNetView.swift
+//  SubnetView.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-30.
@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-struct SubNetView: View {
-    @ObservedObject var subNetListViewModel: SubNetListViewModel
-    @StateObject private var viewModel = SubNetViewModel()
+struct SubnetView: View {
+    @ObservedObject var subnetListViewModel: SubnetListViewModel
+    @StateObject private var viewModel = SubnetViewModel()
     
     var body: some View {
         NavigationStack {
@@ -27,10 +27,15 @@ struct SubNetView: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle(viewModel.subnet?.name ?? "SubNet")
+            .navigationTitle(viewModel.subnet?.name ?? "Subnet")
             .navigationBarTitleDisplayMode(.large)
+            .sheet(isPresented: $viewModel.showAddMembersSheet) {
+                if let subnetId = viewModel.subnet?.id {
+                    AddSubnetMembersView(subnetId: subnetId)
+                }
+            }
             .onAppear {
-                subNetListViewModel.passSubnetToViewModel(viewModel)
+                subnetListViewModel.passSubnetToViewModel(viewModel)
                 Task {
                     await viewModel.fetchMembers()
                 }
@@ -38,7 +43,7 @@ struct SubNetView: View {
         }
     }
     
-    private func emptyMembersView(subnet: SubNet) -> some View {
+    private func emptyMembersView(subnet: Subnet) -> some View {
         VStack(spacing: 24) {
             Spacer()
             
@@ -65,13 +70,16 @@ struct SubNetView: View {
                     .font(.headline)
                     .foregroundColor(.primary)
             }
+            .onTapGesture {
+                viewModel.showAddMembers()
+            }
             
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
-    private func membersListView(subnet: SubNet) -> some View {
+    private func membersListView(subnet: Subnet) -> some View {
         List {
             // Subnet Info Section
             Section {

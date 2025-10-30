@@ -1,5 +1,5 @@
 //
-//  SubNetListViewModel.swift
+//  SubnetListViewModel.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-29.
@@ -9,19 +9,19 @@ import Foundation
 import Combine
 
 @MainActor
-final class SubNetListViewModel: ObservableObject {
-    @Published var subNets: [SubNet] = []
+final class SubnetListViewModel: ObservableObject {
+    @Published var subnets: [Subnet] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-    @Published var selectedSubnet: SubNet?
+    @Published var selectedSubnet: Subnet?
     
-    func fetchSubNets() async {
+    func fetchSubnets() async {
         isLoading = true
         errorMessage = nil
         
         do {
-            let networks = try await SubNetListModel.fetchSubNets()
-            subNets = networks
+            let networks = try await SubnetListModel.fetchSubnets()
+            subnets = networks
         } catch {
             errorMessage = error.localizedDescription
             print("Error fetching subnets: \(error)")
@@ -30,11 +30,11 @@ final class SubNetListViewModel: ObservableObject {
         isLoading = false
     }
     
-    func selectSubnet(_ subnet: SubNet) {
+    func selectSubnet(_ subnet: Subnet) {
         selectedSubnet = subnet
     }
     
-    func passSubnetToViewModel(_ subnetViewModel: SubNetViewModel) {
+    func passSubnetToViewModel(_ subnetViewModel: SubnetViewModel) {
         guard let subnet = selectedSubnet else { return }
         subnetViewModel.setSubnet(subnet)
     }

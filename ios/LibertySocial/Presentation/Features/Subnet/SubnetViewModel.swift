@@ -1,5 +1,5 @@
 //
-//  SubNetViewModel.swift
+//  SubnetViewModel.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-30.
@@ -9,13 +9,20 @@ import Foundation
 import Combine
 
 @MainActor
-final class SubNetViewModel: ObservableObject {
-    @Published var subnet: SubNet?
-    @Published var members: [SubNetMember] = []
+final class SubnetViewModel: ObservableObject {
+    @Published var subnet: Subnet?
+    @Published var members: [SubnetMember] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var showAddMembersSheet: Bool = false
     
-    func setSubnet(_ subnet: SubNet) {
+    private let model: SubnetModel
+    
+    init(model: SubnetModel = SubnetModel()) {
+        self.model = model
+    }
+    
+    func setSubnet(_ subnet: Subnet) {
         self.subnet = subnet
     }
     
@@ -26,7 +33,7 @@ final class SubNetViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let fetchedMembers = try await SubNetModel.fetchMembers(subnetId: subnet.id)
+            let fetchedMembers = try await model.fetchMembers(subnetId: subnet.id)
             members = fetchedMembers
         } catch {
             errorMessage = error.localizedDescription
@@ -34,5 +41,9 @@ final class SubNetViewModel: ObservableObject {
         }
         
         isLoading = false
+    }
+    
+    func showAddMembers() {
+        showAddMembersSheet = true
     }
 }
