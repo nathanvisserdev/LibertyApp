@@ -121,7 +121,7 @@ struct NetworkView: View {
                     } else {
                         ForEach(subNetViewModel.subNets) { subnet in
                             Button {
-                                subNetViewModel.selectSubnet(subnet.id)
+                                subNetViewModel.selectSubnet(subnet)
                                 showSubNetView = true
                             } label: {
                                 HStack(spacing: 12) {

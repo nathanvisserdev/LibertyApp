@@ -13,7 +13,7 @@ final class SubNetListViewModel: ObservableObject {
     @Published var subNets: [SubNet] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-    @Published var selectedSubnetId: String?
+    @Published var selectedSubnet: SubNet?
     
     func fetchSubNets() async {
         isLoading = true
@@ -30,12 +30,12 @@ final class SubNetListViewModel: ObservableObject {
         isLoading = false
     }
     
-    func selectSubnet(_ subnetId: String) {
-        selectedSubnetId = subnetId
+    func selectSubnet(_ subnet: SubNet) {
+        selectedSubnet = subnet
     }
     
-    func passSubnetIdToViewModel(_ subnetViewModel: SubNetViewModel) {
-        guard let subnetId = selectedSubnetId else { return }
-        subnetViewModel.setSubnetId(subnetId)
+    func passSubnetToViewModel(_ subnetViewModel: SubNetViewModel) {
+        guard let subnet = selectedSubnet else { return }
+        subnetViewModel.setSubnet(subnet)
     }
 }

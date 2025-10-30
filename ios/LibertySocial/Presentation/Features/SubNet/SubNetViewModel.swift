@@ -10,9 +10,29 @@ import Combine
 
 @MainActor
 final class SubNetViewModel: ObservableObject {
-    @Published var subnetId: String?
+    @Published var subnet: SubNet?
+    @Published var members: [SubNetMember] = []
+    @Published var isLoading: Bool = false
+    @Published var errorMessage: String?
     
-    func setSubnetId(_ id: String) {
-        self.subnetId = id
+    func setSubnet(_ subnet: SubNet) {
+        self.subnet = subnet
+    }
+    
+    func fetchMembers() async {
+        guard let subnet = subnet else { return }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            let fetchedMembers = try await SubNetModel.fetchMembers(subnetId: subnet.id)
+            members = fetchedMembers
+        } catch {
+            errorMessage = error.localizedDescription
+            print("Error fetching subnet members: \(error)")
+        }
+        
+        isLoading = false
     }
 }
