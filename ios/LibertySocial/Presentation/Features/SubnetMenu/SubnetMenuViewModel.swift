@@ -12,6 +12,7 @@ import Combine
 final class SubnetMenuViewModel: ObservableObject {
     
     // MARK: - Published (UI State for Navigation)
+    @Published var showCreateSubnet: Bool = false
     @Published var showSubnetView: Bool = false
     
     // MARK: - Init
@@ -20,6 +21,14 @@ final class SubnetMenuViewModel: ObservableObject {
     }
     
     // MARK: - Intents (User Actions)
+    func showCreateSubnetView() {
+        showCreateSubnet = true
+    }
+    
+    func hideCreateSubnetView() {
+        showCreateSubnet = false
+    }
+    
     func showSubnet() {
         showSubnetView = true
     }

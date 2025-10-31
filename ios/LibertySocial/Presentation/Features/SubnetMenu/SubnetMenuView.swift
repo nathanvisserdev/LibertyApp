@@ -19,6 +19,30 @@ struct SubnetMenuView: View {
     var body: some View {
         NavigationStack {
             List {
+                // Create Subnet option
+                Button {
+                    viewModel.showCreateSubnetView()
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.blue)
+                        
+                        Text("Create Subnet")
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+                .buttonStyle(.plain)
+                
                 Section {
                     if subnetViewModel.isLoading {
                         HStack {
@@ -102,6 +126,11 @@ struct SubnetMenuView: View {
             }
             .task {
                 await subnetViewModel.fetchSubnets()
+            }
+            .sheet(isPresented: $viewModel.showCreateSubnet) {
+                CreateSubnetCoordinator().start()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $viewModel.showSubnetView) {
                 let coordinator = SubnetCoordinator(subnetListViewModel: subnetViewModel)
