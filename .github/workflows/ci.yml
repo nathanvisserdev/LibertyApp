@@ -23,6 +23,10 @@ jobs:
           echo "PORT=3000" >> .env
           echo "PUBLIC_SQUARE_ADMIN_ID=test-admin-id" >> .env
           echo "BCRYPT_ROUNDS=1" >> .env
+          echo "R2_ENDPOINT=${{ secrets.R2_ENDPOINT }}" >> .env
+          echo "R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }}" >> .env
+          echo "R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}" >> .env
+          echo "R2_BUCKET=${{ secrets.R2_BUCKET }}" >> .env
       - run: npm ci
       - run: npx prisma generate
       - run: npx prisma db push --force-reset

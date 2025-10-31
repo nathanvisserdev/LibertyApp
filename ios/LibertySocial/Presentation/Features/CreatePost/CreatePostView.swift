@@ -11,6 +11,8 @@ import PhotosUI
 struct CreatePostView: View {
     @StateObject var vm: CreatePostViewModel
     @State private var showPhotoPicker = false
+    @State private var showAudiencePicker = false
+    @State private var selectedAudience = "Select Audience"
     var onCancel: () -> Void
     var onPosted: () -> Void
 
@@ -31,19 +33,17 @@ struct CreatePostView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     
-                    Menu {
-                        Button("Public") { }
-                        Button("Connections") { }
-                        Button("Subnet") { }
-                        Button("Group") { }
+                    Button {
+                        showAudiencePicker = true
                     } label: {
                         HStack(spacing: 4) {
-                            Text("Public")
+                            Text(selectedAudience)
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             Image(systemName: "chevron.down")
                                 .font(.caption)
                         }
+                        .foregroundStyle(.primary)
                     }
                     
                     Spacer()
@@ -141,6 +141,13 @@ struct CreatePostView: View {
                               || vm.remainingCharacters < 0
                               || vm.isSubmitting)
                 }
+            }
+            .confirmationDialog("Select Audience", isPresented: $showAudiencePicker, titleVisibility: .hidden) {
+                Button("Acquaintances") { selectedAudience = "Acquaintances" }
+                Button("Subnet") { selectedAudience = "Subnet" }
+                Button("Connections") { selectedAudience = "Connections" }
+                Button("Public") { selectedAudience = "Public" }
+                Button("Cancel", role: .cancel) { }
             }
         }
     }
