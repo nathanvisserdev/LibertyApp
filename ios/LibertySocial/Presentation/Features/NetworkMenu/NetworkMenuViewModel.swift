@@ -18,7 +18,7 @@ final class NetworkMenuViewModel: ObservableObject {
     // MARK: - Published (UI State for Navigation)
     @Published var showConnections: Bool = false
     @Published var showGroupsMenu: Bool = false
-    @Published var showSubnetView: Bool = false
+    @Published var showSubnetMenu: Bool = false
     
     // MARK: - Init
     init(model: NetworkMenuModel = NetworkMenuModel(), authService: AuthServiceProtocol = AuthService.shared) {
@@ -43,11 +43,11 @@ final class NetworkMenuViewModel: ObservableObject {
         showGroupsMenu = false
     }
     
-    func showSubnet() {
-        showSubnetView = true
+    func showSubnetMenuView() {
+        showSubnetMenu = true
     }
     
-    func hideSubnet() {
-        showSubnetView = false
+    func hideSubnetMenuView() {
+        showSubnetMenu = false
     }
 }
