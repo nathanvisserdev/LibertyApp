@@ -30,6 +30,9 @@ final class CreatePostViewModel: ObservableObject {
     @Published var showPhotoPicker: Bool = false
     @Published var showAudiencePicker: Bool = false
     @Published var shouldDismiss: Bool = false
+    @Published var userIsPrivate: Bool = false
+    @Published var userSubnets: [Subnet] = []
+    @Published var isLoadingUserData: Bool = false
     
     // MARK: - Private State
     private var presignedUploadData: PresignedUploadResponse?
@@ -42,6 +45,28 @@ final class CreatePostViewModel: ObservableObject {
         self.model = model
     }
     
+    // MARK: - Load User Data
+    func loadCurrentUserData() async {
+        isLoadingUserData = true
+        do {
+            // Fetch user's private status and subnets concurrently
+            async let isPrivate = model.getCurrentUserIsPrivate()
+            async let subnets = model.getUserSubnets()
+            
+            userIsPrivate = try await isPrivate
+            userSubnets = try await subnets
+            
+            // Set default audience based on user's privacy setting
+            if selectedAudience == "Select Audience" {
+                selectedAudience = defaultAudience
+            }
+        } catch {
+            print("Error loading user data: \(error.localizedDescription)")
+            errorMessage = "Failed to load user data"
+        }
+        isLoadingUserData = false
+    }
+    
     // MARK: - Computed
     var remainingCharacters: Int {
         maxCharacters - text.count
@@ -51,6 +76,35 @@ final class CreatePostViewModel: ObservableObject {
         let hasContent = !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         let hasMedia = localMediaURL != nil
         return (hasContent || hasMedia) && remainingCharacters >= 0 && !isSubmitting
+    }
+    
+    // MARK: - Audience Logic
+    
+    /// Default audience based on user's privacy setting
+    var defaultAudience: String {
+        userIsPrivate ? "Connections" : "Public"
+    }
+    
+    /// Available audience options for the dropdown
+    var availableAudiences: [String] {
+        var audiences: [String] = []
+        
+        if userIsPrivate {
+            // Private users: Connections (default), Acquaintances, Strangers, + Subnets
+            audiences.append("Connections")
+            audiences.append("Acquaintances")
+            audiences.append("Strangers")
+        } else {
+            // Public users: Public (default) + Subnets
+            audiences.append("Public")
+        }
+        
+        // Add user's subnets
+        for subnet in userSubnets {
+            audiences.append(subnet.name)
+        }
+        
+        return audiences
     }
     
     // MARK: - Intents (User Actions)

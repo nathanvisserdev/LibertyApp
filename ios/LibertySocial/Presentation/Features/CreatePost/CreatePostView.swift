@@ -142,17 +142,20 @@ struct CreatePostView: View {
                 isPresented: $viewModel.showAudiencePicker,
                 titleVisibility: .hidden
             ) {
-                Button("Strangers") { viewModel.selectAudience("Strangers") }
-                Button("Acquaintances") { viewModel.selectAudience("Acquaintances") }
-                Button("Subnet") { viewModel.selectAudience("Subnet") }
-                Button("Connections") { viewModel.selectAudience("Connections") }
-                Button("Public") { viewModel.selectAudience("Public") }
+                ForEach(viewModel.availableAudiences, id: \.self) { audience in
+                    Button(audience) {
+                        viewModel.selectAudience(audience)
+                    }
+                }
                 Button("Cancel", role: .cancel) { }
             }
             .onChange(of: viewModel.shouldDismiss) { _, shouldDismiss in
                 if shouldDismiss {
                     dismiss()
                 }
+            }
+            .task {
+                await viewModel.loadCurrentUserData()
             }
         }
     }

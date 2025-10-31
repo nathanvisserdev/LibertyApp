@@ -39,9 +39,22 @@ struct CreatePostResponse: Codable {
 struct CreatePostModel {
     
     private let authSession: AuthSession
+    private let subnetSession: SubnetSession
     
-    init(authSession: AuthSession = AuthService.shared) {
+    init(authSession: AuthSession = AuthService.shared,
+         subnetSession: SubnetSession = SubnetService.shared) {
         self.authSession = authSession
+        self.subnetSession = subnetSession
+    }
+    
+    // MARK: - Get Current User's isPrivate status
+    func getCurrentUserIsPrivate() async throws -> Bool {
+        return try await authSession.getCurrentUserIsPrivate()
+    }
+    
+    // MARK: - Get Current User's Subnets
+    func getUserSubnets() async throws -> [Subnet] {
+        return try await subnetSession.getUserSubnets()
     }
     
     // MARK: - Request presigned upload URL from server

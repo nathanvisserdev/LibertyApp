@@ -11,6 +11,7 @@ import Foundation
 /// Minimal interface for authenticated API requests - exposes only auth token retrieval
 protocol AuthSession {
     func getAuthToken() throws -> String
+    func getCurrentUserIsPrivate() async throws -> Bool
 }
 
 protocol AuthServiceProtocol {
@@ -28,7 +29,11 @@ protocol AuthServiceProtocol {
     func fetchConnections() async throws -> [Connection]
 }
 
-struct APIUser: Decodable { let id: String; let email: String }
+struct APIUser: Decodable { 
+    let id: String
+    let email: String
+    let isPrivate: Bool
+}
 
 @MainActor
 final class AuthService: AuthServiceProtocol, AuthSession {
@@ -47,6 +52,12 @@ final class AuthService: AuthServiceProtocol, AuthSession {
     /// Public interface for authenticated requests - used by feature models
     func getAuthToken() throws -> String {
         return try getToken()
+    }
+    
+    /// Get the current user's isPrivate status
+    func getCurrentUserIsPrivate() async throws -> Bool {
+        let user = try await fetchCurrentUserTyped()
+        return user.isPrivate
     }
     
     private func saveToken(_ token: String) throws {
