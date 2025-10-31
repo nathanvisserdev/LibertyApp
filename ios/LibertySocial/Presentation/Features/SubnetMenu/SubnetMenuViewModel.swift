@@ -7,12 +7,15 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 @MainActor
 final class SubnetMenuViewModel: ObservableObject {
     
     // MARK: - Dependencies
     private let model: SubnetMenuModel
+    private let subnetService: SubnetSession
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Published (Output State)
     @Published var subnets: [Subnet] = []
@@ -30,8 +33,16 @@ final class SubnetMenuViewModel: ObservableObject {
     @Published var alertMessage: String = ""
     
     // MARK: - Init
-    init(model: SubnetMenuModel = SubnetMenuModel()) {
+    init(model: SubnetMenuModel = SubnetMenuModel(), subnetService: SubnetSession = SubnetService.shared) {
         self.model = model
+        self.subnetService = subnetService
+        
+        // Subscribe to subnet changes from the service
+        subnetService.subnetsDidChange
+            .sink { [weak self] in
+                self?.refreshSubnets()
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Intents (User Actions)
@@ -88,6 +99,29 @@ final class SubnetMenuViewModel: ObservableObject {
             alertMessage = error.localizedDescription
             showErrorAlert = true
             print("Error deleting subnet: \(error)")
+        }
+    }
+    
+    func moveSubnet(from source: IndexSet, to destination: Int) {
+        // Move in local array
+        subnets.move(fromOffsets: source, toOffset: destination)
+        
+        // Update ordering for all subnets
+        Task {
+            await updateAllSubnetOrderings()
+        }
+    }
+    
+    private func updateAllSubnetOrderings() async {
+        // Update ordering for each subnet based on their new position
+        for (index, subnet) in subnets.enumerated() {
+            do {
+                try await model.updateSubnetOrdering(subnetId: subnet.id, ordering: index)
+            } catch {
+                print("Error updating ordering for subnet \(subnet.name): \(error)")
+                // Note: We don't show an alert here to avoid multiple alerts
+                // The UI will still show the reordered list even if server update fails
+            }
         }
     }
 }

@@ -63,11 +63,22 @@ struct SubnetMenuView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.vertical, 8)
                     } else {
-                        ForEach(viewModel.subnets) { subnet in
+                        ForEach(Array(viewModel.subnets.enumerated()), id: \.element.id) { index, subnet in
                             Button {
                                 viewModel.showSubnet(subnet)
                             } label: {
                                 HStack(spacing: 12) {
+                                    // Priority number badge
+                                    Text("\(index + 1)")
+                                        .font(.caption2)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.white)
+                                        .frame(width: 24, height: 24)
+                                        .background(
+                                            Circle()
+                                                .fill(priorityColor(for: index))
+                                        )
+                                    
                                     // Icon based on visibility or default status
                                     Image(systemName: subnet.isDefault ? "star.circle.fill" : visibilityIcon(for: subnet.visibility))
                                         .font(.title2)
@@ -116,15 +127,25 @@ struct SubnetMenuView: View {
                                 }
                             }
                         }
+                        .onMove { source, destination in
+                            viewModel.moveSubnet(from: source, to: destination)
+                        }
                     }
                 } header: {
                     Text("Subnets")
+                } footer: {
+                    Text("Drag to order")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
             .listStyle(.insetGrouped)
             .navigationTitle("Subnets")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
+                    EditButton()
+                }
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("Done") {
                         dismiss()
                     }
@@ -134,11 +155,7 @@ struct SubnetMenuView: View {
                 await viewModel.fetchSubnets()
             }
             .sheet(isPresented: $viewModel.showCreateSubnet) {
-                CreateSubnetCoordinator(
-                    onSubnetCreated: {
-                        viewModel.refreshSubnets()
-                    }
-                ).start()
+                CreateSubnetCoordinator().start()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
@@ -190,6 +207,20 @@ struct SubnetMenuView: View {
             return .purple
         default:
             return .purple
+        }
+    }
+    
+    private func priorityColor(for index: Int) -> Color {
+        // Use subtle iOS-native gray gradients based on priority
+        switch index {
+        case 0:
+            return Color(.systemGray)      // Highest priority
+        case 1:
+            return Color(.systemGray2)
+        case 2:
+            return Color(.systemGray3)
+        default:
+            return Color(.systemGray4)     // Lower priority
         }
     }
 }

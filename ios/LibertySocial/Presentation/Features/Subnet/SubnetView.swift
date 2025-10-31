@@ -46,12 +46,7 @@ struct SubnetView: View {
             }
             .sheet(isPresented: $viewModel.showAddMembersSheet) {
                 if let subnetId = viewModel.subnet?.id {
-                    let coordinator = AddSubnetMembersCoordinator(subnetId: subnetId) {
-                        Task {
-                            await viewModel.fetchMembers()
-                        }
-                    }
-                    coordinator.start()
+                    AddSubnetMembersCoordinator(subnetId: subnetId).start()
                 }
             }
             .onAppear {

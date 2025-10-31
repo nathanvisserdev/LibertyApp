@@ -11,14 +11,11 @@ final class AddSubnetMembersCoordinator {
     private let authSession: AuthSession
     private let authService: AuthServiceProtocol
     private let subnetId: String
-    private let onMembersAdded: () -> Void
     
     init(subnetId: String,
-         onMembersAdded: @escaping () -> Void,
          authSession: AuthSession = AuthService.shared,
          authService: AuthServiceProtocol = AuthService.shared) {
         self.subnetId = subnetId
-        self.onMembersAdded = onMembersAdded
         self.authSession = authSession
         self.authService = authService
     }
@@ -26,6 +23,6 @@ final class AddSubnetMembersCoordinator {
     func start() -> some View {
         let model = AddSubnetMembersModel(authSession: authSession)
         let viewModel = AddSubnetMembersViewModel(model: model)
-        return AddSubnetMembersView(viewModel: viewModel, subnetId: subnetId, onMembersAdded: onMembersAdded)
+        return AddSubnetMembersView(viewModel: viewModel, subnetId: subnetId)
     }
 }

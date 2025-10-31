@@ -10,13 +10,11 @@ import SwiftUI
 struct AddSubnetMembersView: View {
     @StateObject private var viewModel: AddSubnetMembersViewModel
     let subnetId: String
-    let onMembersAdded: () -> Void
     @Environment(\.dismiss) var dismiss
     
-    init(viewModel: AddSubnetMembersViewModel, subnetId: String, onMembersAdded: @escaping () -> Void) {
+    init(viewModel: AddSubnetMembersViewModel, subnetId: String) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.subnetId = subnetId
-        self.onMembersAdded = onMembersAdded
     }
     
     var body: some View {
@@ -71,11 +69,7 @@ struct AddSubnetMembersView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         Task {
-                            let success = await viewModel.addSelectedMembers()
-                            if success {
-                                onMembersAdded()
-                                dismiss()
-                            }
+                            await viewModel.addSelectedMembers()
                         }
                     } label: {
                         if viewModel.isAddingMembers {
@@ -96,6 +90,11 @@ struct AddSubnetMembersView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(viewModel.alertMessage)
+            }
+            .onChange(of: viewModel.shouldDismiss) { _, shouldDismiss in
+                if shouldDismiss {
+                    dismiss()
+                }
             }
             .onAppear {
                 viewModel.setSubnetId(subnetId)
@@ -158,6 +157,6 @@ struct AddSubnetMembersView: View {
 #Preview {
     let model = AddSubnetMembersModel()
     let viewModel = AddSubnetMembersViewModel(model: model)
-    return AddSubnetMembersView(viewModel: viewModel, subnetId: "preview-subnet-id", onMembersAdded: {})
+    return AddSubnetMembersView(viewModel: viewModel, subnetId: "preview-subnet-id")
 }
 

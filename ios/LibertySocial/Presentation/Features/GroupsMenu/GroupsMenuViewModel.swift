@@ -14,6 +14,8 @@ final class GroupsMenuViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: GroupsMenuModel
     private let authService: AuthServiceProtocol
+    private let groupService: GroupSession
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Published (Output State)
     @Published var userGroups: [UserGroup] = []
@@ -26,9 +28,19 @@ final class GroupsMenuViewModel: ObservableObject {
     @Published var selectedGroup: UserGroup?
     
     // MARK: - Init
-    init(model: GroupsMenuModel = GroupsMenuModel(), authService: AuthServiceProtocol = AuthService.shared) {
+    init(model: GroupsMenuModel = GroupsMenuModel(), authService: AuthServiceProtocol = AuthService.shared, groupService: GroupSession = GroupService.shared) {
         self.model = model
         self.authService = authService
+        self.groupService = groupService
+        
+        // Subscribe to group changes
+        groupService.groupsDidChange
+            .sink { [weak self] in
+                Task { @MainActor [weak self] in
+                    await self?.fetchUserGroups()
+                }
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Intents (User Actions)
@@ -40,8 +52,8 @@ final class GroupsMenuViewModel: ObservableObject {
             // Get current user ID
             let currentUser = try await authService.fetchCurrentUserTyped()
             
-            // Fetch user's groups
-            userGroups = try await model.fetchUserGroups(userId: currentUser.id)
+            // Fetch user's groups via service (with caching)
+            userGroups = try await groupService.getUserGroups(userId: currentUser.id)
         } catch {
             errorMessage = error.localizedDescription
             print("Error fetching user groups: \(error)")

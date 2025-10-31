@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 // MARK: - Subnet Models
 struct Subnet: Codable, Identifiable {
@@ -50,6 +51,8 @@ struct SubnetChild: Codable, Identifiable {
 /// Minimal interface for subnet-related operations
 protocol SubnetSession {
     func getUserSubnets() async throws -> [Subnet]
+    var subnetsDidChange: AnyPublisher<Void, Never> { get }
+    func invalidateCache()
 }
 
 // MARK: - Subnet Service
@@ -59,13 +62,42 @@ final class SubnetService: SubnetSession {
     
     private let authSession: AuthSession
     
+    // MARK: - Cache & Change Signaling
+    private var cachedSubnets: [Subnet]?
+    private var needsRefresh: Bool = true
+    private let subnetsDidChangeSubject = PassthroughSubject<Void, Never>()
+    
+    var subnetsDidChange: AnyPublisher<Void, Never> {
+        subnetsDidChangeSubject.eraseToAnyPublisher()
+    }
+    
     init(authSession: AuthSession = AuthService.shared) {
         self.authSession = authSession
     }
     
+    // MARK: - Public Methods
+    
+    /// Invalidate the cache and signal that data needs to be refreshed
+    func invalidateCache() {
+        needsRefresh = true
+        cachedSubnets = nil
+        subnetsDidChangeSubject.send()
+    }
+    
+    /// Check if cache needs refresh
+    func shouldRefresh() -> Bool {
+        return needsRefresh
+    }
+    
     // MARK: - SubnetSession Protocol
-    /// Get the current user's subnets
+    /// Get the current user's subnets (with caching)
     func getUserSubnets() async throws -> [Subnet] {
+        // Return cached data if available and not stale
+        if !needsRefresh, let cached = cachedSubnets {
+            return cached
+        }
+        
+        // Fetch fresh data from server
         guard let url = URL(string: "\(AppConfig.baseURL)/subnets") else {
             throw URLError(.badURL)
         }
@@ -89,6 +121,12 @@ final class SubnetService: SubnetSession {
         
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode([Subnet].self, from: data)
+        let subnets = try decoder.decode([Subnet].self, from: data)
+        
+        // Update cache and reset stale flag
+        cachedSubnets = subnets
+        needsRefresh = false
+        
+        return subnets
     }
 }

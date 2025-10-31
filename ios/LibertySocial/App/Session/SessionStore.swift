@@ -11,15 +11,26 @@ import Combine
 @MainActor
 final class SessionStore: ObservableObject {
     @Published private(set) var isAuthenticated = false
-
-    init() { 
+    
+    // MARK: - Dependencies
+    private let authSession: AuthSession
+    
+    init(authSession: AuthSession = AuthService.shared) { 
+        self.authSession = authSession
         Task { await refresh() }
     }
 
     func refresh() async {
         // First check if token exists and isn't expired locally
-        guard let token = KeychainHelper.read(), !isExpired(token) else {
-            KeychainHelper.delete()
+        do {
+            let token = try authSession.getAuthToken()
+            guard !isExpired(token) else {
+                AuthService.shared.deleteToken()
+                isAuthenticated = false
+                return
+            }
+        } catch {
+            // No token available
             isAuthenticated = false
             return
         }
@@ -34,7 +45,7 @@ final class SessionStore: ObservableObject {
         } catch {
             // Token is invalid or request failed
             print("⚠️ Token validation failed: \(error.localizedDescription)")
-            KeychainHelper.delete()
+            AuthService.shared.deleteToken()
             isAuthenticated = false
         }
     }
@@ -55,9 +66,7 @@ final class SessionStore: ObservableObject {
     
     /// Fetch pending request count from backend
     private func fetchPendingCount() async throws -> PendingCountResponse {
-        guard let token = KeychainHelper.read() else {
-            throw NSError(domain: "SessionStore", code: 401, userInfo: [NSLocalizedDescriptionKey: "No auth token"])
-        }
+        let token = try authSession.getAuthToken()
         
         var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/devices/pending-count"))
         req.httpMethod = "GET"
@@ -79,7 +88,7 @@ final class SessionStore: ObservableObject {
         }
         
         // Clear auth token and badge state
-        KeychainHelper.delete()
+        AuthService.shared.deleteToken()
         UserDefaults.standard.set(false, forKey: "newConnectionRequest")
         isAuthenticated = false
     }

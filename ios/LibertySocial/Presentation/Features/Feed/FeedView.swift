@@ -51,12 +51,8 @@ struct FeedView: View {
         }
         .task { await vm.load() }
         .safeAreaInset(edge: .bottom) {
-            TabBarCoordinator().start {
-                Task {
-                    await vm.refresh()
-                }
-            }
-            .ignoresSafeArea(edges: .bottom)
+            TabBarCoordinator().start()
+                .ignoresSafeArea(edges: .bottom)
         }
     }
 

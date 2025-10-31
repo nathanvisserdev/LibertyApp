@@ -19,11 +19,14 @@ final class AddSubnetMembersViewModel: ObservableObject {
     @Published var showSuccessAlert: Bool = false
     @Published var showErrorAlert: Bool = false
     @Published var alertMessage: String = ""
+    @Published var shouldDismiss: Bool = false
     
     private let model: AddSubnetMembersModel
+    private let subnetService: SubnetSession
     
-    init(model: AddSubnetMembersModel = AddSubnetMembersModel()) {
+    init(model: AddSubnetMembersModel = AddSubnetMembersModel(), subnetService: SubnetSession = SubnetService.shared) {
         self.model = model
+        self.subnetService = subnetService
     }
     
     func setSubnetId(_ id: String) {
@@ -69,9 +72,13 @@ final class AddSubnetMembersViewModel: ObservableObject {
             let userIdsArray = Array(selectedUserIds)
             try await model.addMembers(subnetId: subnetId, userIds: userIdsArray)
             
+            // Invalidate subnet cache to update memberCount
+            subnetService.invalidateCache()
+            
             let count = selectedUserIds.count
             alertMessage = count == 1 ? "Successfully added 1 member" : "Successfully added \(count) members"
             showSuccessAlert = true
+            shouldDismiss = true
             isAddingMembers = false
             return true
         } catch {

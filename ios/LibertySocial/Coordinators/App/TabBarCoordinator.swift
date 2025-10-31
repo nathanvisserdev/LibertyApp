@@ -17,9 +17,8 @@ final class TabBarCoordinator {
     
     // MARK: - Start
     /// Builds the TabBarView with its ViewModel
-    func start(onComposeCompleted: @escaping () -> Void) -> some View {
+    func start() -> some View {
         let viewModel = TabBarViewModel()
-        viewModel.onComposeCompleted = onComposeCompleted
         return TabBarView(viewModel: viewModel)
     }
 }

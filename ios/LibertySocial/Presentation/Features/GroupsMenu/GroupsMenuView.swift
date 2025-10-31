@@ -150,14 +150,6 @@ struct GroupsMenuView: View {
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
-            .onChange(of: viewModel.showCreateGroup) { isShowing in
-                if !isShowing {
-                    // Refresh groups when sheet is dismissed
-                    Task {
-                        await viewModel.fetchUserGroups()
-                    }
-                }
-            }
         }
     }
 }

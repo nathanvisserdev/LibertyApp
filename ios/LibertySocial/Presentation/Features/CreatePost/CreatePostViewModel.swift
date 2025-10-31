@@ -15,6 +15,7 @@ final class CreatePostViewModel: ObservableObject {
     
     // MARK: - Dependencies
     private let model: CreatePostModel
+    private let feedService: FeedSession
     
     // MARK: - Published (Input State)
     @Published var text: String = ""
@@ -41,8 +42,9 @@ final class CreatePostViewModel: ObservableObject {
     let maxCharacters = 1000
     
     // MARK: - Init
-    init(model: CreatePostModel = CreatePostModel()) {
+    init(model: CreatePostModel = CreatePostModel(), feedService: FeedSession = FeedService.shared) {
         self.model = model
+        self.feedService = feedService
     }
     
     // MARK: - Load User Data
@@ -195,6 +197,9 @@ final class CreatePostViewModel: ObservableObject {
                 visibility: visibilityForSelectedAudience,
                 subnetId: subnetIdForSelectedAudience
             )
+            
+            // Invalidate feed cache to trigger refresh
+            feedService.invalidateCache()
             
             // Clear form on success
             clearForm()

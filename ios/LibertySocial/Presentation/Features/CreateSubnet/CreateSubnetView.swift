@@ -149,12 +149,7 @@ struct CreateSubnetView: View {
             }
             .sheet(isPresented: $viewModel.showAddMembers) {
                 if let subnetId = viewModel.createdSubnetId {
-                    AddSubnetMembersCoordinator(
-                        subnetId: subnetId,
-                        onMembersAdded: {
-                            viewModel.onMembersAdded()
-                        }
-                    ).start()
+                    AddSubnetMembersCoordinator(subnetId: subnetId).start()
                 }
             }
         }

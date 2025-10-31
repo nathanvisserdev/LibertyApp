@@ -27,9 +27,6 @@ final class TabBarViewModel: ObservableObject {
     @Published var isShowingNetworkMenu: Bool = false
     @Published var selectedUserId: String?
     
-    // MARK: - Callbacks
-    var onComposeCompleted: (() -> Void)?
-    
     // MARK: - Init
     init(model: TabBarModel = TabBarModel()) {
         self.model = model
@@ -61,7 +58,6 @@ final class TabBarViewModel: ObservableObject {
     
     func hideCompose() {
         isShowingCompose = false
-        onComposeCompleted?()
     }
     
     func tapSearch() {

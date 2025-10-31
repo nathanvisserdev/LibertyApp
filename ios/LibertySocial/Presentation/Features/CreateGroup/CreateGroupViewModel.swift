@@ -13,6 +13,7 @@ final class CreateGroupViewModel: ObservableObject {
     
     // MARK: - Dependencies
     private let model: CreateGroupModel
+    private let groupService: GroupSession
     
     // MARK: - Published (Input State)
     @Published var name: String = ""
@@ -50,8 +51,9 @@ final class CreateGroupViewModel: ObservableObject {
     let maxDescriptionCharacters = 250
     
     // MARK: - Init
-    init(model: CreateGroupModel = CreateGroupModel()) {
+    init(model: CreateGroupModel = CreateGroupModel(), groupService: GroupSession = GroupService.shared) {
         self.model = model
+        self.groupService = groupService
     }
     
     // MARK: - Computed Properties
@@ -183,6 +185,9 @@ final class CreateGroupViewModel: ObservableObject {
                     isHidden: isHidden
                 )
             }
+            
+            // Invalidate group cache to trigger refresh
+            groupService.invalidateCache()
             
             isSubmitting = false
             return true

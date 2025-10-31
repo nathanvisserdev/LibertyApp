@@ -17,10 +17,22 @@ final class SubnetViewModel: ObservableObject {
     @Published var showAddMembersSheet: Bool = false
     
     private let model: SubnetModel
+    private let subnetService: SubnetSession
+    private var cancellables = Set<AnyCancellable>()
     
-    init(model: SubnetModel = SubnetModel(), subnet: Subnet? = nil) {
+    init(model: SubnetModel = SubnetModel(), subnet: Subnet? = nil, subnetService: SubnetSession = SubnetService.shared) {
         self.model = model
         self.subnet = subnet
+        self.subnetService = subnetService
+        
+        // Subscribe to subnet changes
+        subnetService.subnetsDidChange
+            .sink { [weak self] in
+                Task { @MainActor [weak self] in
+                    await self?.fetchMembers()
+                }
+            }
+            .store(in: &cancellables)
     }
     
     func setSubnet(_ subnet: Subnet) {
@@ -64,6 +76,9 @@ final class SubnetViewModel: ObservableObject {
             
             // Remove from local array
             members.removeAll { $0.id == member.id }
+            
+            // Invalidate subnet cache to update memberCount in SubnetMenu
+            subnetService.invalidateCache()
             
             let memberName = "\(member.user.firstName ?? "") \(member.user.lastName ?? "")".trimmingCharacters(in: .whitespaces)
             let displayName = memberName.isEmpty ? "@\(member.user.username)" : memberName

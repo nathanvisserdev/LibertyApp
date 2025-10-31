@@ -16,7 +16,12 @@ class PushNotificationManager: NSObject, ObservableObject {
     
     @Published var deviceToken: String?
     
-    private override init() {
+    // MARK: - Dependencies
+    private let authSession: AuthSession
+    
+    // MARK: - Init
+    init(authSession: AuthSession = AuthService.shared) {
+        self.authSession = authSession
         super.init()
     }
     
@@ -56,12 +61,9 @@ class PushNotificationManager: NSObject, ObservableObject {
     
     /// Register device token with backend server
     private func registerDeviceWithBackend(token: String) async {
-        guard let authToken = KeychainHelper.read() else {
-            print("No auth token found, skipping device registration")
-            return
-        }
-        
         do {
+            let authToken = try authSession.getAuthToken()
+            
             let body = ["token": token, "platform": "ios"]
             let data = try JSONSerialization.data(withJSONObject: body)
             
@@ -85,12 +87,13 @@ class PushNotificationManager: NSObject, ObservableObject {
     
     /// Unregister device token from backend (call on logout)
     func unregisterDevice() async {
-        guard let token = deviceToken,
-              let authToken = KeychainHelper.read() else {
+        guard let token = deviceToken else {
             return
         }
         
         do {
+            let authToken = try authSession.getAuthToken()
+            
             let body = ["token": token]
             let data = try JSONSerialization.data(withJSONObject: body)
             
