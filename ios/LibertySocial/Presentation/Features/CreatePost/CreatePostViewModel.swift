@@ -107,6 +107,36 @@ final class CreatePostViewModel: ObservableObject {
         return audiences
     }
     
+    /// Converts the UI-friendly audience selection to the backend visibility format
+    private var visibilityForSelectedAudience: String {
+        switch selectedAudience {
+        case "Public":
+            return "PUBLIC"
+        case "Connections":
+            return "CONNECTIONS"
+        case "Acquaintances":
+            return "ACQUAINTANCES"
+        case "Strangers":
+            return "STRANGERS"
+        default:
+            // It's a subnet name - check if it exists in userSubnets
+            if userSubnets.contains(where: { $0.name == selectedAudience }) {
+                return "SUBNET"
+            }
+            // Fallback to PUBLIC if somehow an invalid audience is selected
+            return "PUBLIC"
+        }
+    }
+    
+    /// Returns the subnet ID if a subnet is selected, nil otherwise
+    private var subnetIdForSelectedAudience: String? {
+        // Check if selected audience is a subnet name
+        if let subnet = userSubnets.first(where: { $0.name == selectedAudience }) {
+            return subnet.id
+        }
+        return nil
+    }
+    
     // MARK: - Intents (User Actions)
     func requestPresignedUpload() async {
         errorMessage = nil
@@ -161,7 +191,9 @@ final class CreatePostViewModel: ObservableObject {
                 content: trimmed.isEmpty ? nil : trimmed,
                 media: mediaKey,
                 imageWidth: imageWidth,
-                imageHeight: imageHeight
+                imageHeight: imageHeight,
+                visibility: visibilityForSelectedAudience,
+                subnetId: subnetIdForSelectedAudience
             )
             
             // Clear form on success

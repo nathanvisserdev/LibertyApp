@@ -25,6 +25,8 @@ struct CreatePostRequest: Codable {
     let media: String?
     let imageWidth: Double?
     let imageHeight: Double?
+    let visibility: String?
+    let subnetId: String?
 }
 
 struct CreatePostResponse: Codable {
@@ -107,7 +109,7 @@ struct CreatePostModel {
     }
     
     // MARK: - Create post
-    func createPost(content: String?, media: String? = nil, imageWidth: CGFloat? = nil, imageHeight: CGFloat? = nil) async throws -> CreatePostResponse {
+    func createPost(content: String?, media: String? = nil, imageWidth: CGFloat? = nil, imageHeight: CGFloat? = nil, visibility: String, subnetId: String? = nil) async throws -> CreatePostResponse {
         let url = URL(string: "/posts", relativeTo: AppConfig.baseURL)!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -120,7 +122,9 @@ struct CreatePostModel {
             content: content,
             media: media,
             imageWidth: imageWidth != nil ? Double(imageWidth!) : nil,
-            imageHeight: imageHeight != nil ? Double(imageHeight!) : nil
+            imageHeight: imageHeight != nil ? Double(imageHeight!) : nil,
+            visibility: visibility,
+            subnetId: subnetId
         )
         request.httpBody = try JSONEncoder().encode(body)
 
