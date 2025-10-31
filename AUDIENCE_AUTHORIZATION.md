@@ -1,7 +1,7 @@
 # Audience-Based Post Authorization Implementation
 
 ## Overview
-Implemented comprehensive audience-based authorization for posts across the Liberty Social platform. Posts can now have different visibility levels (PUBLIC, CONNECTIONS, ACQUAINTANCES, SUBNET, GROUP) and authorization is enforced consistently across all endpoints.
+Implemented comprehensive audience-based authorization for posts across the Liberty Social platform. Posts can now have different visibility levels (PUBLIC, CONNECTIONS, ACQUAINTANCES, STRANGERS, SUBNET, GROUP) and authorization is enforced consistently across all endpoints.
 
 ## Changes Implemented
 
@@ -15,6 +15,7 @@ Implemented comprehensive audience-based authorization for posts across the Libe
 - **PUBLIC**: Visible to all users
 - **CONNECTIONS**: Visible to users connected with any connection type (ACQUAINTANCE, STRANGER, IS_FOLLOWING)
 - **ACQUAINTANCES**: Visible only to users with ACQUAINTANCE connection type
+- **STRANGERS**: Visible only to users with STRANGER connection type
 - **SUBNET**: Visible to subnet members and subnet owner
 - **GROUP**: Visible to group members (legacy support)
 - **Own Posts**: Users can always see their own posts
@@ -32,6 +33,7 @@ Implemented comprehensive audience-based authorization for posts across the Libe
   - PUBLIC posts from all users
   - CONNECTIONS posts from connected users
   - ACQUAINTANCES posts from acquaintances
+  - STRANGERS posts from strangers
   - SUBNET posts from subnets user belongs to or owns
   - GROUP posts from groups user is a member of
 
@@ -42,7 +44,7 @@ Implemented comprehensive audience-based authorization for posts across the Libe
 - Returns 404 if post doesn't exist
 
 #### PATCH `/posts/:id` Endpoint
-- Updated to support changing visibility to CONNECTIONS, ACQUAINTANCES, SUBNET
+- Updated to support changing visibility to CONNECTIONS, ACQUAINTANCES, STRANGERS, SUBNET
 - Maintains same permission validation as POST endpoint
 
 ### 2. Media Authorization (`/server/src/mediaRead.ts`)
