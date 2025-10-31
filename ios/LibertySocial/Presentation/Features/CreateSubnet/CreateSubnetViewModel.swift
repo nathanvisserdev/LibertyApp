@@ -13,6 +13,7 @@ final class CreateSubnetViewModel: ObservableObject {
     
     // MARK: - Dependencies
     private let model: CreateSubnetModel
+    private let onSubnetCreated: () -> Void
     
     // MARK: - Published (Input State)
     @Published var name: String = ""
@@ -26,10 +27,13 @@ final class CreateSubnetViewModel: ObservableObject {
     @Published var showSuccessAlert: Bool = false
     @Published var successMessage: String = ""
     @Published var shouldDismiss: Bool = false
+    @Published var showAddMembers: Bool = false
+    @Published var createdSubnetId: String?
     
     // MARK: - Init
-    init(model: CreateSubnetModel = CreateSubnetModel()) {
+    init(model: CreateSubnetModel = CreateSubnetModel(), onSubnetCreated: @escaping () -> Void = {}) {
         self.model = model
+        self.onSubnetCreated = onSubnetCreated
     }
     
     // MARK: - Computed
@@ -61,7 +65,10 @@ final class CreateSubnetViewModel: ObservableObject {
                 try await model.setDefaultSubnet(subnetId: response.id)
             }
             
-            // Success
+            // Store subnet ID for navigation
+            createdSubnetId = response.id
+            
+            // Success - navigate to add members instead of dismissing
             successMessage = "'\(response.name)' created successfully!"
             showSuccessAlert = true
             isSubmitting = false
@@ -76,6 +83,13 @@ final class CreateSubnetViewModel: ObservableObject {
     
     func dismissSuccessAlert() {
         showSuccessAlert = false
+        showAddMembers = true
+    }
+    
+    func onMembersAdded() {
+        // Notify parent that subnet was created and members were added
+        onSubnetCreated()
+        // After members are added, dismiss the entire creation flow
         shouldDismiss = true
     }
 }

@@ -18,8 +18,9 @@ final class SubnetViewModel: ObservableObject {
     
     private let model: SubnetModel
     
-    init(model: SubnetModel = SubnetModel()) {
+    init(model: SubnetModel = SubnetModel(), subnet: Subnet? = nil) {
         self.model = model
+        self.subnet = subnet
     }
     
     func setSubnet(_ subnet: Subnet) {

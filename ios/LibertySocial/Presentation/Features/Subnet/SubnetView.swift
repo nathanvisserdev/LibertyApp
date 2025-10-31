@@ -9,14 +9,12 @@ import SwiftUI
 
 struct SubnetView: View {
     @StateObject private var viewModel: SubnetViewModel
-    @ObservedObject var subnetListViewModel: SubnetListViewModel
     @State private var showAlert = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     
-    init(viewModel: SubnetViewModel, subnetListViewModel: SubnetListViewModel) {
+    init(viewModel: SubnetViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.subnetListViewModel = subnetListViewModel
     }
     
     var body: some View {
@@ -57,7 +55,6 @@ struct SubnetView: View {
                 }
             }
             .onAppear {
-                subnetListViewModel.passSubnetToViewModel(viewModel)
                 Task {
                     await viewModel.fetchMembers()
                 }

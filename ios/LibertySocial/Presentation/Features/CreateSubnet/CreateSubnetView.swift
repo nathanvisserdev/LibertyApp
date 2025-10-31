@@ -147,6 +147,16 @@ struct CreateSubnetView: View {
                     dismiss()
                 }
             }
+            .sheet(isPresented: $viewModel.showAddMembers) {
+                if let subnetId = viewModel.createdSubnetId {
+                    AddSubnetMembersCoordinator(
+                        subnetId: subnetId,
+                        onMembersAdded: {
+                            viewModel.onMembersAdded()
+                        }
+                    ).start()
+                }
+            }
         }
     }
 }

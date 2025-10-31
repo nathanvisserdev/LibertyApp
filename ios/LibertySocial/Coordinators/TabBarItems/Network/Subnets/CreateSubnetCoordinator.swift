@@ -10,15 +10,17 @@ import SwiftUI
 /// Stateless coordinator for CreateSubnet flow - navigation is SwiftUI-owned
 final class CreateSubnetCoordinator {
     
+    private let onSubnetCreated: () -> Void
+    
     // MARK: - Init
-    init() {
-        // Initialize with dependencies if needed
+    init(onSubnetCreated: @escaping () -> Void = {}) {
+        self.onSubnetCreated = onSubnetCreated
     }
     
     // MARK: - Start
     /// Builds the CreateSubnetView with its ViewModel
     func start() -> some View {
-        let viewModel = CreateSubnetViewModel()
+        let viewModel = CreateSubnetViewModel(onSubnetCreated: onSubnetCreated)
         return CreateSubnetView(viewModel: viewModel)
     }
 }

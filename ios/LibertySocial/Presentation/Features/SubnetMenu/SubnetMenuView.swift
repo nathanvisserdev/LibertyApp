@@ -10,7 +10,6 @@ import SwiftUI
 struct SubnetMenuView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel: SubnetMenuViewModel
-    @StateObject private var subnetViewModel = SubnetListViewModel()
     
     init(viewModel: SubnetMenuViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -44,30 +43,29 @@ struct SubnetMenuView: View {
                 .buttonStyle(.plain)
                 
                 Section {
-                    if subnetViewModel.isLoading {
+                    if viewModel.isLoading {
                         HStack {
                             Spacer()
                             ProgressView()
                             Spacer()
                         }
                         .padding(.vertical, 8)
-                    } else if let errorMessage = subnetViewModel.errorMessage {
+                    } else if let errorMessage = viewModel.errorMessage {
                         Text(errorMessage)
                             .font(.caption)
                             .foregroundColor(.red)
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.vertical, 8)
-                    } else if subnetViewModel.subnets.isEmpty {
+                    } else if viewModel.subnets.isEmpty {
                         Text("No subnets yet")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.vertical, 8)
                     } else {
-                        ForEach(subnetViewModel.subnets) { subnet in
+                        ForEach(viewModel.subnets) { subnet in
                             Button {
-                                subnetViewModel.selectSubnet(subnet)
-                                viewModel.showSubnet()
+                                viewModel.showSubnet(subnet)
                             } label: {
                                 HStack(spacing: 12) {
                                     // Icon based on visibility or default status
@@ -125,18 +123,23 @@ struct SubnetMenuView: View {
                 }
             }
             .task {
-                await subnetViewModel.fetchSubnets()
+                await viewModel.fetchSubnets()
             }
             .sheet(isPresented: $viewModel.showCreateSubnet) {
-                CreateSubnetCoordinator().start()
+                CreateSubnetCoordinator(
+                    onSubnetCreated: {
+                        viewModel.refreshSubnets()
+                    }
+                ).start()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $viewModel.showSubnetView) {
-                let coordinator = SubnetCoordinator(subnetListViewModel: subnetViewModel)
-                coordinator.start()
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
+                if let subnet = viewModel.selectedSubnet {
+                    SubnetCoordinator(subnet: subnet).start()
+                        .presentationDetents([.large])
+                        .presentationDragIndicator(.visible)
+                }
             }
         }
     }
