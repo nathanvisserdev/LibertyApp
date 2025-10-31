@@ -24,6 +24,11 @@ final class SubnetMenuViewModel: ObservableObject {
     @Published var showSubnetView: Bool = false
     @Published var selectedSubnet: Subnet?
     
+    // MARK: - Published (UI State for Alerts)
+    @Published var showSuccessAlert: Bool = false
+    @Published var showErrorAlert: Bool = false
+    @Published var alertMessage: String = ""
+    
     // MARK: - Init
     init(model: SubnetMenuModel = SubnetMenuModel()) {
         self.model = model
@@ -65,6 +70,24 @@ final class SubnetMenuViewModel: ObservableObject {
     func refreshSubnets() {
         Task {
             await fetchSubnets()
+        }
+    }
+    
+    func deleteSubnet(_ subnet: Subnet) async {
+        do {
+            try await model.deleteSubnet(subnetId: subnet.id)
+            
+            // Remove from local array
+            subnets.removeAll { $0.id == subnet.id }
+            
+            // Show success alert
+            alertMessage = "'\(subnet.name)' deleted successfully"
+            showSuccessAlert = true
+        } catch {
+            // Show error alert
+            alertMessage = error.localizedDescription
+            showErrorAlert = true
+            print("Error deleting subnet: \(error)")
         }
     }
 }

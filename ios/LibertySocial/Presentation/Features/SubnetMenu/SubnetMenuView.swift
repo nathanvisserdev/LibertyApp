@@ -108,6 +108,14 @@ struct SubnetMenuView: View {
                             }
                             .buttonStyle(.plain)
                         }
+                        .onDelete { indexSet in
+                            for index in indexSet {
+                                let subnet = viewModel.subnets[index]
+                                Task {
+                                    await viewModel.deleteSubnet(subnet)
+                                }
+                            }
+                        }
                     }
                 } header: {
                     Text("Subnets")
@@ -140,6 +148,16 @@ struct SubnetMenuView: View {
                         .presentationDetents([.large])
                         .presentationDragIndicator(.visible)
                 }
+            }
+            .alert("Success", isPresented: $viewModel.showSuccessAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(viewModel.alertMessage)
+            }
+            .alert("Error", isPresented: $viewModel.showErrorAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(viewModel.alertMessage)
             }
         }
     }
