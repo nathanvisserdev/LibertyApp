@@ -8,13 +8,27 @@
 import Foundation
 import Combine
 
+enum SignupStep: Int, CaseIterable {
+    case credentials = 0
+    case name = 1
+    case username = 2
+    case demographics = 3
+    case photo = 4
+    case about = 5
+    case phone = 6
+    case complete = 7
+}
+
 @MainActor
 final class SignupViewModel: ObservableObject {
     
     // MARK: - Dependencies
     private let model: SignupModel
     
-    // MARK: - Published
+    // MARK: - Flow State
+    @Published var currentStep: SignupStep = .credentials
+    
+    // MARK: - Form Fields
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     @Published var email: String = ""
@@ -22,18 +36,25 @@ final class SignupViewModel: ObservableObject {
     @Published var password: String = ""
     @Published var confirmPassword: String = ""
     @Published var dateOfBirth: Date = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
-    @Published var gender: String = "" // MALE, FEMALE, OTHER (required)
-    @Published var isPrivate: Bool = true // Default to private account
+    @Published var gender: String = "MALE"
+    @Published var isPrivate: Bool = true
     @Published var phoneNumber: String = ""
     @Published var photo: String = ""
     @Published var about: String = ""
     
+    // Store photo data temporarily until after signup
+    @Published var photoData: Data?
+    
+    // MARK: - UI State
     @Published var isSecure: Bool = true
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var successMessage: String?
     @Published var emailCheckMessage: String?
     @Published var usernameCheckMessage: String?
+    @Published var showWelcome: Bool = false
+    @Published var photoUploadSuccess: Bool = false
+    @Published var photoUploadMessage: String?
     
     // MARK: - Init
     init(model: SignupModel = SignupModel()) {
@@ -61,7 +82,98 @@ final class SignupViewModel: ObservableObject {
         return formatter.string(from: dateOfBirth)
     }
     
+    // MARK: - Navigation
+    func nextStep() {
+        if let next = SignupStep(rawValue: currentStep.rawValue + 1) {
+            currentStep = next
+        }
+    }
+    
+    func skipToComplete() {
+        currentStep = .complete
+        showWelcome = true
+    }
+    
     // MARK: - Actions
+    
+    /// Complete the multi-step signup flow
+    func completeSignup() async {
+        print("🚀 completeSignup: Starting signup process...")
+        print("🚀 completeSignup: Has photo data? \(photoData != nil)")
+        if let photoData = photoData {
+            print("🚀 completeSignup: Photo data size: \(photoData.count) bytes")
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            // Check if we have photo data - it's now required
+            guard photoData != nil else {
+                errorMessage = "Profile photo is required. Please select a photo."
+                isLoading = false
+                return
+            }
+            
+            // Use a placeholder URL for now - we'll upload the real photo after signup
+            let placeholderPhotoURL = "https://placeholder.com/profile-photo-pending"
+            
+            let request = SignupRequest(
+                firstName: firstName.trimmed,
+                lastName: lastName.trimmed,
+                email: email.trimmed,
+                username: username.trimmed.lowercased(),
+                password: password,
+                dateOfBirth: formattedDateOfBirth,
+                gender: gender,
+                isPrivate: isPrivate,
+                phoneNumber: phoneNumber.trimmed.isEmpty ? nil : phoneNumber.trimmed,
+                profilePhoto: placeholderPhotoURL,
+                about: about.trimmed.isEmpty ? nil : about.trimmed
+            )
+            
+            print("📝 completeSignup: Calling signup endpoint...")
+            try await model.signup(request)
+            print("✅ completeSignup: Signup successful!")
+            
+            // Auto-login is now handled by SignupModel (token is saved)
+            print("✅ completeSignup: User is now logged in!")
+            
+            // Now upload the actual photo since we have a token
+            if let photoData = photoData {
+                do {
+                    print("📸 completeSignup: Starting photo upload with \(photoData.count) bytes...")
+                    let photoKey = try await model.uploadPhoto(photoData: photoData)
+                    photo = photoKey
+                    photoUploadSuccess = true
+                    photoUploadMessage = "Profile photo uploaded successfully! ✓"
+                    print("✅ completeSignup: Photo upload completed successfully")
+                } catch {
+                    print("❌ completeSignup: Photo upload failed!")
+                    print("❌ completeSignup: Error: \(error)")
+                    print("❌ completeSignup: Error description: \(error.localizedDescription)")
+                    
+                    if let nsError = error as NSError? {
+                        print("❌ completeSignup: Error domain: \(nsError.domain)")
+                        print("❌ completeSignup: Error code: \(nsError.code)")
+                        print("❌ completeSignup: Error userInfo: \(nsError.userInfo)")
+                    }
+                    
+                    photoUploadSuccess = false
+                    photoUploadMessage = "Photo upload failed, but your account was created. You can upload a photo later."
+                    // Don't fail signup if photo upload fails
+                }
+            }
+            
+            // Successfully signed up - no error
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        
+        isLoading = false
+    }
+    
+    /// Single-step signup (for standalone SignupView)
     func signup() async {
         guard canSubmit else { return }
         isLoading = true
@@ -153,13 +265,17 @@ final class SignupViewModel: ObservableObject {
         phoneNumber = ""
         photo = ""
         about = ""
+        photoData = nil
         dateOfBirth = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
-        gender = ""
+        gender = "MALE"
         isPrivate = true
         errorMessage = nil
         successMessage = nil
         emailCheckMessage = nil
         usernameCheckMessage = nil
+        photoUploadSuccess = false
+        photoUploadMessage = nil
+        currentStep = .credentials
     }
     
     // MARK: - Validation

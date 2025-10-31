@@ -8,17 +8,21 @@
 import SwiftUI
 
 struct ProfileMenuView: View {
+    @StateObject private var viewModel: ProfileMenuViewModel
     @Environment(\.dismiss) var dismiss
-    @State private var showProfile = false
-    @State private var showSettings = false
     let userId: String?
+    
+    init(viewModel: ProfileMenuViewModel, userId: String?) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.userId = userId
+    }
     
     var body: some View {
         NavigationStack {
             List {
                 // Profile option
                 Button {
-                    showProfile = true
+                    viewModel.tapProfile()
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "person")
@@ -48,7 +52,7 @@ struct ProfileMenuView: View {
                 
                 // Settings option
                 Button {
-                    showSettings = true
+                    viewModel.tapSettings()
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "gearshape")
@@ -78,7 +82,7 @@ struct ProfileMenuView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showProfile) {
+            .sheet(isPresented: $viewModel.showProfile) {
                 if let userId = userId {
                     ProfileView(viewModel: ProfileViewModel(), userId: userId)
                         .presentationDetents([.large])
@@ -90,5 +94,5 @@ struct ProfileMenuView: View {
 }
 
 #Preview {
-    ProfileMenuView(userId: "sample-user-id")
+    ProfileMenuCoordinator().start(userId: "sample-user-id")
 }

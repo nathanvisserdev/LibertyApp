@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SignupWelcomeView: View {
-    @ObservedObject var coordinator: SignupFlowCoordinator
+    @ObservedObject var viewModel: SignupViewModel
     @EnvironmentObject var sessionStore: SessionStore
     @Environment(\.dismiss) var dismiss
     
@@ -20,7 +20,7 @@ struct SignupWelcomeView: View {
                 .font(.system(size: 80))
                 .foregroundColor(.green)
             
-            Text("Welcome to Liberty Social \(coordinator.firstName)!")
+            Text("Welcome to Liberty Social \(viewModel.firstName)!")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
@@ -32,18 +32,18 @@ struct SignupWelcomeView: View {
                 .padding(.horizontal)
             
             // Photo upload status message
-            if let photoMessage = coordinator.photoUploadMessage {
+            if let photoMessage = viewModel.photoUploadMessage {
                 HStack(spacing: 8) {
-                    Image(systemName: coordinator.photoUploadSuccess ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                        .foregroundColor(coordinator.photoUploadSuccess ? .green : .orange)
+                    Image(systemName: viewModel.photoUploadSuccess ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                        .foregroundColor(viewModel.photoUploadSuccess ? .green : .orange)
                     Text(photoMessage)
                         .font(.subheadline)
-                        .foregroundColor(coordinator.photoUploadSuccess ? .green : .orange)
+                        .foregroundColor(viewModel.photoUploadSuccess ? .green : .orange)
                 }
                 .padding()
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(coordinator.photoUploadSuccess ? Color.green.opacity(0.1) : Color.orange.opacity(0.1))
+                        .fill(viewModel.photoUploadSuccess ? Color.green.opacity(0.1) : Color.orange.opacity(0.1))
                 )
                 .padding(.horizontal)
             }

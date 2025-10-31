@@ -13,10 +13,15 @@ struct PresignReadResponse: Decodable {
 }
 
 struct MediaModel {
-    static func fetchPresignedReadURL(for mediaKey: String) async throws -> (url: URL, expiresAt: Date) {
-        guard let token = KeychainHelper.read() else {
-            throw NSError(domain: "MediaModel", code: 401, userInfo: [NSLocalizedDescriptionKey: "No auth token"])
-        }
+    
+    private let authSession: AuthSession
+    
+    init(authSession: AuthSession = AuthService.shared) {
+        self.authSession = authSession
+    }
+    
+    func fetchPresignedReadURL(for mediaKey: String) async throws -> (url: URL, expiresAt: Date) {
+        let token = try authSession.getAuthToken()
         
         let body = ["key": mediaKey]
         let data = try JSONSerialization.data(withJSONObject: body)

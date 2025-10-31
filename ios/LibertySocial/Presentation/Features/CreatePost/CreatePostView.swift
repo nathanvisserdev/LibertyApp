@@ -9,35 +9,27 @@ import SwiftUI
 import PhotosUI
 
 struct CreatePostView: View {
-    @StateObject var vm: CreatePostViewModel
-    @State private var showPhotoPicker = false
-    @State private var showAudiencePicker = false
-    @State private var selectedAudience = "Select Audience"
-    var onCancel: () -> Void
-    var onPosted: () -> Void
+    @StateObject private var viewModel: CreatePostViewModel
+    @Environment(\.dismiss) private var dismiss
 
-    init(vm: CreatePostViewModel,
-         onCancel: @escaping () -> Void,
-         onPosted: @escaping () -> Void) {
-        _vm = StateObject(wrappedValue: vm)
-        self.onCancel = onCancel
-        self.onPosted = onPosted
+    init(viewModel: CreatePostViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 12) {
-                // Post to selector
+                // MARK: - Audience Selector
                 HStack(spacing: 6) {
                     Text("Post to")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     
                     Button {
-                        showAudiencePicker = true
+                        viewModel.tapAudiencePicker()
                     } label: {
                         HStack(spacing: 4) {
-                            Text(selectedAudience)
+                            Text(viewModel.selectedAudience)
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             Image(systemName: "chevron.down")
@@ -52,11 +44,12 @@ struct CreatePostView: View {
                 .padding(.vertical, 8)
                 .background(Color(.systemGray6))
                 
+                // MARK: - Text Editor with Photo Preview
                 ZStack(alignment: .topLeading) {
-                    TextEditor(text: $vm.draft.text)
+                    TextEditor(text: $viewModel.text)
                         .frame(minHeight: 160)
                         .padding(8)
-                        .padding(.top, vm.draft.localMedia.isEmpty ? 0 : 128)
+                        .padding(.top, viewModel.localMediaURL != nil ? 128 : 0)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
                                 .strokeBorder(.secondary.opacity(0.3))
@@ -64,7 +57,7 @@ struct CreatePostView: View {
                     
                     VStack(alignment: .leading, spacing: 0) {
                         // Display selected photo if available
-                        if let photoURL = vm.draft.localMedia.first {
+                        if let photoURL = viewModel.localMediaURL {
                             AsyncImage(url: photoURL) { image in
                                 image
                                     .resizable()
@@ -77,46 +70,51 @@ struct CreatePostView: View {
                             .padding(8)
                         }
                         
-                        if vm.draft.text.isEmpty {
-                            Text(vm.draft.localMedia.isEmpty ? "What's on your mind?" : "Add a caption...")
+                        // Placeholder text
+                        if viewModel.text.isEmpty {
+                            Text(viewModel.localMediaURL == nil ? "What's on your mind?" : "Add a caption...")
                                 .foregroundStyle(.secondary)
                                 .padding(.horizontal, 12)
-                                .padding(.top, vm.draft.localMedia.isEmpty ? 8 : 0)
+                                .padding(.top, viewModel.localMediaURL == nil ? 8 : 0)
                                 .allowsHitTesting(false)
                         }
                     }
                 }
 
+                // MARK: - Character Count
                 HStack {
                     Spacer()
-                    Text("\(vm.remainingCharacters)")
+                    Text("\(viewModel.remainingCharacters)")
                         .font(.footnote)
-                        .foregroundStyle(vm.remainingCharacters < 0 ? .red : .secondary)
+                        .foregroundStyle(viewModel.remainingCharacters < 0 ? .red : .secondary)
                 }
 
-                if let msg = vm.errorMessage {
+                // MARK: - Error Message
+                if let msg = viewModel.errorMessage {
                     Text(msg)
                         .font(.footnote)
                         .foregroundStyle(.red)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
+                // MARK: - Photo Picker Button
                 Button(action: {
                     Task {
-                        let success = await vm.requestPresignedUpload()
-                        if success {
-                            showPhotoPicker = true
-                        }
+                        await viewModel.requestPresignedUpload()
                     }
                 }) {
                     Image(systemName: "camera")
                         .font(.title2)
                         .foregroundStyle(.secondary)
                 }
-                .photosPicker(isPresented: $showPhotoPicker, selection: $vm.selectedPhoto, matching: .images)
-                .onChange(of: vm.selectedPhoto) { _, _ in
+                .photosPicker(
+                    isPresented: $viewModel.showPhotoPicker,
+                    selection: $viewModel.selectedPhoto,
+                    matching: .images
+                )
+                .onChange(of: viewModel.selectedPhoto) { _, _ in
                     Task {
-                        await vm.loadSelectedPhoto()
+                        await viewModel.loadSelectedPhoto()
                     }
                 }
 
@@ -126,29 +124,40 @@ struct CreatePostView: View {
             .navigationTitle("Post")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: onCancel)
+                    Button("Cancel") {
+                        dismiss()
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Post") {
                         Task {
-                            let success = await vm.submit()
-                            if success {
-                                onPosted()
-                            }
+                            await viewModel.submit()
                         }
                     }
-                    .disabled((vm.draft.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && vm.draft.localMedia.isEmpty)
-                              || vm.remainingCharacters < 0
-                              || vm.isSubmitting)
+                    .disabled(!viewModel.canSubmit)
                 }
             }
-            .confirmationDialog("Select Audience", isPresented: $showAudiencePicker, titleVisibility: .hidden) {
-                Button("Acquaintances") { selectedAudience = "Acquaintances" }
-                Button("Subnet") { selectedAudience = "Subnet" }
-                Button("Connections") { selectedAudience = "Connections" }
-                Button("Public") { selectedAudience = "Public" }
+            .confirmationDialog(
+                "Select Audience",
+                isPresented: $viewModel.showAudiencePicker,
+                titleVisibility: .hidden
+            ) {
+                Button("Strangers") { viewModel.selectAudience("Strangers") }
+                Button("Acquaintances") { viewModel.selectAudience("Acquaintances") }
+                Button("Subnet") { viewModel.selectAudience("Subnet") }
+                Button("Connections") { viewModel.selectAudience("Connections") }
+                Button("Public") { viewModel.selectAudience("Public") }
                 Button("Cancel", role: .cancel) { }
+            }
+            .onChange(of: viewModel.shouldDismiss) { _, shouldDismiss in
+                if shouldDismiss {
+                    dismiss()
+                }
             }
         }
     }
+}
+
+#Preview {
+    CreatePostView(viewModel: CreatePostViewModel())
 }

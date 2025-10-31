@@ -8,11 +8,16 @@
 import SwiftUI
 
 struct SubnetView: View {
+    @StateObject private var viewModel: SubnetViewModel
     @ObservedObject var subnetListViewModel: SubnetListViewModel
-    @StateObject private var viewModel = SubnetViewModel()
     @State private var showAlert = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
+    
+    init(viewModel: SubnetViewModel, subnetListViewModel: SubnetListViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.subnetListViewModel = subnetListViewModel
+    }
     
     var body: some View {
         NavigationStack {
@@ -43,11 +48,12 @@ struct SubnetView: View {
             }
             .sheet(isPresented: $viewModel.showAddMembersSheet) {
                 if let subnetId = viewModel.subnet?.id {
-                    AddSubnetMembersView(subnetId: subnetId) {
+                    let coordinator = AddSubnetMembersCoordinator(subnetId: subnetId) {
                         Task {
                             await viewModel.fetchMembers()
                         }
                     }
+                    coordinator.start()
                 }
             }
             .onAppear {

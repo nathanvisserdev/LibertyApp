@@ -9,24 +9,30 @@ import Foundation
 import Combine
 
 @MainActor
-class SearchViewModel: ObservableObject {
+final class SearchViewModel: ObservableObject {
+    
     // MARK: - Dependencies
     private let model: SearchModel
     
-    // MARK: - Published
+    // MARK: - Published (Input State)
     @Published var query: String = ""
-    @Published var users: [SearchUser] = []
-    @Published var groups: [SearchGroup] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    
+    // MARK: - Published (UI State)
+    @Published var users: [SearchUser] = []
+    @Published var groups: [SearchGroup] = []
     
     // MARK: - Init
     init(model: SearchModel = SearchModel()) {
         self.model = model
     }
 
-    func searchUsers(query: String) async {
-        guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+    // MARK: - Intents (User Actions)
+    func performSearch() async {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard !trimmedQuery.isEmpty else {
             users = []
             groups = []
             return
@@ -36,7 +42,7 @@ class SearchViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let result = try await model.searchUsers(query: query.trimmingCharacters(in: .whitespacesAndNewlines))
+            let result = try await model.searchUsers(query: trimmedQuery)
             users = result.users
             groups = result.groups
         } catch {

@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct SignupUsernameView: View {
-    @ObservedObject var coordinator: SignupFlowCoordinator
+    @ObservedObject var viewModel: SignupViewModel
     @State private var usernameCheckMessage: String = ""
     @State private var isCheckingUsername: Bool = false
     @State private var usernameIsValid: Bool? = nil
     
     private var canProceed: Bool {
-        !coordinator.username.isEmpty &&
-        coordinator.username.count >= 3 &&
+        !viewModel.username.isEmpty &&
+        viewModel.username.count >= 3 &&
         usernameIsValid == true
     }
     
@@ -37,15 +37,15 @@ struct SignupUsernameView: View {
                     .font(.headline)
                 
                 HStack {
-                    TextField("Pick your unique username", text: $coordinator.username)
+                    TextField("Pick your unique username", text: $viewModel.username)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                        .onChange(of: coordinator.username) { oldValue, newValue in
+                        .onChange(of: viewModel.username) { oldValue, newValue in
                             usernameIsValid = nil
                             usernameCheckMessage = ""
                             Task {
                                 try? await Task.sleep(nanoseconds: 500_000_000)
-                                if newValue == coordinator.username {
+                                if newValue == viewModel.username {
                                     await checkUsernameAvailability()
                                 }
                             }
@@ -69,7 +69,7 @@ struct SignupUsernameView: View {
                         .foregroundColor(usernameIsValid == true ? .green : .red)
                 }
                 
-                if !coordinator.username.isEmpty && coordinator.username.count < 3 {
+                if !viewModel.username.isEmpty && viewModel.username.count < 3 {
                     Text("Username must be at least 3 characters")
                         .font(.caption)
                         .foregroundColor(.gray)
@@ -79,7 +79,7 @@ struct SignupUsernameView: View {
             Spacer()
             
             Button(action: {
-                coordinator.nextStep()
+                viewModel.nextStep()
             }) {
                 Text("Continue")
                     .fontWeight(.semibold)
@@ -96,7 +96,7 @@ struct SignupUsernameView: View {
     }
     
     private func checkUsernameAvailability() async {
-        guard !coordinator.username.isEmpty, coordinator.username.count >= 3 else {
+        guard !viewModel.username.isEmpty, viewModel.username.count >= 3 else {
             usernameCheckMessage = ""
             usernameIsValid = nil
             return
@@ -106,7 +106,7 @@ struct SignupUsernameView: View {
         
         do {
             let model = SignupModel()
-            let isAvailable = try await model.checkAvailability(username: coordinator.username)
+            let isAvailable = try await model.checkAvailability(username: viewModel.username)
             
             if isAvailable {
                 usernameCheckMessage = "Username is available"

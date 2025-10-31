@@ -9,7 +9,7 @@ import SwiftUI
 import Combine
 
 struct SignupPhoneView: View {
-    @ObservedObject var coordinator: SignupFlowCoordinator
+    @ObservedObject var viewModel: SignupViewModel
     @State private var formattedPhone: String = ""
     
     var body: some View {
@@ -40,8 +40,8 @@ struct SignupPhoneView: View {
                         // Limit to 10 digits
                         let limitedDigits = String(digitsOnly.prefix(10))
                         
-                        // Store unformatted number in coordinator
-                        coordinator.phoneNumber = limitedDigits
+                        // Store unformatted number in viewModel
+                        viewModel.phoneNumber = limitedDigits
                         
                         // Format for display
                         formattedPhone = formatPhoneNumber(limitedDigits)
@@ -57,19 +57,19 @@ struct SignupPhoneView: View {
             VStack(spacing: 12) {
                 Button(action: {
                     Task {
-                        await coordinator.completeSignup()
-                        if coordinator.errorMessage == nil {
-                            coordinator.nextStep()
+                        await viewModel.completeSignup()
+                        if viewModel.errorMessage == nil {
+                            viewModel.nextStep()
                         }
                     }
                 }) {
-                    if coordinator.isLoading {
+                    if viewModel.isLoading {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             .frame(maxWidth: .infinity)
                             .padding()
                     } else {
-                        Text(coordinator.phoneNumber.isEmpty ? "Opt-out and finish" : "Finish")
+                        Text(viewModel.phoneNumber.isEmpty ? "Opt-out and finish" : "Finish")
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -78,16 +78,16 @@ struct SignupPhoneView: View {
                 .background(Color.blue)
                 .foregroundColor(.white)
                 .cornerRadius(10)
-                .disabled(coordinator.isLoading)
+                .disabled(viewModel.isLoading)
                 
-                if !coordinator.phoneNumber.isEmpty {
+                if !viewModel.phoneNumber.isEmpty {
                     Button(action: {
-                        coordinator.phoneNumber = ""
+                        viewModel.phoneNumber = ""
                         formattedPhone = ""
                         Task {
-                            await coordinator.completeSignup()
-                            if coordinator.errorMessage == nil {
-                                coordinator.nextStep()
+                            await viewModel.completeSignup()
+                            if viewModel.errorMessage == nil {
+                                viewModel.nextStep()
                             }
                         }
                     }) {
@@ -95,18 +95,18 @@ struct SignupPhoneView: View {
                             .fontWeight(.semibold)
                             .foregroundColor(.blue)
                     }
-                    .disabled(coordinator.isLoading)
+                    .disabled(viewModel.isLoading)
                 }
             }
             .padding(.bottom, 20)
         }
         .padding(.horizontal)
-        .alert("Error", isPresented: .constant(coordinator.errorMessage != nil)) {
+        .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
             Button("OK") {
-                coordinator.errorMessage = nil
+                viewModel.errorMessage = nil
             }
         } message: {
-            if let error = coordinator.errorMessage {
+            if let error = viewModel.errorMessage {
                 Text(error)
             }
         }

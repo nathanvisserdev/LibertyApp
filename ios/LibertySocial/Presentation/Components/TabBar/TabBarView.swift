@@ -8,15 +8,17 @@
 import SwiftUI
 
 struct TabBarView: View {
-    @ObservedObject var viewModel: TabBarViewModel
-    @ObservedObject var coordinator: TabBarCoordinator
-    @ObservedObject var feedViewModel: FeedViewModel
+    @StateObject private var viewModel: TabBarViewModel
+    
+    init(viewModel: TabBarViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
 
     var body: some View {
         HStack {
             Spacer(minLength: 0)
             Button {
-                coordinator.showNotifications()
+                viewModel.tapNotifications()
             } label: {
                 Image(systemName: "bell")
                     .font(.system(size: 28, weight: .regular))
@@ -24,17 +26,17 @@ struct TabBarView: View {
             }
             Spacer(minLength: 0)
             Button {
-                coordinator.showNetwork()
+                viewModel.tapNetworkMenu()
             } label: {
                 ZStack(alignment: .topTrailing) {
-                    Image(systemName: "person.3.sequence")
+                    Image(systemName: "person.3")
                         .font(.system(size: 28, weight: .regular))
                         .foregroundColor(.primary)
                 }
             }
             Spacer(minLength: 0)
             Button {
-                coordinator.showCompose()
+                viewModel.tapCompose()
             } label: {
                 Image(systemName: "square.and.arrow.up")
                     .font(.system(size: 28, weight: .regular))
@@ -43,7 +45,7 @@ struct TabBarView: View {
             .accessibilityLabel("Compose")
             Spacer(minLength: 0)
             Button {
-                coordinator.showSearch()
+                viewModel.tapSearch()
             } label: {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 28, weight: .regular))
@@ -51,7 +53,7 @@ struct TabBarView: View {
             }
             Spacer(minLength: 0)
             Button {
-                coordinator.showCurrentUserProfile()
+                viewModel.tapCurrentUserProfile()
             } label: {
                 Image(systemName: "person")
                     .font(.system(size: 28, weight: .regular))
@@ -65,63 +67,29 @@ struct TabBarView: View {
             // Fetch current user's info when tab bar appears
             await viewModel.fetchCurrentUserInfo()
         }
-        .sheet(
-            isPresented: Binding(
-                get: { coordinator.isShowingCompose },
-                set: { coordinator.isShowingCompose = $0 }
-            )
-        ) {
-            CreatePostView(
-                vm: CreatePostViewModel(),
-                onCancel: { coordinator.hideCompose() },
-                onPosted: { 
-                    coordinator.hideCompose()
-                    Task {
-                        await feedViewModel.refresh()
-                    }
-                }
-            )
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
-        }
-        .sheet(
-            isPresented: Binding(
-                get: { coordinator.isShowingSearch },
-                set: { coordinator.isShowingSearch = $0 }
-            )
-        ) {
-            SearchView(viewModel: SearchViewModel())
+        .sheet(isPresented: $viewModel.isShowingCompose) {
+            CreatePostCoordinator().start()
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
-        .sheet(
-            isPresented: Binding(
-                get: { coordinator.isShowingNotifications },
-                set: { coordinator.isShowingNotifications = $0 }
-            )
-        ) {
-            NotificationsView()
+        .sheet(isPresented: $viewModel.isShowingSearch) {
+            SearchCoordinator().start()
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
-        .sheet(
-            isPresented: Binding(
-                get: { coordinator.isShowingNetwork },
-                set: { coordinator.isShowingNetwork = $0 }
-            )
-        ) {
-            NetworkView()
+        .sheet(isPresented: $viewModel.isShowingNotifications) {
+            NotificationsMenuCoordinator().start()
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
-        .sheet(
-            isPresented: Binding(
-                get: { coordinator.isShowingProfile },
-                set: { coordinator.isShowingProfile = $0 }
-            )
-        ) {
-            if let userId = coordinator.selectedUserId {
-                ProfileMenuView(userId: userId)
+        .sheet(isPresented: $viewModel.isShowingNetworkMenu) {
+            NetworkMenuCoordinator().start()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $viewModel.isShowingProfile) {
+            if let userId = viewModel.selectedUserId {
+                ProfileMenuCoordinator().start(userId: userId)
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }

@@ -9,10 +9,20 @@ import Foundation
 import Combine
 
 @MainActor
-class GroupViewModel: ObservableObject {
+final class GroupViewModel: ObservableObject {
+    
+    // MARK: - Dependencies
+    private let model: GroupModel
+    
+    // MARK: - Published (State)
     @Published var group: UserGroup
     
-    init(group: UserGroup) {
+    // MARK: - Init
+    init(group: UserGroup, model: GroupModel = GroupModel()) {
         self.group = group
+        self.model = model
     }
+    
+    // MARK: - Intents (User Actions)
+    // Future: Add methods for group actions (join, leave, post, etc.)
 }

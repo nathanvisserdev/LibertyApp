@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SignupCredentialsView: View {
-    @ObservedObject var coordinator: SignupFlowCoordinator
+    @ObservedObject var viewModel: SignupViewModel
     @State private var confirmPassword: String = ""
     @State private var emailCheckMessage: String = ""
     @State private var isCheckingEmail: Bool = false
@@ -16,13 +16,13 @@ struct SignupCredentialsView: View {
     @State private var showEmailTakenAlert: Bool = false
     
     private var passwordsMatch: Bool {
-        !coordinator.password.isEmpty && coordinator.password == confirmPassword
+        !viewModel.password.isEmpty && viewModel.password == confirmPassword
     }
     
     private var canProceed: Bool {
-        !coordinator.email.isEmpty &&
-        !coordinator.password.isEmpty &&
-        coordinator.password.count >= 8 &&
+        !viewModel.email.isEmpty &&
+        !viewModel.password.isEmpty &&
+        viewModel.password.count >= 8 &&
         passwordsMatch &&
         emailIsValid == true
     }
@@ -45,16 +45,16 @@ struct SignupCredentialsView: View {
                     .font(.headline)
                 
                 HStack {
-                    TextField("Enter your email", text: $coordinator.email)
+                    TextField("Enter your email", text: $viewModel.email)
                         .textInputAutocapitalization(.never)
                         .keyboardType(.emailAddress)
                         .autocorrectionDisabled()
-                        .onChange(of: coordinator.email) { oldValue, newValue in
+                        .onChange(of: viewModel.email) { oldValue, newValue in
                             emailIsValid = nil
                             emailCheckMessage = ""
                             Task {
                                 try? await Task.sleep(nanoseconds: 500_000_000)
-                                if newValue == coordinator.email {
+                                if newValue == viewModel.email {
                                     await checkEmailAvailability()
                                 }
                             }
@@ -89,14 +89,14 @@ struct SignupCredentialsView: View {
                 Text("Password")
                     .font(.headline)
                 
-                SecureField("At least 8 characters", text: $coordinator.password)
+                SecureField("At least 8 characters", text: $viewModel.password)
                     .textContentType(.newPassword)
                     .autocorrectionDisabled()
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
                 
-                if !coordinator.password.isEmpty && coordinator.password.count < 8 {
+                if !viewModel.password.isEmpty && viewModel.password.count < 8 {
                     Text("Password must be at least 8 characters")
                         .font(.caption)
                         .foregroundColor(.red)
@@ -112,7 +112,7 @@ struct SignupCredentialsView: View {
                         .textContentType(.newPassword)
                         .autocorrectionDisabled()
                     
-                    if !coordinator.password.isEmpty && !confirmPassword.isEmpty {
+                    if !viewModel.password.isEmpty && !confirmPassword.isEmpty {
                         Image(systemName: passwordsMatch ? "checkmark.circle.fill" : "xmark.circle.fill")
                             .foregroundColor(passwordsMatch ? .green : .red)
                     }
@@ -142,7 +142,7 @@ struct SignupCredentialsView: View {
                     return
                 }
                 
-                coordinator.nextStep()
+                viewModel.nextStep()
             }) {
                 Text("Continue")
                     .fontWeight(.semibold)
@@ -164,7 +164,7 @@ struct SignupCredentialsView: View {
     }
     
     private func checkEmailAvailability() async {
-        let trimmedEmail = coordinator.email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let trimmedEmail = viewModel.email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         
         guard !trimmedEmail.isEmpty else {
             emailCheckMessage = ""

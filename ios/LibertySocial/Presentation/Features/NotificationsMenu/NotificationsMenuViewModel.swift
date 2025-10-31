@@ -1,5 +1,5 @@
 //
-//  NotificationsViewModel.swift
+//  NotificationsMenuViewModel.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-24.
@@ -9,16 +9,21 @@ import Foundation
 import Combine
 
 @MainActor
-class NotificationsViewModel: ObservableObject {
+final class NotificationsMenuViewModel: ObservableObject {
+    // MARK: - Dependencies
+    private let model: NotificationsMenuModel
+    
+    // MARK: - Published (State)
     @Published var notifications: [NotificationItem] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    private let model: NotificationsModel
-    
-    init(model: NotificationsModel = NotificationsModel()) {
+    // MARK: - Init
+    init(model: NotificationsMenuModel = NotificationsMenuModel()) {
         self.model = model
     }
+    
+    // MARK: - Intents (User Actions)
     
     func loadNotifications() async {
         isLoading = true

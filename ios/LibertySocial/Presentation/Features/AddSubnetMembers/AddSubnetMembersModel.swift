@@ -8,6 +8,13 @@
 import Foundation
 
 struct AddSubnetMembersModel {
+    
+    private let authSession: AuthSession
+    
+    init(authSession: AuthSession = AuthService.shared) {
+        self.authSession = authSession
+    }
+    
     func fetchEligibleConnections(subnetId: String) async throws -> [Connection] {
         guard let url = URL(string: "\(AppConfig.baseURL)/me/subnets/\(subnetId)/eligible-connections") else {
             throw URLError(.badURL)
@@ -16,9 +23,8 @@ struct AddSubnetMembersModel {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        if let token = KeychainHelper.read() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try authSession.getAuthToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
@@ -48,9 +54,8 @@ struct AddSubnetMembersModel {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        if let token = KeychainHelper.read() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try authSession.getAuthToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let body: [String: Any] = ["userIds": userIds]
         guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {

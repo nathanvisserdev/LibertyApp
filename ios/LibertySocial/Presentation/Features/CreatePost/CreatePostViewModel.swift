@@ -1,5 +1,5 @@
 //
-//  CreatePostVM.swift
+//  CreatePostViewModel.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-12.
@@ -12,23 +12,56 @@ import PhotosUI
 
 @MainActor
 final class CreatePostViewModel: ObservableObject {
-    struct Draft {
-        var text: String = ""
-        var localMedia: [URL] = []   // temp file URLs from picker
-        var imageWidth: CGFloat?
-        var imageHeight: CGFloat?
-    }
     
-    @Published var draft = Draft()
+    // MARK: - Dependencies
+    private let model: CreatePostModel
+    
+    // MARK: - Published (Input State)
     @Published var text: String = ""
+    @Published var selectedPhoto: PhotosPickerItem?
+    @Published var selectedAudience: String = "Select Audience"
+    
+    // MARK: - Published (UI State)
+    @Published var localMediaURL: URL?
+    @Published var imageWidth: CGFloat?
+    @Published var imageHeight: CGFloat?
     @Published var isSubmitting: Bool = false
     @Published var errorMessage: String?
-    @Published var presignedUploadData: PresignedUploadResponse?
-    @Published var selectedPhoto: PhotosPickerItem?
+    @Published var showPhotoPicker: Bool = false
+    @Published var showAudiencePicker: Bool = false
+    @Published var shouldDismiss: Bool = false
+    
+    // MARK: - Private State
+    private var presignedUploadData: PresignedUploadResponse?
+    
+    // MARK: - Constants
     let maxCharacters = 1000
-
+    
+    // MARK: - Init
+    init(model: CreatePostModel = CreatePostModel()) {
+        self.model = model
+    }
+    
+    // MARK: - Computed
     var remainingCharacters: Int {
-        maxCharacters - draft.text.count
+        maxCharacters - text.count
+    }
+    
+    var canSubmit: Bool {
+        let hasContent = !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let hasMedia = localMediaURL != nil
+        return (hasContent || hasMedia) && remainingCharacters >= 0 && !isSubmitting
+    }
+    
+    // MARK: - Intents (User Actions)
+    func requestPresignedUpload() async {
+        errorMessage = nil
+        do {
+            presignedUploadData = try await model.requestPresignedUpload()
+            showPhotoPicker = true
+        } catch {
+            errorMessage = "Failed to prepare upload: \(error.localizedDescription)"
+        }
     }
     
     func loadSelectedPhoto() async {
@@ -38,21 +71,21 @@ final class CreatePostViewModel: ObservableObject {
             if let data = try await selectedPhoto.loadTransferable(type: Data.self) {
                 // Get image dimensions
                 if let uiImage = UIImage(data: data) {
-                    draft.imageWidth = uiImage.size.width
-                    draft.imageHeight = uiImage.size.height
+                    imageWidth = uiImage.size.width
+                    imageHeight = uiImage.size.height
                 }
                 
-                // Save to temporary file
+                // Save to temporary file for preview
                 let tempURL = FileManager.default.temporaryDirectory
                     .appendingPathComponent(UUID().uuidString)
                     .appendingPathExtension("jpg")
                 
                 try data.write(to: tempURL)
-                draft.localMedia = [tempURL]
+                localMediaURL = tempURL
                 
                 // Upload the photo to R2 using the presigned URL
                 if let uploadData = presignedUploadData {
-                    try await uploadPhoto(data: data, uploadData: uploadData)
+                    try await model.uploadPhoto(data: data, uploadData: uploadData)
                 }
             }
         } catch {
@@ -60,93 +93,53 @@ final class CreatePostViewModel: ObservableObject {
         }
     }
     
-    private func uploadPhoto(data: Data, uploadData: PresignedUploadResponse) async throws {
-        guard let url = URL(string: uploadData.url) else {
-            throw NSError(domain: "CreatePostViewModel", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid upload URL"])
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = uploadData.method
-        
-        // Set headers from presigned response
-        for (key, value) in uploadData.headersOrFields {
-            request.setValue(value, forHTTPHeaderField: key)
-        }
-        
-        request.httpBody = data
-        
-        let (_, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-            throw NSError(domain: "CreatePostViewModel", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to upload photo"])
-        }
-        
-        print("📸 CreatePostViewModel: Successfully uploaded photo to R2")
-    }
-
-    func requestPresignedUpload() async -> Bool {
-        errorMessage = nil
-        do {
-            presignedUploadData = try await PostsAPI.getPresignedUploadURL(contentType: "image/jpeg")
-            return true
-        } catch {
-            errorMessage = "Failed to prepare upload: \(error.localizedDescription)"
-            return false
-        }
-    }
-
-    func submit() async -> Bool {
-        guard !isSubmitting else { return false }
+    func submit() async {
+        guard canSubmit else { return }
         isSubmitting = true
         errorMessage = nil
         
         do {
-            let trimmed = draft.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
             let mediaKey = presignedUploadData?.key
             
-            // Validate that we have either content or media
-            guard !trimmed.isEmpty || mediaKey != nil else {
-                throw ValidationError.empty
-            }
-            
-            // Validate content length if provided
-            if !trimmed.isEmpty && trimmed.count > maxCharacters {
-                throw ValidationError.tooLong
-            }
-            
             // Create the post with content and/or media
-            _ = try await PostsAPI.createPost(
+            _ = try await model.createPost(
                 content: trimmed.isEmpty ? nil : trimmed,
                 media: mediaKey,
-                imageWidth: draft.imageWidth,
-                imageHeight: draft.imageHeight
+                imageWidth: imageWidth,
+                imageHeight: imageHeight
             )
             
-            // Clear the form on success
-            draft = Draft()
-            text = ""
-            presignedUploadData = nil
-            selectedPhoto = nil
+            // Clear form on success
+            clearForm()
             
-            isSubmitting = false
-            return true
+            // Signal to dismiss the view
+            shouldDismiss = true
         } catch {
             errorMessage = error.localizedDescription
-            isSubmitting = false
-            return false
         }
+        
+        isSubmitting = false
     }
     
-    enum ValidationError: LocalizedError {
-        case empty
-        case tooLong
-        
-        var errorDescription: String? {
-            switch self {
-            case .empty: return "Post cannot be empty."
-            case .tooLong: return "Post must be 1000 characters or less."
-            }
-        }
+    func tapAudiencePicker() {
+        showAudiencePicker = true
+    }
+    
+    func selectAudience(_ audience: String) {
+        selectedAudience = audience
+        showAudiencePicker = false
+    }
+    
+    // MARK: - Private Helpers
+    private func clearForm() {
+        text = ""
+        localMediaURL = nil
+        imageWidth = nil
+        imageHeight = nil
+        presignedUploadData = nil
+        selectedPhoto = nil
+        selectedAudience = "Select Audience"
     }
 }
 

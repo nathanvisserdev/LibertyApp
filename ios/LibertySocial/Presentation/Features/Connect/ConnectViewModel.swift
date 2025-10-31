@@ -12,6 +12,7 @@ import Combine
 class ConnectViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: ConnectModel
+    private let userId: String
     
     // MARK: - Published
     @Published var selectedType: String? = nil
@@ -21,8 +22,9 @@ class ConnectViewModel: ObservableObject {
     @Published var requestSent = false
     
     // MARK: - Init
-    init(model: ConnectModel = ConnectModel()) {
+    init(model: ConnectModel = ConnectModel(), userId: String) {
         self.model = model
+        self.userId = userId
     }
     
     func sendConnectionRequest(userId: String, type: String) async {

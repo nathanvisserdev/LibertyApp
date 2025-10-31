@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct SignupNameView: View {
-    @ObservedObject var coordinator: SignupFlowCoordinator
+    @ObservedObject var viewModel: SignupViewModel
     
     private var canProceed: Bool {
-        !coordinator.firstName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !coordinator.lastName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        !viewModel.firstName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !viewModel.lastName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     
     var body: some View {
@@ -32,7 +32,7 @@ struct SignupNameView: View {
                 Text("First Name")
                     .font(.headline)
                 
-                TextField("Enter your first name", text: $coordinator.firstName)
+                TextField("Enter your first name", text: $viewModel.firstName)
                     .autocorrectionDisabled()
                     .padding()
                     .background(Color(.systemGray6))
@@ -43,7 +43,7 @@ struct SignupNameView: View {
                 Text("Last Name")
                     .font(.headline)
                 
-                TextField("Enter your last name", text: $coordinator.lastName)
+                TextField("Enter your last name", text: $viewModel.lastName)
                     .autocorrectionDisabled()
                     .padding()
                     .background(Color(.systemGray6))
@@ -53,7 +53,7 @@ struct SignupNameView: View {
             Spacer()
             
             Button(action: {
-                coordinator.nextStep()
+                viewModel.nextStep()
             }) {
                 Text("Continue")
                     .fontWeight(.semibold)

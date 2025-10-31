@@ -8,10 +8,14 @@
 import SwiftUI
 
 struct SearchView: View {
-    @ObservedObject var viewModel: SearchViewModel
+    @StateObject private var viewModel: SearchViewModel
     @Environment(\.dismiss) var dismiss
     @FocusState private var isTextFieldFocused: Bool
     @State private var selectedUserId: String?
+    
+    init(viewModel: SearchViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
 
     var body: some View {
         NavigationView {
@@ -27,7 +31,7 @@ struct SearchView: View {
                 
                 Button(action: {
                     Task {
-                        await viewModel.searchUsers(query: viewModel.query)
+                        await viewModel.performSearch()
                     }
                     isTextFieldFocused = false
                 }) {

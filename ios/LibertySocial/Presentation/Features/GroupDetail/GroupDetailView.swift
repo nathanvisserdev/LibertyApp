@@ -11,8 +11,8 @@ struct GroupDetailView: View {
     @StateObject private var viewModel: GroupDetailViewModel
     @Environment(\.dismiss) var dismiss
     
-    init(group: UserGroup) {
-        _viewModel = StateObject(wrappedValue: GroupDetailViewModel(groupId: group.id))
+    init(viewModel: GroupDetailViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
     
     var body: some View {
@@ -302,7 +302,7 @@ struct MemberRow: View {
 }
 
 #Preview {
-    GroupDetailView(group: UserGroup(
+    let group = UserGroup(
         id: "1",
         name: "Sample Group",
         description: "This is a sample group description",
@@ -317,5 +317,8 @@ struct MemberRow: View {
         ),
         displayLabel: "Sample Group public assembly room",
         joinedAt: Date()
-    ))
+    )
+    let model = GroupDetailModel()
+    let viewModel = GroupDetailViewModel(groupId: group.id, model: model)
+    return GroupDetailView(viewModel: viewModel)
 }

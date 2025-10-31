@@ -14,13 +14,18 @@ final class LoginViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: LoginModel
     
-    // MARK: - Published
+    // MARK: - Published (Input State)
     @Published var email: String = ""
     @Published var password: String = ""
     @Published var isSecure: Bool = true
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-    @Published var me: [String: Any]?    // now a dictionary instead of MeResponse
+    @Published var me: [String: Any]?
+    
+    // MARK: - Published (UI State for Alerts and Navigation)
+    @Published var showSignup: Bool = false
+    @Published var showTestUsersAlert: Bool = false
+    @Published var testUsersMessage: String?
     
     // MARK: - Init
     init(model: LoginModel = LoginModel()) {
@@ -32,15 +37,15 @@ final class LoginViewModel: ObservableObject {
         isValidEmail(email) && password.count >= 6 && !isLoading
     }
 
-    // MARK: - Actions
+    // MARK: - Intents (User Actions)
     func login() async {
         guard canSubmit else { return }
         isLoading = true
         errorMessage = nil
         do {
             try await model.login(email: email.trimmed, password: password)
-            // Optionally fetch current user after login
-            me = try await AuthService.shared.fetchCurrentUser()
+            // Fetch current user after login
+            me = try await model.fetchCurrentUser()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -48,12 +53,26 @@ final class LoginViewModel: ObservableObject {
     }
 
     func logout() {
-        AuthService.shared.deleteToken()
+        model.deleteToken()
         me = nil
     }
 
     func toggleSecure() {
         isSecure.toggle()
+    }
+    
+    func tapCreateAccount() {
+        showSignup = true
+    }
+    
+    func showTestUsers(message: String) {
+        testUsersMessage = message
+        showTestUsersAlert = true
+    }
+    
+    func dismissTestUsersAlert() {
+        showTestUsersAlert = false
+        testUsersMessage = nil
     }
 
     // MARK: - Validation

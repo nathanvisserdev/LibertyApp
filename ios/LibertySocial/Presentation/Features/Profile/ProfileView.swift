@@ -101,7 +101,8 @@ struct ProfileView: View {
                         }
                         .padding(.horizontal, 20)
                         .sheet(isPresented: $showConnectionTypeSelection) {
-                            ConnectView(firstName: profile.firstName, userId: userId, isPrivate: profile.isPrivate)
+                            let coordinator = ConnectCoordinator(firstName: profile.firstName, userId: userId, isPrivate: profile.isPrivate)
+                            coordinator.start()
                         }
                     }
                     

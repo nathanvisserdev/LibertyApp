@@ -9,7 +9,7 @@ import SwiftUI
 import PhotosUI
 
 struct SignupPhotoView: View {
-    @ObservedObject var coordinator: SignupFlowCoordinator
+    @ObservedObject var viewModel: SignupViewModel
     @State private var selectedItem: PhotosPickerItem?
     @State private var selectedImageData: Data?
     
@@ -73,9 +73,9 @@ struct SignupPhotoView: View {
             
             VStack(spacing: 12) {
                 Button(action: {
-                    // Store the photo data in the coordinator for upload after signup
-                    coordinator.photoData = selectedImageData
-                    coordinator.nextStep()
+                    // Store the photo data in the viewModel for upload after signup
+                    viewModel.photoData = selectedImageData
+                    viewModel.nextStep()
                 }) {
                     Text("Continue")
                         .fontWeight(.semibold)

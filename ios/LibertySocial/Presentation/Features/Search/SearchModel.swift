@@ -34,7 +34,7 @@ struct SearchModel {
         self.authService = authService
     }
     
-    /// Search users - AuthService handles token
+    /// Search for users and groups
     func searchUsers(query: String) async throws -> SearchResponse {
         return try await authService.searchUsers(query: query)
     }

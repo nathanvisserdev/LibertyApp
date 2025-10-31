@@ -48,7 +48,14 @@ struct SubnetChild: Codable, Identifiable {
 
 // MARK: - API
 struct SubnetListModel {
-    static func fetchSubnets() async throws -> [Subnet] {
+    
+    private let authSession: AuthSession
+    
+    init(authSession: AuthSession = AuthService.shared) {
+        self.authSession = authSession
+    }
+    
+    func fetchSubnets() async throws -> [Subnet] {
         guard let url = URL(string: "\(AppConfig.baseURL)/subnets") else {
             throw URLError(.badURL)
         }
@@ -56,9 +63,8 @@ struct SubnetListModel {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        if let token = KeychainHelper.read() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try authSession.getAuthToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
         

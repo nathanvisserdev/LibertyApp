@@ -8,8 +8,12 @@
 import SwiftUI
 
 struct MainView: View {
-    @StateObject private var vm = MainViewModel()
+    @StateObject private var vm: MainViewModel
     @EnvironmentObject private var session: SessionStore
+    
+    init(viewModel: MainViewModel) {
+        _vm = StateObject(wrappedValue: viewModel)
+    }
 
     var body: some View {
         NavigationStack {
@@ -44,7 +48,9 @@ struct MainView: View {
 }
 
 #Preview {
-    MainView()
+    let model = MainModel()
+    let viewModel = MainViewModel(model: model)
+    return MainView(viewModel: viewModel)
         .environmentObject(SessionStore())
 }
 

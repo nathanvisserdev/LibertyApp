@@ -7,44 +7,18 @@
 
 import SwiftUI
 
-struct RoundTableAdmin: Identifiable {
-    let id: String
-    let userId: String
-    let firstName: String
-    let lastName: String
-    let username: String
-    let profilePhoto: String?
-    var isModerator: Bool
-    
-    init(from connection: Connection, isModerator: Bool = true) {
-        self.id = connection.id
-        self.userId = connection.userId
-        self.firstName = connection.firstName
-        self.lastName = connection.lastName
-        self.username = connection.username
-        self.profilePhoto = connection.profilePhoto
-        self.isModerator = isModerator
-    }
-}
-
 struct SelectRoundTableAdminsView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var viewModel: CreateGroupViewModel
-    @State private var connections: [Connection] = []
-    @State private var isLoading: Bool = false
-    @State private var errorMessage: String?
     @State private var showSuccessAlert = false
     @State private var successMessage = ""
     
-    private let authService: AuthServiceProtocol
-    
-    init(viewModel: CreateGroupViewModel, authService: AuthServiceProtocol = AuthService.shared) {
+    init(viewModel: CreateGroupViewModel) {
         self.viewModel = viewModel
-        self.authService = authService
     }
     
     var availableConnections: [Connection] {
-        connections.filter { connection in
+        viewModel.connections.filter { connection in
             !viewModel.selectedAdmins.contains(where: { $0.userId == connection.userId })
         }
     }
@@ -52,7 +26,7 @@ struct SelectRoundTableAdminsView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                if isLoading {
+                if viewModel.isLoadingConnections {
                     ProgressView("Loading connections...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
@@ -74,7 +48,7 @@ struct SelectRoundTableAdminsView: View {
                                 .font(.callout)
                                 .foregroundStyle(.secondary)
                             
-                            ForEach(connections.filter { connection in
+                            ForEach(viewModel.connections.filter { connection in
                                 viewModel.selectedAdmins.contains(where: { $0.userId == connection.userId })
                             }) { connection in
                                 if let admin = viewModel.selectedAdmins.first(where: { $0.userId == connection.userId }) {
@@ -231,7 +205,7 @@ struct SelectRoundTableAdminsView: View {
                 }
             }
             .task {
-                await loadConnections()
+                await viewModel.fetchConnections()
             }
             .alert("Success", isPresented: $showSuccessAlert) {
                 Button("OK", role: .cancel) {
@@ -240,19 +214,6 @@ struct SelectRoundTableAdminsView: View {
             } message: {
                 Text(successMessage)
             }
-        }
-    }
-    
-    private func loadConnections() async {
-        isLoading = true
-        errorMessage = nil
-        
-        do {
-            connections = try await authService.fetchConnections()
-            isLoading = false
-        } catch {
-            errorMessage = "Failed to load connections: \(error.localizedDescription)"
-            isLoading = false
         }
     }
     
@@ -285,17 +246,9 @@ struct SelectRoundTableAdminsView: View {
     }
 }
 
-enum ElectionCycle: String, CaseIterable {
-    case threeMonths = "THREE_MONTHS"
-    case sixMonths = "SIX_MONTHS"
-    case oneYear = "ONE_YEAR"
-    case twoYears = "TWO_YEARS"
-    case fourYears = "FOUR_YEARS"
-}
-
 // Mock preview
 #Preview {
-    let viewModel = CreateGroupViewModel(authService: AuthService.shared)
+    let viewModel = CreateGroupViewModel()
     viewModel.name = "Test Group"
     viewModel.selectedGroupPrivacy = .publicGroup
     

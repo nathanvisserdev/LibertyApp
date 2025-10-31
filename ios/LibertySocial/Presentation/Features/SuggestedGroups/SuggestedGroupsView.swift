@@ -1,5 +1,5 @@
 //
-//  GroupsWithMutualsView.swift
+//  SuggestedGroupsView.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-27.
@@ -7,10 +7,14 @@
 
 import SwiftUI
 
-struct GroupsWithMutualsView: View {
+struct SuggestedGroupsView: View {
     @Environment(\.dismiss) var dismiss
-    @StateObject private var viewModel = GroupsWithMutualsViewModel()
+    @StateObject private var viewModel: SuggestedGroupsViewModel
     @State private var selectedGroup: UserGroup?
+    
+    init(viewModel: SuggestedGroupsViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
     
     var body: some View {
         NavigationStack {
@@ -78,7 +82,7 @@ struct GroupsWithMutualsView: View {
                     .listStyle(.insetGrouped)
                 }
             }
-            .navigationTitle("Groups with mutuals")
+            .navigationTitle("Suggested groups")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -91,7 +95,8 @@ struct GroupsWithMutualsView: View {
                 await viewModel.fetchJoinableGroups()
             }
             .sheet(item: $selectedGroup) { group in
-                GroupDetailView(group: group)
+                let coordinator = GroupDetailCoordinator(group: group)
+                coordinator.start()
             }
         }
     }
@@ -151,5 +156,5 @@ struct GroupRow: View {
 }
 
 #Preview {
-    GroupsWithMutualsView()
+    SuggestedGroupsView(viewModel: SuggestedGroupsViewModel())
 }

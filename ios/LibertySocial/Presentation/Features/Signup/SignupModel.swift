@@ -17,9 +17,11 @@ struct AvailabilityResponse: Decodable {
 }
 
 struct SignupModel {
+    private let authSession: AuthSession
     private let authService: AuthServiceProtocol
     
-    init(authService: AuthServiceProtocol = AuthService.shared) {
+    init(authSession: AuthSession = AuthService.shared, authService: AuthServiceProtocol = AuthService.shared) {
+        self.authSession = authSession
         self.authService = authService
     }
     
@@ -49,6 +51,78 @@ struct SignupModel {
     /// Signup user - AuthService handles token storage
     func signup(_ request: SignupRequest) async throws {
         _ = try await authService.signup(request)
+    }
+    
+    /// Upload profile photo - must be called after signup (requires auth token)
+    func uploadPhoto(photoData: Data) async throws -> String {
+        // Get presigned URL
+        let presignResponse = try await getPresignedURL(contentType: "image/jpeg")
+        
+        // Upload to R2
+        try await uploadToR2(imageData: photoData, presignResponse: presignResponse)
+        
+        // Update user's photo URL in database
+        let photoKey = try await updateUserPhoto(key: presignResponse.key)
+        
+        return photoKey
+    }
+    
+    // MARK: - Private Photo Upload Methods
+    
+    private func getPresignedURL(contentType: String) async throws -> PresignResponse {
+        let token = try authSession.getAuthToken()
+        
+        let body = ["contentType": contentType]
+        let data = try JSONSerialization.data(withJSONObject: body)
+        
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/uploads/presign"))
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.httpBody = data
+        
+        let (responseData, response) = try await URLSession.shared.data(for: req)
+        
+        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "SignupModel", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to get presigned URL"])
+        }
+        
+        return try JSONDecoder().decode(PresignResponse.self, from: responseData)
+    }
+    
+    private func uploadToR2(imageData: Data, presignResponse: PresignResponse) async throws {
+        var req = URLRequest(url: URL(string: presignResponse.url)!)
+        req.httpMethod = "PUT"
+        req.setValue(presignResponse.headersOrFields["Content-Type"], forHTTPHeaderField: "Content-Type")
+        req.httpBody = imageData
+        
+        let (_, response) = try await URLSession.shared.data(for: req)
+        
+        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "SignupModel", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to upload photo"])
+        }
+    }
+    
+    private func updateUserPhoto(key: String) async throws -> String {
+        let token = try authSession.getAuthToken()
+        
+        let body = ["key": key]
+        let data = try JSONSerialization.data(withJSONObject: body)
+        
+        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/users/me/photo"))
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.httpBody = data
+        
+        let (responseData, response) = try await URLSession.shared.data(for: req)
+        
+        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "SignupModel", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to update photo"])
+        }
+        
+        let photoResponse = try JSONDecoder().decode(PhotoUpdateResponse.self, from: responseData)
+        return photoResponse.profilePhoto
     }
 }
 
@@ -84,4 +158,15 @@ struct SignupResponse: Decodable {
     let id: String
     let email: String
     let accessToken: String
+}
+
+struct PresignResponse: Decodable {
+    let url: String
+    let method: String
+    let headersOrFields: [String: String]
+    let key: String
+}
+
+struct PhotoUpdateResponse: Decodable {
+    let profilePhoto: String
 }

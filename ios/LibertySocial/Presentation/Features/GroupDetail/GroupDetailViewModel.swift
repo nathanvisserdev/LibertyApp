@@ -17,9 +17,11 @@ final class GroupDetailViewModel: ObservableObject {
     @Published var joinSuccessMessage: String?
     
     private let groupId: String
+    private let model: GroupDetailModel
     
-    init(groupId: String) {
+    init(groupId: String, model: GroupDetailModel = GroupDetailModel()) {
         self.groupId = groupId
+        self.model = model
     }
     
     func fetchGroupDetail() async {
@@ -27,7 +29,7 @@ final class GroupDetailViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let detail = try await GroupDetailModel.fetchGroupDetail(groupId: groupId)
+            let detail = try await model.fetchGroupDetail(groupId: groupId)
             groupDetail = detail
         } catch {
             errorMessage = error.localizedDescription
@@ -43,7 +45,7 @@ final class GroupDetailViewModel: ObservableObject {
         joinSuccessMessage = nil
         
         do {
-            try await GroupDetailModel.joinGroup(groupId: groupId)
+            try await model.joinGroup(groupId: groupId)
             joinSuccessMessage = "Join request sent."
             
             // Refresh group details to update membership status

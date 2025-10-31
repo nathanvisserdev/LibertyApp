@@ -1,5 +1,5 @@
 //
-//  NotificationsView.swift
+//  NotificationsMenuView.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-24.
@@ -7,8 +7,12 @@
 
 import SwiftUI
 
-struct NotificationsView: View {
-    @StateObject private var viewModel = NotificationsViewModel()
+struct NotificationsMenuView: View {
+    @StateObject private var viewModel: NotificationsMenuViewModel
+    
+    init(viewModel: NotificationsMenuViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
     
     var body: some View {
         NavigationStack {
@@ -236,5 +240,5 @@ struct NotificationRow: View {
 }
 
 #Preview {
-    NotificationsView()
+    NotificationsMenuView(viewModel: NotificationsMenuViewModel())
 }

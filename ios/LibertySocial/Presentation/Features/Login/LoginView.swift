@@ -6,14 +6,14 @@
 //
 
 import SwiftUI
-import Combine
 
 struct LoginView: View {
-    @StateObject private var vm = LoginViewModel()
+    @StateObject private var viewModel: LoginViewModel
     @EnvironmentObject private var session: SessionStore
-    @State private var showSignup = false
-    @State private var testUsersMessage: String?
-    @State private var showTestUsersAlert = false
+    
+    init(viewModel: LoginViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
 
     var body: some View {
         NavigationStack {
@@ -39,7 +39,7 @@ struct LoginView: View {
 
                 // MARK: - Input Fields
                 VStack(spacing: 14) {
-                    TextField("you@example.com", text: $vm.email)
+                    TextField("you@example.com", text: $viewModel.email)
                         .textContentType(.username)
                         .textInputAutocapitalization(.never)
                         .keyboardType(.emailAddress)
@@ -50,16 +50,16 @@ struct LoginView: View {
 
                     HStack {
                         Group {
-                            if vm.isSecure {
-                                SecureField("Password", text: $vm.password)
+                            if viewModel.isSecure {
+                                SecureField("Password", text: $viewModel.password)
                                     .textContentType(.password)
                             } else {
-                                TextField("Password", text: $vm.password)
+                                TextField("Password", text: $viewModel.password)
                                     .textContentType(.password)
                             }
                         }
-                        Button { withAnimation(.snappy) { vm.toggleSecure() } } label: {
-                            Image(systemName: vm.isSecure ? "eye" : "eye.slash")
+                        Button { withAnimation(.snappy) { viewModel.toggleSecure() } } label: {
+                            Image(systemName: viewModel.isSecure ? "eye" : "eye.slash")
                                 .imageScale(.medium)
                         }
                     }
@@ -77,18 +77,18 @@ struct LoginView: View {
                 // MARK: - Sign-in Button
                 Button {
                     Task {
-                        await vm.login()
-                        if vm.me != nil {
+                        await viewModel.login()
+                        if viewModel.me != nil {
                             await session.refresh()
                         }
                     }
                 } label: {
-                    if vm.isLoading { ProgressView().controlSize(.small) }
+                    if viewModel.isLoading { ProgressView().controlSize(.small) }
                     else { Text("Sign in").font(.headline) }
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-                .disabled(!vm.canSubmit)
+                .disabled(!viewModel.canSubmit)
                 .frame(maxWidth: .infinity)
 
                 // MARK: - Or Divider
@@ -98,7 +98,7 @@ struct LoginView: View {
 
                 // MARK: - Create Account Button
                 Button {
-                    showSignup = true
+                    viewModel.tapCreateAccount()
                 } label: {
                     Text("Create account").font(.headline)
                 }
@@ -112,8 +112,7 @@ struct LoginView: View {
                 Button {
                     Task {
                         let result = await CreateTestUsers.createAllUsers()
-                        testUsersMessage = result.message
-                        showTestUsersAlert = true
+                        viewModel.showTestUsers(message: result.message)
                     }
                 } label: {
                     Text("Create Test Users").font(.caption)
@@ -122,17 +121,20 @@ struct LoginView: View {
                 .controlSize(.small)
             }
             .padding(24)
-            .alert(isPresented: .constant(vm.errorMessage != nil)) {
+            .alert(isPresented: .constant(viewModel.errorMessage != nil)) {
                 Alert(
                     title: Text("Sign-in"),
-                    message: Text(vm.errorMessage ?? ""),
-                    dismissButton: .default(Text("OK")) { vm.errorMessage = nil }
+                    message: Text(viewModel.errorMessage ?? ""),
+                    dismissButton: .default(Text("OK")) { viewModel.errorMessage = nil }
                 )
             }
-            .alert("Test Users", isPresented: $showTestUsersAlert) {
+            .alert(
+                "Test Users",
+                isPresented: $viewModel.showTestUsersAlert
+            ) {
                 Button("OK", role: .cancel) { }
             } message: {
-                Text(testUsersMessage ?? "")
+                Text(viewModel.testUsersMessage ?? "")
             }
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
@@ -140,8 +142,8 @@ struct LoginView: View {
                     Button("Done") { hideKeyboard() }
                 }
             }
-            .sheet(isPresented: $showSignup) {
-                SignupFlowView()
+            .sheet(isPresented: $viewModel.showSignup) {
+                SignupCoordinator().start()
             }
         }
     }
@@ -161,6 +163,6 @@ extension View {
 #endif
 
 #Preview {
-    LoginView().tint(.blue)
+    LoginView(viewModel: LoginViewModel()).tint(.blue)
 }
 

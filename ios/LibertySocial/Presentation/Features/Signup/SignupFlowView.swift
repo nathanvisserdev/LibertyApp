@@ -8,31 +8,35 @@
 import SwiftUI
 
 struct SignupFlowView: View {
-    @StateObject private var coordinator = SignupFlowCoordinator()
+    @StateObject private var viewModel: SignupViewModel
     @Environment(\.dismiss) var dismiss
+    
+    init(viewModel: SignupViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
     
     var body: some View {
         NavigationView {
             ZStack {
                 // Step views
                 Group {
-                    switch coordinator.currentStep {
+                    switch viewModel.currentStep {
                     case .credentials:
-                        SignupCredentialsView(coordinator: coordinator)
+                        SignupCredentialsView(viewModel: viewModel)
                     case .name:
-                        SignupNameView(coordinator: coordinator)
+                        SignupNameView(viewModel: viewModel)
                     case .username:
-                        SignupUsernameView(coordinator: coordinator)
+                        SignupUsernameView(viewModel: viewModel)
                     case .demographics:
-                        SignupDemographicsView(coordinator: coordinator)
+                        SignupDemographicsView(viewModel: viewModel)
                     case .photo:
-                        SignupPhotoView(coordinator: coordinator)
+                        SignupPhotoView(viewModel: viewModel)
                     case .about:
-                        SignupAboutView(coordinator: coordinator)
+                        SignupAboutView(viewModel: viewModel)
                     case .phone:
-                        SignupPhoneView(coordinator: coordinator)
+                        SignupPhoneView(viewModel: viewModel)
                     case .complete:
-                        SignupWelcomeView(coordinator: coordinator)
+                        SignupWelcomeView(viewModel: viewModel)
                     }
                 }
                 .transition(.asymmetric(
@@ -43,7 +47,7 @@ struct SignupFlowView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    if coordinator.currentStep != .complete {
+                    if viewModel.currentStep != .complete {
                         Button("Cancel") {
                             dismiss()
                         }
@@ -51,9 +55,9 @@ struct SignupFlowView: View {
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if coordinator.currentStep != .credentials && coordinator.currentStep != .complete {
+                    if viewModel.currentStep != .credentials && viewModel.currentStep != .complete {
                         // Progress indicator
-                        Text("\(coordinator.currentStep.rawValue)/7")
+                        Text("\(viewModel.currentStep.rawValue)/7")
                             .font(.caption)
                             .foregroundColor(.gray)
                     }

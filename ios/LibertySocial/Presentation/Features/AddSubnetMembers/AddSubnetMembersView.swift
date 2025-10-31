@@ -8,10 +8,16 @@
 import SwiftUI
 
 struct AddSubnetMembersView: View {
-    @StateObject private var viewModel = AddSubnetMembersViewModel()
+    @StateObject private var viewModel: AddSubnetMembersViewModel
     let subnetId: String
     let onMembersAdded: () -> Void
     @Environment(\.dismiss) var dismiss
+    
+    init(viewModel: AddSubnetMembersViewModel, subnetId: String, onMembersAdded: @escaping () -> Void) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.subnetId = subnetId
+        self.onMembersAdded = onMembersAdded
+    }
     
     var body: some View {
         NavigationStack {
@@ -150,6 +156,8 @@ struct AddSubnetMembersView: View {
 }
 
 #Preview {
-    AddSubnetMembersView(subnetId: "preview-subnet-id", onMembersAdded: {})
+    let model = AddSubnetMembersModel()
+    let viewModel = AddSubnetMembersViewModel(model: model)
+    return AddSubnetMembersView(viewModel: viewModel, subnetId: "preview-subnet-id", onMembersAdded: {})
 }
 

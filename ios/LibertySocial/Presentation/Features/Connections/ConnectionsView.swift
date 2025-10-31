@@ -12,8 +12,12 @@ struct UserIdWrapper: Identifiable {
 }
 
 struct ConnectionsView: View {
-    @StateObject private var viewModel = ConnectionsViewModel()
+    @StateObject private var viewModel: ConnectionsViewModel
     @State private var selectedUserId: String?
+    
+    init(viewModel: ConnectionsViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
     
     var body: some View {
         NavigationView {
@@ -141,5 +145,5 @@ struct ConnectionsView: View {
 }
 
 #Preview {
-    ConnectionsView()
+    ConnectionsCoordinator().start()
 }

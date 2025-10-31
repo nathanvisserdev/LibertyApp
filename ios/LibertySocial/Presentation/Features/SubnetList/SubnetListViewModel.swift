@@ -15,12 +15,18 @@ final class SubnetListViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var selectedSubnet: Subnet?
     
+    private let model: SubnetListModel
+    
+    init(model: SubnetListModel = SubnetListModel()) {
+        self.model = model
+    }
+    
     func fetchSubnets() async {
         isLoading = true
         errorMessage = nil
         
         do {
-            let networks = try await SubnetListModel.fetchSubnets()
+            let networks = try await model.fetchSubnets()
             subnets = networks
         } catch {
             errorMessage = error.localizedDescription

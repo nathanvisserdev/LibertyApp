@@ -12,6 +12,12 @@ import Combine
 final class MainViewModel: ObservableObject {
     @Published var welcomeMessage = "Welcome to Liberty Social"
     @Published var meResult: String?
+    
+    private let model: MainModel
+    
+    init(model: MainModel = MainModel()) {
+        self.model = model
+    }
 
     func refreshGreeting() {
         welcomeMessage = "Welcome back!"
@@ -23,7 +29,7 @@ final class MainViewModel: ObservableObject {
 
     func loadMe() async {
         do {
-            let me = try await AuthService.shared.fetchCurrentUser()
+            let me = try await model.fetchCurrentUser()
             let id = me["id"] as? String ?? "unknown"
             let email = me["email"] as? String ?? "unknown"
             meResult = "id=\(id), email=\(email)"

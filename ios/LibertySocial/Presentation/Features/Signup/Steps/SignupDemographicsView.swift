@@ -9,7 +9,7 @@ import SwiftUI
 import Combine
 
 struct SignupDemographicsView: View {
-    @ObservedObject var coordinator: SignupFlowCoordinator
+    @ObservedObject var viewModel: SignupViewModel
     
     private let genderOptions = [
         ("MALE", "Male"),
@@ -18,7 +18,7 @@ struct SignupDemographicsView: View {
     ]
     
     private var age: Int {
-        Calendar.current.dateComponents([.year], from: coordinator.dateOfBirth, to: Date()).year ?? 0
+        Calendar.current.dateComponents([.year], from: viewModel.dateOfBirth, to: Date()).year ?? 0
     }
     
     private var isAtLeast13: Bool {
@@ -48,7 +48,7 @@ struct SignupDemographicsView: View {
                 
                 DatePicker(
                     "",
-                    selection: $coordinator.dateOfBirth,
+                    selection: $viewModel.dateOfBirth,
                     in: ...Date(),
                     displayedComponents: .date
                 )
@@ -66,7 +66,7 @@ struct SignupDemographicsView: View {
                 Text("Gender")
                     .font(.headline)
                 
-                Picker("Select your gender", selection: $coordinator.gender) {
+                Picker("Select your gender", selection: $viewModel.gender) {
                     ForEach(genderOptions, id: \.0) { option in
                         Text(option.1).tag(option.0)
                     }
@@ -78,11 +78,11 @@ struct SignupDemographicsView: View {
                 Text("Profile Privacy")
                     .font(.headline)
                 
-                Toggle(isOn: $coordinator.isPrivate) {
+                Toggle(isOn: $viewModel.isPrivate) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(coordinator.isPrivate ? "Private Account" : "Public Account")
+                        Text(viewModel.isPrivate ? "Private Account" : "Public Account")
                             .font(.subheadline)
-                        Text(coordinator.isPrivate ? "Only connections can see your posts" : "Anyone can see your posts")
+                        Text(viewModel.isPrivate ? "Only connections can see your posts" : "Anyone can see your posts")
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
@@ -96,7 +96,7 @@ struct SignupDemographicsView: View {
             Spacer()
             
             Button(action: {
-                coordinator.nextStep()
+                viewModel.nextStep()
             }) {
                 Text("Continue")
                     .fontWeight(.semibold)

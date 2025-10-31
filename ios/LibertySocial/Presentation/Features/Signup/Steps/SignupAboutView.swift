@@ -9,7 +9,7 @@ import SwiftUI
 import Combine
 
 struct SignupAboutView: View {
-    @ObservedObject var coordinator: SignupFlowCoordinator
+    @ObservedObject var viewModel: SignupViewModel
     
     var body: some View {
         VStack(spacing: 20) {
@@ -28,7 +28,7 @@ struct SignupAboutView: View {
                 Text("About")
                     .font(.headline)
                 
-                TextEditor(text: $coordinator.about)
+                TextEditor(text: $viewModel.about)
                     .frame(height: 150)
                     .padding(8)
                     .background(Color(.systemGray6))
@@ -48,9 +48,9 @@ struct SignupAboutView: View {
             VStack(spacing: 12) {
                 Button(action: {
                     // Just move to next step, don't signup yet
-                    coordinator.nextStep()
+                    viewModel.nextStep()
                 }) {
-                    Text(coordinator.about.isEmpty ? "Opt-out" : "Continue")
+                    Text(viewModel.about.isEmpty ? "Opt-out" : "Continue")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -62,12 +62,12 @@ struct SignupAboutView: View {
             .padding(.bottom, 20)
         }
         .padding(.horizontal)
-        .alert("Error", isPresented: .constant(coordinator.errorMessage != nil)) {
+        .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
             Button("OK") {
-                coordinator.errorMessage = nil
+                viewModel.errorMessage = nil
             }
         } message: {
-            if let error = coordinator.errorMessage {
+            if let error = viewModel.errorMessage {
                 Text(error)
             }
         }

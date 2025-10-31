@@ -10,6 +10,11 @@ import Combine
 
 @MainActor
 final class CreateGroupViewModel: ObservableObject {
+    
+    // MARK: - Dependencies
+    private let model: CreateGroupModel
+    
+    // MARK: - Published (Input State)
     @Published var name: String = ""
     @Published var description: String = ""
     @Published var selectedGroupType: GroupType = .autocratic
@@ -30,21 +35,26 @@ final class CreateGroupViewModel: ObservableObject {
     @Published var isSubmitting: Bool = false
     @Published var errorMessage: String?
     
-    // Round Table specific fields
+    // MARK: - Round Table specific fields
     @Published var selectedAdmins: [RoundTableAdmin] = []
     @Published var viceChairId: String?
     @Published var enableElections: Bool = false
     @Published var selectedElectionCycle: ElectionCycle = .oneYear
     
+    // MARK: - Connections for Round Table admin selection
+    @Published var connections: [Connection] = []
+    @Published var isLoadingConnections: Bool = false
+    
+    // MARK: - Constants
     let maxNameCharacters = 100
     let maxDescriptionCharacters = 250
     
-    private let authService: AuthServiceProtocol
-    
-    init(authService: AuthServiceProtocol = AuthService.shared) {
-        self.authService = authService
+    // MARK: - Init
+    init(model: CreateGroupModel = CreateGroupModel()) {
+        self.model = model
     }
     
+    // MARK: - Computed Properties
     var remainingNameCharacters: Int {
         maxNameCharacters - name.count
     }
@@ -64,6 +74,22 @@ final class CreateGroupViewModel: ObservableObject {
         selectedAdmins.count >= 1 && 
         selectedAdmins.count <= 4 && 
         viceChairId != nil
+    }
+    
+    // MARK: - Intents (User Actions)
+    
+    /// Fetch connections for Round Table admin selection
+    func fetchConnections() async {
+        isLoadingConnections = true
+        errorMessage = nil
+        
+        do {
+            connections = try await model.fetchConnections()
+            isLoadingConnections = false
+        } catch {
+            errorMessage = "Failed to load connections: \(error.localizedDescription)"
+            isLoadingConnections = false
+        }
     }
     
     func addAdmin(_ admin: RoundTableAdmin) {
@@ -141,7 +167,7 @@ final class CreateGroupViewModel: ObservableObject {
                     electionCycle: enableElections ? selectedElectionCycle.rawValue : nil
                 )
                 
-                _ = try await CreateGroupModel.createRoundTableGroup(request: request)
+                _ = try await model.createRoundTableGroup(request: request)
             } else {
                 // Submit regular autocratic group
                 guard isValid else {
@@ -149,7 +175,7 @@ final class CreateGroupViewModel: ObservableObject {
                     return false
                 }
                 
-                _ = try await CreateGroupModel.createGroup(
+                _ = try await model.createGroup(
                     name: name.trimmingCharacters(in: .whitespacesAndNewlines),
                     description: description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : description.trimmingCharacters(in: .whitespacesAndNewlines),
                     groupType: selectedGroupType.rawValue,

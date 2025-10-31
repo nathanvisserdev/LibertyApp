@@ -17,14 +17,16 @@ class ProfilePhotoViewModel: ObservableObject {
     @Published var loadError: String?
     
     let photoKey: String
+    private let model: ProfilePhotoModel
     
-    init(photoKey: String) {
+    init(photoKey: String, model: ProfilePhotoModel = ProfilePhotoModel()) {
         self.photoKey = photoKey
+        self.model = model
     }
     
     func fetchPresignedURL() async {
         do {
-            let result = try await ProfilePhotoModel.fetchPresignedURL(for: photoKey)
+            let result = try await model.fetchPresignedURL(for: photoKey)
             
             presignedURL = result.url
             expiresAt = result.expiresAt

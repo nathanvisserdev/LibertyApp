@@ -16,8 +16,8 @@ struct CreateGroupView: View {
     @State private var showSuccessAlert = false
     @State private var successMessage = ""
     
-    init(authService: AuthServiceProtocol = AuthService.shared) {
-        _viewModel = StateObject(wrappedValue: CreateGroupViewModel(authService: authService))
+    init(viewModel: CreateGroupViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
     
     var body: some View {
@@ -186,6 +186,6 @@ struct CreateGroupView: View {
 }
 
 #Preview {
-    CreateGroupView()
+    CreateGroupView(viewModel: CreateGroupViewModel())
 }
 

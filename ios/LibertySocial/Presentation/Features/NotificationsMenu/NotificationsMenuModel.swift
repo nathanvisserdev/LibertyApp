@@ -1,5 +1,5 @@
 //
-//  NotificationsModel.swift
+//  NotificationsMenuModel.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-25.
@@ -62,10 +62,12 @@ struct GroupJoinRequester: Decodable {
     let lastName: String?
 }
 
-struct NotificationsModel {
+struct NotificationsMenuModel {
+    private let authSession: AuthSession
     private let authService: AuthServiceProtocol
     
-    init(authService: AuthServiceProtocol = AuthService.shared) {
+    init(authSession: AuthSession = AuthService.shared, authService: AuthServiceProtocol = AuthService.shared) {
+        self.authSession = authSession
         self.authService = authService
     }
     
@@ -137,9 +139,8 @@ struct NotificationsModel {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        if let token = KeychainHelper.read() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try authSession.getAuthToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
@@ -196,9 +197,8 @@ struct NotificationsModel {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        if let token = KeychainHelper.read() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try authSession.getAuthToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
@@ -264,9 +264,8 @@ struct NotificationsModel {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        if let token = KeychainHelper.read() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try authSession.getAuthToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
@@ -276,7 +275,7 @@ struct NotificationsModel {
         
         if !(200...299).contains(httpResponse.statusCode) {
             let errorMsg = (try? JSONDecoder().decode([String: String].self, from: data)["error"]) ?? "Failed to accept group join request"
-            throw NSError(domain: "NotificationsModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
+            throw NSError(domain: "NotificationsMenuModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
         }
     }
     
@@ -290,9 +289,8 @@ struct NotificationsModel {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        if let token = KeychainHelper.read() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try authSession.getAuthToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
@@ -302,7 +300,7 @@ struct NotificationsModel {
         
         if !(200...299).contains(httpResponse.statusCode) {
             let errorMsg = (try? JSONDecoder().decode([String: String].self, from: data)["error"]) ?? "Failed to decline group join request"
-            throw NSError(domain: "NotificationsModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
+            throw NSError(domain: "NotificationsMenuModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
         }
     }
 }

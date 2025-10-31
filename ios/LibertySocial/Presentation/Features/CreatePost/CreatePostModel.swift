@@ -6,7 +6,9 @@
 //
 
 import Foundation
+import UIKit
 
+// MARK: - API Request/Response Types
 struct PresignedUploadRequest: Codable {
     let contentType: String
 }
@@ -33,16 +35,24 @@ struct CreatePostResponse: Codable {
     let userId: String
 }
 
-struct PostsAPI {
-    static func getPresignedUploadURL(contentType: String) async throws -> PresignedUploadResponse {
+// MARK: - CreatePostModel
+struct CreatePostModel {
+    
+    private let authSession: AuthSession
+    
+    init(authSession: AuthSession = AuthService.shared) {
+        self.authSession = authSession
+    }
+    
+    // MARK: - Request presigned upload URL from server
+    func requestPresignedUpload(contentType: String = "image/jpeg") async throws -> PresignedUploadResponse {
         let url = URL(string: "/uploads/presign", relativeTo: AppConfig.baseURL)!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        if let token = KeychainHelper.read() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try authSession.getAuthToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         let body = PresignedUploadRequest(contentType: contentType)
         request.httpBody = try JSONEncoder().encode(body)
@@ -54,22 +64,45 @@ struct PostsAPI {
             return try JSONDecoder().decode(PresignedUploadResponse.self, from: data)
         } else {
             let msg = (try? JSONDecoder().decode([String: String].self, from: data)["message"]) ?? "Unknown error"
-            throw NSError(domain: "PostsAPI", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: msg])
+            throw NSError(domain: "CreatePostModel", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: msg])
         }
     }
     
-    static func createPost(content: String?, media: String? = nil, imageWidth: CGFloat? = nil, imageHeight: CGFloat? = nil) async throws -> CreatePostResponse {
-        // Build relative to the app's base URL
+    // MARK: - Upload photo to R2 using presigned URL
+    func uploadPhoto(data: Data, uploadData: PresignedUploadResponse) async throws {
+        guard let url = URL(string: uploadData.url) else {
+            throw NSError(domain: "CreatePostModel", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid upload URL"])
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = uploadData.method
+        
+        // Set headers from presigned response
+        for (key, value) in uploadData.headersOrFields {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+        
+        request.httpBody = data
+        
+        let (_, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "CreatePostModel", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to upload photo"])
+        }
+        
+        print("📸 CreatePostModel: Successfully uploaded photo to R2")
+    }
+    
+    // MARK: - Create post
+    func createPost(content: String?, media: String? = nil, imageWidth: CGFloat? = nil, imageHeight: CGFloat? = nil) async throws -> CreatePostResponse {
         let url = URL(string: "/posts", relativeTo: AppConfig.baseURL)!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        if let token = KeychainHelper.read() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try authSession.getAuthToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
-        // Backend expects { content?, media?, imageWidth?, imageHeight? }
         let body = CreatePostRequest(
             content: content,
             media: media,
@@ -85,7 +118,7 @@ struct PostsAPI {
             return try JSONDecoder().decode(CreatePostResponse.self, from: data)
         } else {
             let msg = (try? JSONDecoder().decode([String: String].self, from: data)["message"]) ?? "Unknown error"
-            throw NSError(domain: "PostsAPI", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: msg])
+            throw NSError(domain: "CreatePostModel", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: msg])
         }
     }
 }

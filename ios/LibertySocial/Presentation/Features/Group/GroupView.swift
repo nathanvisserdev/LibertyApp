@@ -11,9 +11,9 @@ struct GroupView: View {
     let group: UserGroup
     @StateObject private var viewModel: GroupViewModel
     
-    init(group: UserGroup) {
+    init(group: UserGroup, viewModel: GroupViewModel) {
         self.group = group
-        _viewModel = StateObject(wrappedValue: GroupViewModel(group: group))
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
     
     var body: some View {
@@ -29,7 +29,7 @@ struct GroupView: View {
 }
 
 #Preview {
-    GroupView(group: UserGroup(
+    let group = UserGroup(
         id: "1",
         name: "Sample Group",
         description: "A sample group",
@@ -44,5 +44,6 @@ struct GroupView: View {
         ),
         displayLabel: "Member",
         joinedAt: Date()
-    ))
+    )
+    return GroupView(group: group, viewModel: GroupViewModel(group: group))
 }

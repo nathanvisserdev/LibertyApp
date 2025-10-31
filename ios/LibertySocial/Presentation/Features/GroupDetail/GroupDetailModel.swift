@@ -44,7 +44,14 @@ struct MemberUser: Codable {
 
 // MARK: - API
 struct GroupDetailModel {
-    static func fetchGroupDetail(groupId: String) async throws -> GroupDetail {
+    
+    private let authSession: AuthSession
+    
+    init(authSession: AuthSession = AuthService.shared) {
+        self.authSession = authSession
+    }
+    
+    func fetchGroupDetail(groupId: String) async throws -> GroupDetail {
         guard let url = URL(string: "\(AppConfig.baseURL)/groups/\(groupId)") else {
             throw URLError(.badURL)
         }
@@ -52,9 +59,8 @@ struct GroupDetailModel {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        if let token = KeychainHelper.read() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try authSession.getAuthToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
@@ -73,7 +79,7 @@ struct GroupDetailModel {
         }
     }
     
-    static func joinGroup(groupId: String) async throws {
+    func joinGroup(groupId: String) async throws {
         guard let url = URL(string: "\(AppConfig.baseURL)/groups/\(groupId)/join") else {
             throw URLError(.badURL)
         }
@@ -82,9 +88,8 @@ struct GroupDetailModel {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        if let token = KeychainHelper.read() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try authSession.getAuthToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
         

@@ -28,3 +28,24 @@ extension ParentCoordinator {
         childCoordinators.removeAll { $0 === coordinator }
     }
 }
+
+// MARK: - App Coordinator
+
+/// Stateless coordinator for the main authenticated user flow
+final class AppCoordinator {
+    
+    // MARK: - Dependencies
+    // Add navigation controller or factory/services if needed in future
+    
+    // MARK: - Init
+    init() {
+        // Initialize with navigation controller or dependencies if needed
+    }
+    
+    // MARK: - Start
+    /// Builds the main authenticated view (FeedView) and returns it
+    func start() -> some View {
+        let feedCoordinator = FeedCoordinator()
+        return feedCoordinator.start()
+    }
+}

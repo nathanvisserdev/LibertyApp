@@ -9,15 +9,11 @@ import SwiftUI
 import Combine
 
 struct FeedView: View {
-    @StateObject private var vm = FeedViewModel()
+    @StateObject private var vm: FeedViewModel
     @EnvironmentObject private var session: SessionStore
-    @StateObject private var tabBarVM = TabBarViewModel()
-    @StateObject private var tabBarCoordinator: TabBarCoordinator
     
-    init() {
-        let viewModel = TabBarViewModel()
-        _tabBarVM = StateObject(wrappedValue: viewModel)
-        _tabBarCoordinator = StateObject(wrappedValue: TabBarCoordinator(viewModel: viewModel))
+    init(viewModel: FeedViewModel) {
+        _vm = StateObject(wrappedValue: viewModel)
     }
 
     var body: some View {
@@ -55,8 +51,12 @@ struct FeedView: View {
         }
         .task { await vm.load() }
         .safeAreaInset(edge: .bottom) {
-            TabBarView(viewModel: tabBarVM, coordinator: tabBarCoordinator, feedViewModel: vm)
-                .ignoresSafeArea(edges: .bottom)
+            TabBarCoordinator().start {
+                Task {
+                    await vm.refresh()
+                }
+            }
+            .ignoresSafeArea(edges: .bottom)
         }
     }
 
@@ -158,15 +158,17 @@ class MediaViewModel: ObservableObject {
     @Published var isLoading = true
     
     let mediaKey: String
+    private let model: MediaModel
     
-    init(mediaKey: String) {
+    init(mediaKey: String, model: MediaModel = MediaModel()) {
         self.mediaKey = mediaKey
+        self.model = model
     }
     
     func fetchPresignedURL() async {
         do {
             print("📸 MediaViewModel: Fetching presigned URL for key: \(mediaKey)")
-            let result = try await MediaModel.fetchPresignedReadURL(for: mediaKey)
+            let result = try await model.fetchPresignedReadURL(for: mediaKey)
             print("📸 MediaViewModel: Got presigned URL: \(result.url)")
             presignedURL = result.url
             isLoading = false

@@ -8,11 +8,18 @@
 import SwiftUI
 
 struct ConnectView: View {
-    @StateObject var viewModel = ConnectViewModel()
+    @StateObject private var viewModel: ConnectViewModel
     let firstName: String
     let userId: String
     let isPrivate: Bool
     @Environment(\.dismiss) var dismiss
+    
+    init(viewModel: ConnectViewModel, firstName: String, userId: String, isPrivate: Bool) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.firstName = firstName
+        self.userId = userId
+        self.isPrivate = isPrivate
+    }
     
     var body: some View {
         ScrollView {
@@ -177,5 +184,7 @@ struct ConnectionTypeButton: View {
 }
 
 #Preview {
-    ConnectView(firstName: "John", userId: "123", isPrivate: false)
+    let model = ConnectModel()
+    let viewModel = ConnectViewModel(model: model, userId: "123")
+    return ConnectView(viewModel: viewModel, firstName: "John", userId: "123", isPrivate: false)
 }
