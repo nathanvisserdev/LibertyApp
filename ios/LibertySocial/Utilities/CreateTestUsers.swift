@@ -664,7 +664,7 @@ class CreateTestUsers {
             "name": name,
             "description": description,
             "groupType": groupType,
-            "privacy": privacy
+            "groupPrivacy": privacy
         ]
         
         do {

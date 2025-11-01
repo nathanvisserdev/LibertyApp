@@ -60,6 +60,20 @@ struct ProfileView: View {
                             .font(.body)
                             .foregroundColor(.gray)
                         
+                        // Public/Private Badge
+                        HStack(spacing: 4) {
+                            Image(systemName: profile.isPrivate ? "lock.fill" : "globe")
+                            Text(profile.isPrivate ? "Private Profile" : "Public Profile")
+                        }
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(profile.isPrivate ? Color.purple.opacity(0.2) : Color.blue.opacity(0.2))
+                        .foregroundColor(profile.isPrivate ? .purple : .blue)
+                        .cornerRadius(20)
+                        .padding(.top, 4)
+                        
                         // Follower/Following counts
                         if let followerCount = profile.followerCount,
                            let followingCount = profile.followingCount {
@@ -91,13 +105,31 @@ struct ProfileView: View {
                                     }
                                 }
                                 
-                                VStack(spacing: 2) {
-                                    Text("\(followingCount)")
-                                        .font(.headline)
-                                        .fontWeight(.bold)
-                                    Text("Following")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                                // Following (tappable if user is public)
+                                if !profile.isPrivate {
+                                    NavigationLink(destination: {
+                                        let coordinator = FollowingListCoordinator(userId: userId)
+                                        coordinator.start()
+                                    }) {
+                                        VStack(spacing: 2) {
+                                            Text("\(followingCount)")
+                                                .font(.headline)
+                                                .fontWeight(.bold)
+                                                .foregroundColor(.primary)
+                                            Text("Following")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                    }
+                                } else {
+                                    VStack(spacing: 2) {
+                                        Text("\(followingCount)")
+                                            .font(.headline)
+                                            .fontWeight(.bold)
+                                        Text("Following")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
                                 }
                             }
                             .padding(.top, 8)
