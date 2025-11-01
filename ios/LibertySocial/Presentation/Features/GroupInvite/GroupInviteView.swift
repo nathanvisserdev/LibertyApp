@@ -8,12 +8,7 @@
 import SwiftUI
 
 struct GroupInviteView: View {
-    @StateObject private var viewModel: GroupInviteViewModel
-    @Environment(\.dismiss) var dismiss
-    
-    init(viewModel: GroupInviteViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
-    }
+    @ObservedObject var viewModel: GroupInviteViewModel
     
     var body: some View {
         NavigationStack {
@@ -31,12 +26,6 @@ struct GroupInviteView: View {
             .navigationTitle("Invite Members")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-                
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         Task {
@@ -61,11 +50,6 @@ struct GroupInviteView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(viewModel.alertMessage)
-            }
-            .onChange(of: viewModel.shouldDismiss) { _, shouldDismiss in
-                if shouldDismiss {
-                    dismiss()
-                }
             }
             .task {
                 await viewModel.loadUserPrivacyStatus()

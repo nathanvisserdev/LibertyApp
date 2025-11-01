@@ -15,6 +15,11 @@ final class GroupInviteViewModel: ObservableObject {
     private let model: GroupInviteModel
     private let groupId: String
     private let authSession: AuthSession
+    private let inviteService: GroupInviteSession
+    private let groupService: GroupSession
+    
+    // MARK: - Cancellables
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Published (Output State)
     @Published var invitees: [InviteeUser] = []
@@ -28,7 +33,9 @@ final class GroupInviteViewModel: ObservableObject {
     @Published var showSuccessAlert: Bool = false
     @Published var showErrorAlert: Bool = false
     @Published var alertMessage: String = ""
-    @Published var shouldDismiss: Bool = false
+    
+    // MARK: - Navigation Signals (Output for Coordinator)
+    let didFinishSuccessfully = PassthroughSubject<Void, Never>()
     
     // MARK: - Filter State
     @Published var filterType: FilterType = .connections
@@ -55,10 +62,49 @@ final class GroupInviteViewModel: ObservableObject {
     }
     
     // MARK: - Init
-    init(model: GroupInviteModel = GroupInviteModel(), groupId: String, authSession: AuthSession = AuthService.shared) {
+    init(
+        model: GroupInviteModel = GroupInviteModel(),
+        groupId: String,
+        authSession: AuthSession = AuthService.shared,
+        inviteService: GroupInviteSession = GroupInviteService.shared,
+        groupService: GroupSession = GroupService.shared
+    ) {
         self.model = model
         self.groupId = groupId
         self.authSession = authSession
+        self.inviteService = inviteService
+        self.groupService = groupService
+        
+        // Subscribe to invite service events
+        subscribeToInviteEvents()
+    }
+    
+    // MARK: - Service Subscription
+    
+    private func subscribeToInviteEvents() {
+        inviteService.inviteEvents
+            .sink { [weak self] event in
+                guard let self = self else { return }
+                
+                switch event {
+                case .invitesSentSuccessfully(let count):
+                    self.isSendingInvites = false
+                    self.alertMessage = count == 1 ? "Sent 1 invite" : "Sent \(count) invites"
+                    self.showSuccessAlert = true
+                    
+                    // Invalidate group cache so the group member list refreshes
+                    self.groupService.invalidateCache()
+                    
+                    // Signal coordinator to dismiss
+                    self.didFinishSuccessfully.send()
+                    
+                case .invitesFailed(let error):
+                    self.isSendingInvites = false
+                    self.alertMessage = error.localizedDescription
+                    self.showErrorAlert = true
+                }
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Computed Properties
@@ -131,17 +177,23 @@ final class GroupInviteViewModel: ObservableObject {
     
     func toggleAdditionalFilter() {
         includeAdditional.toggle()
-        selectedUserIds.removeAll()
+        // Keep existing selections - they'll be filtered after fetching new invitees
         Task {
             await fetchInvitees()
+            // After fetching, remove any selections that are no longer in the invitees list
+            let validUserIds = Set(invitees.map { $0.id })
+            selectedUserIds = selectedUserIds.intersection(validUserIds)
         }
     }
     
     func changeFilter(_ newFilter: FilterType) {
         filterType = newFilter
-        selectedUserIds.removeAll()
+        // Keep existing selections - they'll be filtered after fetching new invitees
         Task {
             await fetchInvitees()
+            // After fetching, remove any selections that are no longer in the invitees list
+            let validUserIds = Set(invitees.map { $0.id })
+            selectedUserIds = selectedUserIds.intersection(validUserIds)
         }
     }
     
@@ -152,18 +204,11 @@ final class GroupInviteViewModel: ObservableObject {
         
         do {
             let userIdsArray = Array(selectedUserIds)
-            try await model.sendInvites(groupId: groupId, userIds: userIdsArray)
-            
-            let count = selectedUserIds.count
-            alertMessage = count == 1 ? "Sent 1 invite" : "Sent \(count) invites"
-            showSuccessAlert = true
-            shouldDismiss = true
-            isSendingInvites = false
+            // Service will emit events that we're subscribed to
+            try await inviteService.sendInvites(groupId: groupId, userIds: userIdsArray)
         } catch {
-            alertMessage = error.localizedDescription
-            showErrorAlert = true
+            // Service already emitted the error event, but ensure we reset state
             isSendingInvites = false
-            print("Error sending invites: \(error)")
         }
     }
 }

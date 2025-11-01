@@ -14,6 +14,10 @@ final class CreateGroupViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: CreateGroupModel
     private let groupService: GroupSession
+    private let inviteService: GroupInviteSession
+    
+    // MARK: - Cancellables
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Published (Input State)
     @Published var name: String = ""
@@ -40,6 +44,9 @@ final class CreateGroupViewModel: ObservableObject {
     @Published var showGroupInvite: Bool = false
     @Published var createdGroupId: String?
     
+    // MARK: - Navigation Signals (Output for Coordinator)
+    let didFinishSuccessfully = PassthroughSubject<Void, Never>()
+    
     // MARK: - Round Table specific fields
     @Published var selectedAdmins: [RoundTableAdmin] = []
     @Published var viceChairId: String?
@@ -55,9 +62,38 @@ final class CreateGroupViewModel: ObservableObject {
     let maxDescriptionCharacters = 250
     
     // MARK: - Init
-    init(model: CreateGroupModel = CreateGroupModel(), groupService: GroupSession = GroupService.shared) {
+    init(
+        model: CreateGroupModel = CreateGroupModel(),
+        groupService: GroupSession = GroupService.shared,
+        inviteService: GroupInviteSession = GroupInviteService.shared
+    ) {
         self.model = model
         self.groupService = groupService
+        self.inviteService = inviteService
+        
+        // Subscribe to invite service events
+        subscribeToInviteEvents()
+    }
+    
+    // MARK: - Service Subscription
+    
+    private func subscribeToInviteEvents() {
+        inviteService.inviteEvents
+            .sink { [weak self] event in
+                guard let self = self else { return }
+                
+                switch event {
+                case .invitesSentSuccessfully:
+                    // When invites are sent successfully, dismiss the entire create group flow
+                    self.didFinishSuccessfully.send()
+                    
+                case .invitesFailed:
+                    // Invite failed, but we stay on the create group view
+                    // User can try inviting again or dismiss manually
+                    break
+                }
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Computed Properties

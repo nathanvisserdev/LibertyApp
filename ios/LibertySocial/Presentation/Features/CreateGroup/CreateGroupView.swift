@@ -8,17 +8,10 @@
 import SwiftUI
 
 struct CreateGroupView: View {
-    @Environment(\.dismiss) var dismiss
-    @StateObject private var viewModel: CreateGroupViewModel
+    @ObservedObject var viewModel: CreateGroupViewModel
     @State private var showAdminSelection = false
     @State private var showPersonalGroupAlert = false
     @State private var showPrivateGroupJoinPolicyAlert = false
-    @State private var showSuccessAlert = false
-    @State private var successMessage = ""
-    
-    init(viewModel: CreateGroupViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
-    }
     
     var body: some View {
         NavigationStack {
@@ -123,11 +116,7 @@ struct CreateGroupView: View {
                             showAdminSelection = true
                         } else {
                             Task {
-                                let success = await viewModel.submit()
-                                if success {
-                                    successMessage = "\(viewModel.name) group created successfully!"
-                                    showSuccessAlert = true
-                                }
+                                await viewModel.submit()
                             }
                         }
                     }) {
@@ -157,13 +146,6 @@ struct CreateGroupView: View {
             }
             .navigationTitle("Create Group")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-            }
             .disabled(viewModel.isSubmitting)
             .sheet(isPresented: $showAdminSelection) {
                 SelectRoundTableAdminsView(viewModel: viewModel)
@@ -180,13 +162,6 @@ struct CreateGroupView: View {
             }
             .alert("Select public or personal to allow open membership.", isPresented: $showPrivateGroupJoinPolicyAlert) {
                 Button("OK", role: .cancel) { }
-            }
-            .alert("Success", isPresented: $showSuccessAlert) {
-                Button("OK", role: .cancel) {
-                    dismiss()
-                }
-            } message: {
-                Text(successMessage)
             }
         }
     }
