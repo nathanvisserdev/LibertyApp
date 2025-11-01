@@ -29,6 +29,9 @@ struct UserProfile: Decodable {
     let isPrivate: Bool
     let connectionStatus: String?
     let requestType: String?
+    let followerCount: Int?
+    let followingCount: Int?
+    let isFollowingYou: Bool?
     let posts: [ProfilePost]?
 }
 

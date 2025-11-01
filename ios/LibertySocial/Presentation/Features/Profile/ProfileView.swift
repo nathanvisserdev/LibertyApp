@@ -59,6 +59,64 @@ struct ProfileView: View {
                         Text("@\(profile.username)")
                             .font(.body)
                             .foregroundColor(.gray)
+                        
+                        // Follower/Following counts
+                        if let followerCount = profile.followerCount,
+                           let followingCount = profile.followingCount {
+                            HStack(spacing: 20) {
+                                // Followers (tappable if user is public)
+                                if !profile.isPrivate {
+                                    NavigationLink(destination: {
+                                        let coordinator = FollowersListCoordinator(userId: userId)
+                                        coordinator.start()
+                                    }) {
+                                        VStack(spacing: 2) {
+                                            Text("\(followerCount)")
+                                                .font(.headline)
+                                                .fontWeight(.bold)
+                                                .foregroundColor(.primary)
+                                            Text("Followers")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                    }
+                                } else {
+                                    VStack(spacing: 2) {
+                                        Text("\(followerCount)")
+                                            .font(.headline)
+                                            .fontWeight(.bold)
+                                        Text("Followers")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                
+                                VStack(spacing: 2) {
+                                    Text("\(followingCount)")
+                                        .font(.headline)
+                                        .fontWeight(.bold)
+                                    Text("Following")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .padding(.top, 8)
+                        }
+                    }
+                    
+                    // "Follows you" badge
+                    if let isFollowingYou = profile.isFollowingYou, isFollowingYou {
+                        HStack(spacing: 4) {
+                            Image(systemName: "checkmark.circle.fill")
+                            Text("Follows you")
+                        }
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.green.opacity(0.2))
+                        .foregroundColor(.green)
+                        .cornerRadius(20)
                     }
                     
                     // Connection Status Badge

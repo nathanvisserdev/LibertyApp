@@ -119,7 +119,8 @@ struct SearchView: View {
                 get: { selectedUserId.map { UserIdWrapper(id: $0) } },
                 set: { selectedUserId = $0?.id }
             )) { wrapper in
-                ProfileView(viewModel: ProfileViewModel(), userId: wrapper.id)
+                let coordinator = ProfileCoordinator(userId: wrapper.id)
+                coordinator.start()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }

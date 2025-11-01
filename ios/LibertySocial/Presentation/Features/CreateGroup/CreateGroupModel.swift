@@ -105,11 +105,19 @@ struct CreateRoundTableGroupRequest {
 }
 
 struct CreateGroupResponse: Codable {
-    let id: String
+    let groupId: String
     let name: String
     let groupType: String
     let groupPrivacy: String
     let isHidden: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case groupId = "id"
+        case name
+        case groupType
+        case groupPrivacy
+        case isHidden
+    }
 }
 
 // MARK: - Model

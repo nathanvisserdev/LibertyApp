@@ -168,6 +168,13 @@ struct CreateGroupView: View {
             .sheet(isPresented: $showAdminSelection) {
                 SelectRoundTableAdminsView(viewModel: viewModel)
             }
+            .sheet(isPresented: $viewModel.showGroupInvite) {
+                if let groupId = viewModel.createdGroupId {
+                    GroupInviteCoordinator(groupId: groupId).start()
+                        .presentationDetents([.large])
+                        .presentationDragIndicator(.visible)
+                }
+            }
             .alert("Select public or private for democratic group type.", isPresented: $showPersonalGroupAlert) {
                 Button("OK", role: .cancel) { }
             }

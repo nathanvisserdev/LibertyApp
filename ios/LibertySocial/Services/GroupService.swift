@@ -68,7 +68,7 @@ final class GroupService: GroupSession {
     private func fetchFromServer(userId: String) async throws -> [UserGroup] {
         let token = try authSession.getAuthToken()
         
-        guard let url = URL(string: "\(AppConfig.baseURL)/groups/user/\(userId)") else {
+        guard let url = URL(string: "\(AppConfig.baseURL)/users/\(userId)/groups") else {
             throw NSError(domain: "GroupService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
         }
         
@@ -84,7 +84,10 @@ final class GroupService: GroupSession {
         }
         
         if httpResponse.statusCode == 200 {
-            return try JSONDecoder().decode([UserGroup].self, from: data)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            let responseData = try decoder.decode(UserGroupsResponse.self, from: data)
+            return responseData.groups
         } else {
             let errorMsg = String(data: data, encoding: .utf8) ?? "Unknown error"
             throw NSError(domain: "GroupService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])

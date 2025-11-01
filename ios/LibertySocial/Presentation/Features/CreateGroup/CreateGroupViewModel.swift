@@ -36,6 +36,10 @@ final class CreateGroupViewModel: ObservableObject {
     @Published var isSubmitting: Bool = false
     @Published var errorMessage: String?
     
+    // MARK: - Navigation State
+    @Published var showGroupInvite: Bool = false
+    @Published var createdGroupId: String?
+    
     // MARK: - Round Table specific fields
     @Published var selectedAdmins: [RoundTableAdmin] = []
     @Published var viceChairId: String?
@@ -169,7 +173,10 @@ final class CreateGroupViewModel: ObservableObject {
                     electionCycle: enableElections ? selectedElectionCycle.rawValue : nil
                 )
                 
-                _ = try await model.createRoundTableGroup(request: request)
+                let response = try await model.createRoundTableGroup(request: request)
+                
+                // Store the created group ID
+                createdGroupId = response.groupId
             } else {
                 // Submit regular autocratic group
                 guard isValid else {
@@ -177,17 +184,23 @@ final class CreateGroupViewModel: ObservableObject {
                     return false
                 }
                 
-                _ = try await model.createGroup(
+                let response = try await model.createGroup(
                     name: name.trimmingCharacters(in: .whitespacesAndNewlines),
                     description: description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : description.trimmingCharacters(in: .whitespacesAndNewlines),
                     groupType: selectedGroupType.rawValue,
                     groupPrivacy: selectedGroupPrivacy.rawValue,
                     isHidden: isHidden
                 )
+                
+                // Store the created group ID
+                createdGroupId = response.groupId
             }
             
             // Invalidate group cache to trigger refresh
             groupService.invalidateCache()
+            
+            // Show GroupInvite view
+            showGroupInvite = true
             
             isSubmitting = false
             return true

@@ -134,6 +134,30 @@ class CreateTestUsers {
             isPrivate: false,
             profilePhoto: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Tom_Brady_2021.jpg/440px-Tom_Brady_2021.jpg",
             about: "Athlete and competitor. Passionate about fitness, discipline, and striving for excellence in everything."
+        ),
+        TestUserData(
+            firstName: "Johnny",
+            lastName: "Cash",
+            email: "johnny@cash.com",
+            password: "Password1",
+            username: "JohnnyCash",
+            dateOfBirth: "1932-02-26",
+            gender: "MALE",
+            isPrivate: false,
+            profilePhoto: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Johnny_Cash_1969.jpg/440px-Johnny_Cash_1969.jpg",
+            about: "Country music legend. Singer-songwriter known for deep voice and somber themes. Walk the line."
+        ),
+        TestUserData(
+            firstName: "Bob",
+            lastName: "Marley",
+            email: "bob@marley.com",
+            password: "Password1",
+            username: "BobMarley",
+            dateOfBirth: "1945-02-06",
+            gender: "MALE",
+            isPrivate: true,
+            profilePhoto: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Bob-Marley-in-Concert_Zurich_05-30-80.jpg/440px-Bob-Marley-in-Concert_Zurich_05-30-80.jpg",
+            about: "Reggae icon and musical revolutionary. Spreading messages of love, unity, and peace through music."
         )
     ]
     
@@ -196,7 +220,9 @@ class CreateTestUsers {
               let johnDoeToken = userTokens["john@doe.com"],
               let daveToken = userTokens["dave@chappelle.com"],
               let jfkToken = userTokens["john@kennedy.com"],
-              let tomToken = userTokens["tom@brady.com"] else {
+              let tomToken = userTokens["tom@brady.com"],
+              let johnnyCashToken = userTokens["johnny@cash.com"],
+              let bobMarleyToken = userTokens["bob@marley.com"] else {
             print("❌ Missing user tokens for connection setup")
             return
         }
@@ -244,6 +270,16 @@ class CreateTestUsers {
         
         guard let tomUserId = await getUserId(token: tomToken) else {
             print("❌ Failed to get Tom Brady's user ID")
+            return
+        }
+        
+        guard let johnnyCashUserId = await getUserId(token: johnnyCashToken) else {
+            print("❌ Failed to get Johnny Cash's user ID")
+            return
+        }
+        
+        guard let bobMarleyUserId = await getUserId(token: bobMarleyToken) else {
+            print("❌ Failed to get Bob Marley's user ID")
             return
         }
         
@@ -410,7 +446,285 @@ class CreateTestUsers {
             }
         }
         
+        // Set up connections to Johnny Cash
+        print("\n🎸 Setting up connections to Johnny Cash...")
+        
+        // Jack Johnson -> Johnny Cash (ACQUAINTANCE)
+        await sendConnectionRequest(
+            token: jackToken,
+            requestedId: johnnyCashUserId,
+            type: "ACQUAINTANCE",
+            senderName: "Jack Johnson to Johnny Cash"
+        )
+        
+        // Jane Doe -> Johnny Cash (ACQUAINTANCE)
+        await sendConnectionRequest(
+            token: janeToken,
+            requestedId: johnnyCashUserId,
+            type: "ACQUAINTANCE",
+            senderName: "Jane Doe to Johnny Cash"
+        )
+        
+        // Billy Bob -> Johnny Cash (STRANGER)
+        await sendConnectionRequest(
+            token: billyToken,
+            requestedId: johnnyCashUserId,
+            type: "STRANGER",
+            senderName: "Billy Bob to Johnny Cash"
+        )
+        
+        // Harry Truman -> Johnny Cash (FOLLOW)
+        await sendConnectionRequest(
+            token: harryToken,
+            requestedId: johnnyCashUserId,
+            type: "FOLLOW",
+            senderName: "Harry Truman to Johnny Cash"
+        )
+        
+        // John Smith -> Johnny Cash (FOLLOW)
+        await sendConnectionRequest(
+            token: johnSmithToken,
+            requestedId: johnnyCashUserId,
+            type: "FOLLOW",
+            senderName: "John Smith to Johnny Cash"
+        )
+        
+        // Wait for requests to settle
+        print("⏳ Waiting for Johnny Cash requests to settle...")
+        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
+        
+        // Get Johnny Cash's pending requests
+        print("📥 Fetching Johnny Cash's pending connection requests...")
+        guard let pendingRequestsJohnnyCash = await getPendingRequests(token: johnnyCashToken) else {
+            print("❌ Failed to get Johnny Cash's pending requests")
+            return
+        }
+        
+        print("   Found \(pendingRequestsJohnnyCash.count) pending request(s) for Johnny Cash")
+        
+        // Johnny Cash accepts all requests
+        print("✋ Johnny Cash accepting all requests...")
+        for request in pendingRequestsJohnnyCash {
+            if let requestId = request["id"] as? String {
+                await acceptConnectionRequest(token: johnnyCashToken, requestId: requestId, senderName: "various users")
+            }
+        }
+        
+        // Wait for acceptances to settle
+        print("⏳ Waiting for acceptances to settle...")
+        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+        
+        // Create Musicians group
+        print("\n🎵 Creating Musicians group...")
+        guard let musiciansGroupId = await createGroup(
+            token: jackToken,
+            name: "Musicians",
+            description: "A group for music lovers and musicians to connect and share",
+            groupType: "AUTOCRATIC",
+            privacy: "PUBLIC"
+        ) else {
+            print("❌ Failed to create Musicians group")
+            return
+        }
+        
+        print("✅ Created Musicians group with ID: \(musiciansGroupId)")
+        
+        // Wait for group to settle
+        print("⏳ Waiting for group creation to settle...")
+        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+        
+        // Invite musicians to the group (Jack is already a member as creator)
+        print("\n📨 Inviting musicians to the group...")
+        
+        let musicianIds = [johnnyCashUserId, janeUserId, billyUserId, bobMarleyUserId]
+        await inviteToGroup(token: jackToken, groupId: musiciansGroupId, userIds: musicianIds)
+        
+        // Wait for invites to settle
+        print("⏳ Waiting for invites to settle...")
+        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
+        
+        // Each musician accepts their invite
+        print("\n✋ Musicians accepting group invites...")
+        await acceptGroupInvite(token: johnnyCashToken, groupId: musiciansGroupId, userName: "Johnny Cash")
+        await acceptGroupInvite(token: janeToken, groupId: musiciansGroupId, userName: "Jane Doe")
+        await acceptGroupInvite(token: billyToken, groupId: musiciansGroupId, userName: "Billy Bob")
+        await acceptGroupInvite(token: bobMarleyToken, groupId: musiciansGroupId, userName: "Bob Marley")
+        
+        // Create posts from various users
+        print("\n📝 Creating posts from users...")
+        await createPosts(userTokens: userTokens)
+        
         print("\n✅ Connection setup complete!")
+    }
+    
+    private static func createPosts(userTokens: [String: String]) async {
+        // Johnny Cash posts
+        if let token = userTokens["johnny@cash.com"] {
+            await createPost(token: token, content: "Just finished recording a new track. There's something special about that deep, resonant sound. Walk the line, friends. 🎸", userName: "Johnny Cash")
+            await createPost(token: token, content: "Music has always been my way of telling stories. Every song is a journey, every chord a memory.", userName: "Johnny Cash")
+        }
+        
+        // Bob Marley posts
+        if let token = userTokens["bob@marley.com"] {
+            await createPost(token: token, content: "One good thing about music, when it hits you, you feel no pain. Keep spreading the love and positivity. ✌️", userName: "Bob Marley")
+            await createPost(token: token, content: "Don't worry about a thing, cause every little thing is gonna be alright. Have a blessed day everyone!", userName: "Bob Marley")
+        }
+        
+        // Jack Johnson posts
+        if let token = userTokens["jack@johnson.com"] {
+            await createPost(token: token, content: "Beach session today with the guitar. Nothing beats the sound of waves and strings together 🌊🎸", userName: "Jack Johnson")
+            await createPost(token: token, content: "Just discovered an amazing local band. Supporting live music is so important!", userName: "Jack Johnson")
+        }
+        
+        // Jane Doe posts
+        if let token = userTokens["jane@doe.com"] {
+            await createPost(token: token, content: "Working on a new design project inspired by music and visual art. The creative process is magical! 🎨", userName: "Jane Doe")
+            await createPost(token: token, content: "Sometimes the best designs come from unexpected places. Stay curious, stay inspired!", userName: "Jane Doe")
+        }
+        
+        // Billy Bob posts
+        if let token = userTokens["billy@bob.com"] {
+            await createPost(token: token, content: "Hiked 12 miles today and the views were absolutely worth it! Nature is the best medicine. 🏔️", userName: "Billy Bob")
+            await createPost(token: token, content: "Planning next weekend's camping trip. Who else loves sleeping under the stars?", userName: "Billy Bob")
+        }
+        
+        // Harry Truman posts
+        if let token = userTokens["harry@truman.com"] {
+            await createPost(token: token, content: "Reading a fascinating biography on American political history. The past has so much to teach us about the present.", userName: "Harry Truman")
+            await createPost(token: token, content: "Coffee and philosophy this morning. What's everyone reading these days?", userName: "Harry Truman")
+        }
+        
+        // John Smith posts
+        if let token = userTokens["john@smith.com"] {
+            await createPost(token: token, content: "Just learned about a new technology that could revolutionize how we approach problem-solving. Innovation never stops!", userName: "John Smith")
+            await createPost(token: token, content: "Sharing knowledge is one of the most powerful things we can do. Always happy to help others learn.", userName: "John Smith")
+        }
+        
+        // Dave Chappelle posts
+        if let token = userTokens["dave@chappelle.com"] {
+            await createPost(token: token, content: "You know what's funny? Life. Just pay attention and you'll see the comedy everywhere. 😄", userName: "Dave Chappelle")
+            await createPost(token: token, content: "Laughter is the best medicine. Unless you're diabetic, then insulin is pretty important too. But after that, laughter!", userName: "Dave Chappelle")
+        }
+        
+        // Tom Brady posts
+        if let token = userTokens["tom@brady.com"] {
+            await createPost(token: token, content: "Another day, another opportunity to be better than yesterday. Hard work and discipline pay off! 💪", userName: "Tom Brady")
+            await createPost(token: token, content: "Success isn't just about talent—it's about commitment, preparation, and never giving up.", userName: "Tom Brady")
+        }
+        
+        // John Doe posts
+        if let token = userTokens["john@doe.com"] {
+            await createPost(token: token, content: "Solved a really challenging coding problem today. There's nothing quite like that 'aha!' moment when everything clicks.", userName: "John Doe")
+            await createPost(token: token, content: "Building software that helps people is incredibly rewarding. Love what I do!", userName: "John Doe")
+        }
+        
+        // John Kennedy posts
+        if let token = userTokens["john@kennedy.com"] {
+            await createPost(token: token, content: "Community engagement event was a success! When we work together, amazing things happen. 🇺🇸", userName: "John Kennedy")
+            await createPost(token: token, content: "Ask not what your community can do for you, but what you can do for your community.", userName: "John Kennedy")
+        }
+    }
+    
+    private static func createPost(token: String, content: String, userName: String) async {
+        let url = AppConfig.baseURL.appendingPathComponent("posts")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let postData: [String: Any] = [
+            "content": content,
+            "visibility": "PUBLIC"
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: postData)
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 {
+                print("✅ Created post from \(userName)")
+            } else {
+                print("❌ Failed to create post from \(userName)")
+            }
+        } catch {
+            print("❌ Error creating post from \(userName): \(error.localizedDescription)")
+        }
+    }
+    
+    private static func createGroup(token: String, name: String, description: String, groupType: String, privacy: String) async -> String? {
+        let url = AppConfig.baseURL.appendingPathComponent("groups")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let groupData: [String: Any] = [
+            "name": name,
+            "description": description,
+            "groupType": groupType,
+            "privacy": privacy
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: groupData)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 {
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let groupId = json["id"] as? String {
+                    return groupId
+                }
+            }
+        } catch {
+            print("❌ Error creating group: \(error.localizedDescription)")
+        }
+        return nil
+    }
+    
+    private static func inviteToGroup(token: String, groupId: String, userIds: [String]) async {
+        let url = AppConfig.baseURL.appendingPathComponent("groups/\(groupId)/invite")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let inviteData: [String: Any] = ["userIds": userIds]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: inviteData)
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                print("✅ Sent \(userIds.count) group invites")
+            } else {
+                print("❌ Failed to send group invites")
+            }
+        } catch {
+            print("❌ Error sending group invites: \(error.localizedDescription)")
+        }
+    }
+    
+    private static func acceptGroupInvite(token: String, groupId: String, userName: String) async {
+        let url = AppConfig.baseURL.appendingPathComponent("groups/\(groupId)/accept-invite")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                print("✅ \(userName) accepted group invite")
+            } else {
+                print("❌ \(userName) failed to accept group invite")
+            }
+        } catch {
+            print("❌ Error accepting group invite for \(userName): \(error.localizedDescription)")
+        }
     }
     
     private static func getUserId(token: String) async -> String? {
@@ -540,7 +854,7 @@ class CreateTestUsers {
     private static func createUser(_ user: TestUserData, index: Int) async -> (Bool, String?) {
         let url = AppConfig.baseURL.appendingPathComponent("signup")
         
-        print("🔄 [\(index)/9] Creating user: \(user.username)...")
+        print("🔄 [\(index)/11] Creating user: \(user.username)...")
         print("   URL: \(url.absoluteString)")
         
         var request = URLRequest(url: url)
@@ -567,7 +881,7 @@ class CreateTestUsers {
             
             if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 201 {
-                    print("✅ [\(index)/9] Created user: \(user.username) (private: \(user.isPrivate))")
+                    print("✅ [\(index)/11] Created user: \(user.username) (private: \(user.isPrivate))")
                     
                     // Extract accessToken from response (server returns "accessToken" not "token")
                     if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -580,17 +894,17 @@ class CreateTestUsers {
                     }
                     return (true, nil)
                 } else {
-                    print("❌ [\(index)/9] Failed to create \(user.username): HTTP \(httpResponse.statusCode)")
+                    print("❌ [\(index)/11] Failed to create \(user.username): HTTP \(httpResponse.statusCode)")
                     if let responseString = String(data: data, encoding: .utf8) {
                         print("   Server response: \(responseString)")
                     }
                     return (false, nil)
                 }
             }
-            print("❌ [\(index)/9] Invalid response type for \(user.username)")
+            print("❌ [\(index)/11] Invalid response type for \(user.username)")
             return (false, nil)
         } catch let error as NSError {
-            print("❌ [\(index)/9] Network error creating \(user.username):")
+            print("❌ [\(index)/11] Network error creating \(user.username):")
             print("   Domain: \(error.domain)")
             print("   Code: \(error.code)")
             print("   Description: \(error.localizedDescription)")
