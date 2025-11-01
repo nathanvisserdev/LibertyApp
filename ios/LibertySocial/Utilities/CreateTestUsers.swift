@@ -278,6 +278,66 @@ class CreateTestUsers {
             isPrivate: false,
             profilePhoto: "https://i.pravatar.cc/150?img=56",
             about: "Freedom fighter and humanitarian. Education is the most powerful weapon. Peace and reconciliation advocate."
+        ),
+        TestUserData(
+            firstName: "Harriet",
+            lastName: "Tubman",
+            email: "harriet@tubman.com",
+            password: "Password1",
+            username: "HarrietTubman",
+            dateOfBirth: "1822-03-10",
+            gender: "FEMALE",
+            isPrivate: false,
+            profilePhoto: "https://i.pravatar.cc/150?img=47",
+            about: "Freedom fighter and Underground Railroad conductor. Every great dream begins with a dreamer."
+        ),
+        TestUserData(
+            firstName: "Nikola",
+            lastName: "Tesla",
+            email: "nikola@tesla.com",
+            password: "Password1",
+            username: "NikolaTesla",
+            dateOfBirth: "1856-07-10",
+            gender: "MALE",
+            isPrivate: false,
+            profilePhoto: "https://i.pravatar.cc/150?img=33",
+            about: "Inventor and electrical engineer. The present is theirs; the future is mine. Innovation through electricity."
+        ),
+        TestUserData(
+            firstName: "Ella",
+            lastName: "Fitzgerald",
+            email: "ella@fitzgerald.com",
+            password: "Password1",
+            username: "EllaFitzgerald",
+            dateOfBirth: "1917-04-25",
+            gender: "FEMALE",
+            isPrivate: false,
+            profilePhoto: "https://i.pravatar.cc/150?img=45",
+            about: "First Lady of Song. Jazz vocalist with a voice like no other. Music is my passion and joy."
+        ),
+        TestUserData(
+            firstName: "Martin",
+            lastName: "Luther King Jr",
+            email: "martin@king.com",
+            password: "Password1",
+            username: "MartinLutherKing",
+            dateOfBirth: "1929-01-15",
+            gender: "MALE",
+            isPrivate: false,
+            profilePhoto: "https://i.pravatar.cc/150?img=52",
+            about: "Civil rights leader. I have a dream. Darkness cannot drive out darkness; only light can do that."
+        ),
+        TestUserData(
+            firstName: "Cleopatra",
+            lastName: "VII",
+            email: "cleopatra@egypt.com",
+            password: "Password1",
+            username: "Cleopatra",
+            dateOfBirth: "0069-01-01",
+            gender: "FEMALE",
+            isPrivate: false,
+            profilePhoto: "https://i.pravatar.cc/150?img=26",
+            about: "Last pharaoh of Egypt. Leader, strategist, and polyglot. History is written by the bold."
         )
     ]
     
@@ -468,6 +528,37 @@ class CreateTestUsers {
             return
         }
         
+        // Get new users' tokens and IDs
+        guard let harrietToken = userTokens["harriet@tubman.com"],
+              let harrietUserId = await getUserId(token: harrietToken) else {
+            print("❌ Failed to get Harriet Tubman's user ID")
+            return
+        }
+        
+        guard let nikolaToken = userTokens["nikola@tesla.com"],
+              let nikolaUserId = await getUserId(token: nikolaToken) else {
+            print("❌ Failed to get Nikola Tesla's user ID")
+            return
+        }
+        
+        guard let ellaToken = userTokens["ella@fitzgerald.com"],
+              let ellaUserId = await getUserId(token: ellaToken) else {
+            print("❌ Failed to get Ella Fitzgerald's user ID")
+            return
+        }
+        
+        guard let martinToken = userTokens["martin@king.com"],
+              let martinUserId = await getUserId(token: martinToken) else {
+            print("❌ Failed to get Martin Luther King's user ID")
+            return
+        }
+        
+        guard let cleopatraToken = userTokens["cleopatra@egypt.com"],
+              let cleopatraUserId = await getUserId(token: cleopatraToken) else {
+            print("❌ Failed to get Cleopatra's user ID")
+            return
+        }
+        
         // Track which requests were successfully sent to John Smith
         var sentRequestsToJohnSmith: [String: (userId: String, type: String, name: String)] = [:]
         
@@ -650,6 +741,42 @@ class CreateTestUsers {
             senderName: "Jane Doe to Johnny Cash"
         )
         
+        // New users -> Johnny Cash (ACQUAINTANCE connections)
+        await sendConnectionRequest(
+            token: harrietToken,
+            requestedId: johnnyCashUserId,
+            type: "ACQUAINTANCE",
+            senderName: "Harriet Tubman to Johnny Cash"
+        )
+        
+        await sendConnectionRequest(
+            token: nikolaToken,
+            requestedId: johnnyCashUserId,
+            type: "ACQUAINTANCE",
+            senderName: "Nikola Tesla to Johnny Cash"
+        )
+        
+        await sendConnectionRequest(
+            token: ellaToken,
+            requestedId: johnnyCashUserId,
+            type: "ACQUAINTANCE",
+            senderName: "Ella Fitzgerald to Johnny Cash"
+        )
+        
+        await sendConnectionRequest(
+            token: martinToken,
+            requestedId: johnnyCashUserId,
+            type: "ACQUAINTANCE",
+            senderName: "Martin Luther King to Johnny Cash"
+        )
+        
+        await sendConnectionRequest(
+            token: cleopatraToken,
+            requestedId: johnnyCashUserId,
+            type: "ACQUAINTANCE",
+            senderName: "Cleopatra to Johnny Cash"
+        )
+        
         // Billy Bob -> Johnny Cash (STRANGER)
         await sendConnectionRequest(
             token: billyToken,
@@ -720,9 +847,9 @@ class CreateTestUsers {
             }
         }
         
-        // Wait for acceptances to settle
-        print("⏳ Waiting for acceptances to settle...")
-        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+        // Wait longer for acceptances to settle and create adjacency table entries
+        print("⏳ Waiting for acceptances to settle and adjacency table to update...")
+        try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
         
         // Have the users Johnny is following accept his requests
         print("\n✋ Users accepting Johnny Cash's follow requests...")
@@ -986,6 +1113,36 @@ class CreateTestUsers {
             await createPost(token: token, content: "Education is the most powerful weapon which you can use to change the world. 📚", userName: "Nelson Mandela")
             await createPost(token: token, content: "It always seems impossible until it's done. Keep fighting for what's right!", userName: "Nelson Mandela")
         }
+        
+        // Harriet Tubman posts
+        if let token = userTokens["harriet@tubman.com"] {
+            await createPost(token: token, content: "Every great dream begins with a dreamer. Always remember, you have within you the strength to reach for the stars. 🌟", userName: "Harriet Tubman")
+            await createPost(token: token, content: "I freed a thousand slaves. I could have freed a thousand more if only they knew they were slaves.", userName: "Harriet Tubman")
+        }
+        
+        // Nikola Tesla posts
+        if let token = userTokens["nikola@tesla.com"] {
+            await createPost(token: token, content: "The present is theirs; the future, for which I really worked, is mine. ⚡", userName: "Nikola Tesla")
+            await createPost(token: token, content: "If you want to find the secrets of the universe, think in terms of energy, frequency and vibration.", userName: "Nikola Tesla")
+        }
+        
+        // Ella Fitzgerald posts
+        if let token = userTokens["ella@fitzgerald.com"] {
+            await createPost(token: token, content: "It isn't where you came from, it's where you're going that counts. 🎵", userName: "Ella Fitzgerald")
+            await createPost(token: token, content: "Just don't give up trying to do what you really want to do. Where there is love and inspiration, you can't go wrong.", userName: "Ella Fitzgerald")
+        }
+        
+        // Martin Luther King posts
+        if let token = userTokens["martin@king.com"] {
+            await createPost(token: token, content: "I have a dream that one day this nation will rise up and live out the true meaning of its creed. ✊", userName: "Martin Luther King")
+            await createPost(token: token, content: "Darkness cannot drive out darkness; only light can do that. Hate cannot drive out hate; only love can do that.", userName: "Martin Luther King")
+        }
+        
+        // Cleopatra posts
+        if let token = userTokens["cleopatra@egypt.com"] {
+            await createPost(token: token, content: "I will not be triumphed over. Leadership is about vision, strategy, and the courage to act. 👑", userName: "Cleopatra")
+            await createPost(token: token, content: "All strange and terrible events are welcome, but comforts we despise. History favors the bold!", userName: "Cleopatra")
+        }
     }
     
     private static func createAdditionalGroups(userTokens: [String: String]) async {
@@ -1009,7 +1166,12 @@ class CreateTestUsers {
               let fridaUserId = await getUserId(token: userTokens["frida@kahlo.com"] ?? ""),
               let janeUserId = await getUserId(token: userTokens["jane@doe.com"] ?? ""),
               let winstonToken = userTokens["winston@churchill.com"],
-              let winstonUserId = await getUserId(token: winstonToken) else {
+              let winstonUserId = await getUserId(token: winstonToken),
+              let harrietUserId = await getUserId(token: userTokens["harriet@tubman.com"] ?? ""),
+              let nikolaUserId = await getUserId(token: userTokens["nikola@tesla.com"] ?? ""),
+              let ellaUserId = await getUserId(token: userTokens["ella@fitzgerald.com"] ?? ""),
+              let martinUserId = await getUserId(token: userTokens["martin@king.com"] ?? ""),
+              let cleopatraUserId = await getUserId(token: userTokens["cleopatra@egypt.com"] ?? "") else {
             print("❌ Failed to get required user IDs for additional groups")
             return
         }
@@ -1023,7 +1185,9 @@ class CreateTestUsers {
             privacy: "PUBLIC"
         ) {
             print("✅ Created Science & Innovation group")
-            await inviteToGroup(token: albertToken, groupId: scienceGroupId, userIds: [marieUserId, leonardoUserId, johnnyCashUserId])
+            // Johnny Cash NOT invited - will see as suggested group
+            // Add Jane Doe and new users (Nikola Tesla, Harriet Tubman)
+            await inviteToGroup(token: albertToken, groupId: scienceGroupId, userIds: [marieUserId, leonardoUserId, janeUserId, nikolaUserId, harrietUserId])
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             if let marieToken = userTokens["marie@curie.com"] {
                 await acceptGroupInvite(token: marieToken, groupId: scienceGroupId, userName: "Marie Curie")
@@ -1031,7 +1195,15 @@ class CreateTestUsers {
             if let leonardoToken = userTokens["leonardo@davinci.com"] {
                 await acceptGroupInvite(token: leonardoToken, groupId: scienceGroupId, userName: "Leonardo da Vinci")
             }
-            await acceptGroupInvite(token: johnnyCashToken, groupId: scienceGroupId, userName: "Johnny Cash")
+            if let janeToken = userTokens["jane@doe.com"] {
+                await acceptGroupInvite(token: janeToken, groupId: scienceGroupId, userName: "Jane Doe")
+            }
+            if let nikolaToken = userTokens["nikola@tesla.com"] {
+                await acceptGroupInvite(token: nikolaToken, groupId: scienceGroupId, userName: "Nikola Tesla")
+            }
+            if let harrietToken = userTokens["harriet@tubman.com"] {
+                await acceptGroupInvite(token: harrietToken, groupId: scienceGroupId, userName: "Harriet Tubman")
+            }
         }
         
         // 2. Champions Circle (Muhammad Ali as admin) - PRIVATE
@@ -1063,7 +1235,9 @@ class CreateTestUsers {
             privacy: "PUBLIC"
         ) {
             print("✅ Created Change Makers group")
-            await inviteToGroup(token: rosaToken, groupId: changeMakersGroupId, userIds: [nelsonUserId, mayaUserId, johnnyCashUserId, winstonUserId])
+            // Johnny Cash NOT invited - will see as suggested group
+            // Add Martin Luther King and Harriet Tubman to Change Makers
+            await inviteToGroup(token: rosaToken, groupId: changeMakersGroupId, userIds: [nelsonUserId, mayaUserId, winstonUserId, janeUserId, martinUserId, harrietUserId])
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             if let nelsonToken = userTokens["nelson@mandela.com"] {
                 await acceptGroupInvite(token: nelsonToken, groupId: changeMakersGroupId, userName: "Nelson Mandela")
@@ -1071,8 +1245,16 @@ class CreateTestUsers {
             if let mayaToken = userTokens["maya@angelou.com"] {
                 await acceptGroupInvite(token: mayaToken, groupId: changeMakersGroupId, userName: "Maya Angelou")
             }
-            await acceptGroupInvite(token: johnnyCashToken, groupId: changeMakersGroupId, userName: "Johnny Cash")
             await acceptGroupInvite(token: winstonToken, groupId: changeMakersGroupId, userName: "Winston Churchill")
+            if let janeToken = userTokens["jane@doe.com"] {
+                await acceptGroupInvite(token: janeToken, groupId: changeMakersGroupId, userName: "Jane Doe")
+            }
+            if let martinToken = userTokens["martin@king.com"] {
+                await acceptGroupInvite(token: martinToken, groupId: changeMakersGroupId, userName: "Martin Luther King")
+            }
+            if let harrietToken = userTokens["harriet@tubman.com"] {
+                await acceptGroupInvite(token: harrietToken, groupId: changeMakersGroupId, userName: "Harriet Tubman")
+            }
         }
         
         // 4. Creative Souls (Frida Kahlo as admin) - PUBLIC
@@ -1106,12 +1288,72 @@ class CreateTestUsers {
             privacy: "PUBLIC"
         ) {
             print("✅ Created Adventure Seekers group")
-            await inviteToGroup(token: ameliaToken, groupId: adventureGroupId, userIds: [billyUserId, johnnyCashUserId])
+            // Johnny Cash NOT invited - will see as suggested group
+            // Add Cleopatra to Adventure Seekers
+            await inviteToGroup(token: ameliaToken, groupId: adventureGroupId, userIds: [billyUserId, janeUserId, cleopatraUserId])
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             if let billyToken = userTokens["billy@bob.com"] {
                 await acceptGroupInvite(token: billyToken, groupId: adventureGroupId, userName: "Billy Bob")
             }
-            await acceptGroupInvite(token: johnnyCashToken, groupId: adventureGroupId, userName: "Johnny Cash")
+            if let janeToken = userTokens["jane@doe.com"] {
+                await acceptGroupInvite(token: janeToken, groupId: adventureGroupId, userName: "Jane Doe")
+            }
+            if let cleopatraToken = userTokens["cleopatra@egypt.com"] {
+                await acceptGroupInvite(token: cleopatraToken, groupId: adventureGroupId, userName: "Cleopatra")
+            }
+        }
+        
+        // 6. Jazz & Soul (Ella Fitzgerald as admin) - PUBLIC
+        // Johnny Cash NOT invited - new group for suggested
+        if let ellaToken = userTokens["ella@fitzgerald.com"],
+           let jazzGroupId = await createGroup(
+            token: ellaToken,
+            name: "Jazz & Soul",
+            description: "For lovers of jazz, blues, and soulful music",
+            groupType: "AUTOCRATIC",
+            privacy: "PUBLIC"
+        ) {
+            print("✅ Created Jazz & Soul group")
+            // Add musical connections but NOT Johnny Cash
+            if let bobMarleyUserId = await getUserId(token: userTokens["bob@marley.com"] ?? ""),
+               let mayaUserId = await getUserId(token: userTokens["maya@angelou.com"] ?? "") {
+                await inviteToGroup(token: ellaToken, groupId: jazzGroupId, userIds: [bobMarleyUserId, mayaUserId, nikolaUserId])
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                if let bobMarleyToken = userTokens["bob@marley.com"] {
+                    await acceptGroupInvite(token: bobMarleyToken, groupId: jazzGroupId, userName: "Bob Marley")
+                }
+                if let mayaToken = userTokens["maya@angelou.com"] {
+                    await acceptGroupInvite(token: mayaToken, groupId: jazzGroupId, userName: "Maya Angelou")
+                }
+                if let nikolaToken = userTokens["nikola@tesla.com"] {
+                    await acceptGroupInvite(token: nikolaToken, groupId: jazzGroupId, userName: "Nikola Tesla")
+                }
+            }
+        }
+        
+        // 7. History Buffs (Cleopatra as admin) - PUBLIC  
+        // Johnny Cash NOT invited - new group for suggested
+        if let cleopatraToken = userTokens["cleopatra@egypt.com"],
+           let historyGroupId = await createGroup(
+            token: cleopatraToken,
+            name: "History Buffs",
+            description: "Discussing and celebrating history's greatest moments",
+            groupType: "AUTOCRATIC",
+            privacy: "PUBLIC"
+        ) {
+            print("✅ Created History Buffs group")
+            await inviteToGroup(token: cleopatraToken, groupId: historyGroupId, userIds: [winstonUserId, nelsonUserId, harrietUserId, martinUserId])
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            await acceptGroupInvite(token: winstonToken, groupId: historyGroupId, userName: "Winston Churchill")
+            if let nelsonToken = userTokens["nelson@mandela.com"] {
+                await acceptGroupInvite(token: nelsonToken, groupId: historyGroupId, userName: "Nelson Mandela")
+            }
+            if let harrietToken = userTokens["harriet@tubman.com"] {
+                await acceptGroupInvite(token: harrietToken, groupId: historyGroupId, userName: "Harriet Tubman")
+            }
+            if let martinToken = userTokens["martin@king.com"] {
+                await acceptGroupInvite(token: martinToken, groupId: historyGroupId, userName: "Martin Luther King")
+            }
         }
     }
     
