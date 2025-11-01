@@ -158,6 +158,126 @@ class CreateTestUsers {
             isPrivate: true,
             profilePhoto: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Bob-Marley-in-Concert_Zurich_05-30-80.jpg/440px-Bob-Marley-in-Concert_Zurich_05-30-80.jpg",
             about: "Reggae icon and musical revolutionary. Spreading messages of love, unity, and peace through music."
+        ),
+        TestUserData(
+            firstName: "Marie",
+            lastName: "Curie",
+            email: "marie@curie.com",
+            password: "Password1",
+            username: "MarieCurie",
+            dateOfBirth: "1867-11-07",
+            gender: "FEMALE",
+            isPrivate: false,
+            profilePhoto: "https://i.pravatar.cc/150?img=45",
+            about: "Scientist and researcher. Pioneer in radioactivity. Two-time Nobel Prize winner. Science is my passion!"
+        ),
+        TestUserData(
+            firstName: "Albert",
+            lastName: "Einstein",
+            email: "albert@einstein.com",
+            password: "Password1",
+            username: "AlbertEinstein",
+            dateOfBirth: "1879-03-14",
+            gender: "MALE",
+            isPrivate: false,
+            profilePhoto: "https://i.pravatar.cc/150?img=13",
+            about: "Theoretical physicist. Imagination is more important than knowledge. E=mc². Relativity enthusiast."
+        ),
+        TestUserData(
+            firstName: "Amelia",
+            lastName: "Earhart",
+            email: "amelia@earhart.com",
+            password: "Password1",
+            username: "AmeliaEarhart",
+            dateOfBirth: "1897-07-24",
+            gender: "FEMALE",
+            isPrivate: true,
+            profilePhoto: "https://i.pravatar.cc/150?img=48",
+            about: "Aviation pioneer and adventurer. The most difficult thing is the decision to act. Flying is freedom!"
+        ),
+        TestUserData(
+            firstName: "Leonardo",
+            lastName: "da Vinci",
+            email: "leonardo@davinci.com",
+            password: "Password1",
+            username: "LeonardoDaVinci",
+            dateOfBirth: "1452-04-15",
+            gender: "MALE",
+            isPrivate: false,
+            profilePhoto: "https://i.pravatar.cc/150?img=60",
+            about: "Renaissance artist and inventor. Painter, sculptor, architect, scientist. Art is never finished, only abandoned."
+        ),
+        TestUserData(
+            firstName: "Rosa",
+            lastName: "Parks",
+            email: "rosa@parks.com",
+            password: "Password1",
+            username: "RosaParks",
+            dateOfBirth: "1913-02-04",
+            gender: "FEMALE",
+            isPrivate: true,
+            profilePhoto: "https://i.pravatar.cc/150?img=20",
+            about: "Civil rights activist. Stand up for what is right, even if you're standing alone. Change maker."
+        ),
+        TestUserData(
+            firstName: "Winston",
+            lastName: "Churchill",
+            email: "winston@churchill.com",
+            password: "Password1",
+            username: "WinstonChurchill",
+            dateOfBirth: "1874-11-30",
+            gender: "MALE",
+            isPrivate: false,
+            profilePhoto: "https://i.pravatar.cc/150?img=59",
+            about: "Statesman and orator. Success is not final, failure is not fatal. History enthusiast and writer."
+        ),
+        TestUserData(
+            firstName: "Frida",
+            lastName: "Kahlo",
+            email: "frida@kahlo.com",
+            password: "Password1",
+            username: "FridaKahlo",
+            dateOfBirth: "1907-07-06",
+            gender: "FEMALE",
+            isPrivate: false,
+            profilePhoto: "https://i.pravatar.cc/150?img=44",
+            about: "Artist and icon. I paint my own reality. Self-portraits are my way of expressing inner emotions."
+        ),
+        TestUserData(
+            firstName: "Muhammad",
+            lastName: "Ali",
+            email: "muhammad@ali.com",
+            password: "Password1",
+            username: "MuhammadAli",
+            dateOfBirth: "1942-01-17",
+            gender: "MALE",
+            isPrivate: false,
+            profilePhoto: "https://i.pravatar.cc/150?img=51",
+            about: "The Greatest. Float like a butterfly, sting like a bee. Champion inside and outside the ring."
+        ),
+        TestUserData(
+            firstName: "Maya",
+            lastName: "Angelou",
+            email: "maya@angelou.com",
+            password: "Password1",
+            username: "MayaAngelou",
+            dateOfBirth: "1928-04-04",
+            gender: "FEMALE",
+            isPrivate: true,
+            profilePhoto: "https://i.pravatar.cc/150?img=49",
+            about: "Poet and civil rights activist. Still I rise. Words have power to change the world and heal souls."
+        ),
+        TestUserData(
+            firstName: "Nelson",
+            lastName: "Mandela",
+            email: "nelson@mandela.com",
+            password: "Password1",
+            username: "NelsonMandela",
+            dateOfBirth: "1918-07-18",
+            gender: "MALE",
+            isPrivate: false,
+            profilePhoto: "https://i.pravatar.cc/150?img=56",
+            about: "Freedom fighter and humanitarian. Education is the most powerful weapon. Peace and reconciliation advocate."
         )
     ]
     
@@ -222,7 +342,17 @@ class CreateTestUsers {
               let jfkToken = userTokens["john@kennedy.com"],
               let tomToken = userTokens["tom@brady.com"],
               let johnnyCashToken = userTokens["johnny@cash.com"],
-              let bobMarleyToken = userTokens["bob@marley.com"] else {
+              let bobMarleyToken = userTokens["bob@marley.com"],
+              let marieToken = userTokens["marie@curie.com"],
+              let albertToken = userTokens["albert@einstein.com"],
+              let ameliaToken = userTokens["amelia@earhart.com"],
+              let leonardoToken = userTokens["leonardo@davinci.com"],
+              let rosaToken = userTokens["rosa@parks.com"],
+              let winstonToken = userTokens["winston@churchill.com"],
+              let fridaToken = userTokens["frida@kahlo.com"],
+              let muhammadToken = userTokens["muhammad@ali.com"],
+              let mayaToken = userTokens["maya@angelou.com"],
+              let nelsonToken = userTokens["nelson@mandela.com"] else {
             print("❌ Missing user tokens for connection setup")
             return
         }
@@ -280,6 +410,61 @@ class CreateTestUsers {
         
         guard let bobMarleyUserId = await getUserId(token: bobMarleyToken) else {
             print("❌ Failed to get Bob Marley's user ID")
+            return
+        }
+        
+        guard let marieUserId = await getUserId(token: marieToken) else {
+            print("❌ Failed to get Marie Curie's user ID")
+            return
+        }
+        
+        guard let albertUserId = await getUserId(token: albertToken) else {
+            print("❌ Failed to get Albert Einstein's user ID")
+            return
+        }
+        
+        guard let ameliaUserId = await getUserId(token: ameliaToken) else {
+            print("❌ Failed to get Amelia Earhart's user ID")
+            return
+        }
+        
+        guard let leonardoUserId = await getUserId(token: leonardoToken) else {
+            print("❌ Failed to get Leonardo da Vinci's user ID")
+            return
+        }
+        
+        guard let rosaUserId = await getUserId(token: rosaToken) else {
+            print("❌ Failed to get Rosa Parks's user ID")
+            return
+        }
+        
+        guard let winstonUserId = await getUserId(token: winstonToken) else {
+            print("❌ Failed to get Winston Churchill's user ID")
+            return
+        }
+        
+        guard let fridaUserId = await getUserId(token: fridaToken) else {
+            print("❌ Failed to get Frida Kahlo's user ID")
+            return
+        }
+        
+        guard let muhammadUserId = await getUserId(token: muhammadToken) else {
+            print("❌ Failed to get Muhammad Ali's user ID")
+            return
+        }
+        
+        guard let mayaUserId = await getUserId(token: mayaToken) else {
+            print("❌ Failed to get Maya Angelou's user ID")
+            return
+        }
+        
+        guard let nelsonUserId = await getUserId(token: nelsonToken) else {
+            print("❌ Failed to get Nelson Mandela's user ID")
+            return
+        }
+        
+        guard let johnnyCashUserId = await getUserId(token: johnnyCashToken) else {
+            print("❌ Failed to get Johnny Cash's user ID")
             return
         }
         
@@ -489,6 +674,31 @@ class CreateTestUsers {
             senderName: "John Smith to Johnny Cash"
         )
         
+        // Many more people follow Johnny Cash (he's famous!)
+        await sendConnectionRequest(token: marieToken, requestedId: johnnyCashUserId, type: "FOLLOW", senderName: "Marie Curie to Johnny Cash")
+        await sendConnectionRequest(token: albertToken, requestedId: johnnyCashUserId, type: "ACQUAINTANCE", senderName: "Albert Einstein to Johnny Cash")
+        await sendConnectionRequest(token: ameliaToken, requestedId: johnnyCashUserId, type: "FOLLOW", senderName: "Amelia Earhart to Johnny Cash")
+        await sendConnectionRequest(token: leonardoToken, requestedId: johnnyCashUserId, type: "FOLLOW", senderName: "Leonardo da Vinci to Johnny Cash")
+        await sendConnectionRequest(token: rosaToken, requestedId: johnnyCashUserId, type: "ACQUAINTANCE", senderName: "Rosa Parks to Johnny Cash")
+        await sendConnectionRequest(token: winstonToken, requestedId: johnnyCashUserId, type: "FOLLOW", senderName: "Winston Churchill to Johnny Cash")
+        await sendConnectionRequest(token: fridaToken, requestedId: johnnyCashUserId, type: "ACQUAINTANCE", senderName: "Frida Kahlo to Johnny Cash")
+        await sendConnectionRequest(token: muhammadToken, requestedId: johnnyCashUserId, type: "ACQUAINTANCE", senderName: "Muhammad Ali to Johnny Cash")
+        await sendConnectionRequest(token: mayaToken, requestedId: johnnyCashUserId, type: "FOLLOW", senderName: "Maya Angelou to Johnny Cash")
+        await sendConnectionRequest(token: nelsonToken, requestedId: johnnyCashUserId, type: "FOLLOW", senderName: "Nelson Mandela to Johnny Cash")
+        await sendConnectionRequest(token: daveToken, requestedId: johnnyCashUserId, type: "FOLLOW", senderName: "Dave Chappelle to Johnny Cash")
+        await sendConnectionRequest(token: tomToken, requestedId: johnnyCashUserId, type: "FOLLOW", senderName: "Tom Brady to Johnny Cash")
+        
+        // Johnny Cash follows other users (he's humble and appreciates others)
+        print("\n🎸 Johnny Cash following other inspiring people...")
+        await sendConnectionRequest(token: johnnyCashToken, requestedId: bobMarleyUserId, type: "FOLLOW", senderName: "Johnny Cash to Bob Marley")
+        await sendConnectionRequest(token: johnnyCashToken, requestedId: mayaUserId, type: "FOLLOW", senderName: "Johnny Cash to Maya Angelou")
+        await sendConnectionRequest(token: johnnyCashToken, requestedId: nelsonUserId, type: "FOLLOW", senderName: "Johnny Cash to Nelson Mandela")
+        await sendConnectionRequest(token: johnnyCashToken, requestedId: muhammadUserId, type: "FOLLOW", senderName: "Johnny Cash to Muhammad Ali")
+        await sendConnectionRequest(token: johnnyCashToken, requestedId: winstonUserId, type: "FOLLOW", senderName: "Johnny Cash to Winston Churchill")
+        await sendConnectionRequest(token: johnnyCashToken, requestedId: fridaUserId, type: "FOLLOW", senderName: "Johnny Cash to Frida Kahlo")
+        await sendConnectionRequest(token: johnnyCashToken, requestedId: leonardoUserId, type: "FOLLOW", senderName: "Johnny Cash to Leonardo da Vinci")
+        await sendConnectionRequest(token: johnnyCashToken, requestedId: rosaUserId, type: "FOLLOW", senderName: "Johnny Cash to Rosa Parks")
+        
         // Wait for requests to settle
         print("⏳ Waiting for Johnny Cash requests to settle...")
         try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
@@ -513,6 +723,93 @@ class CreateTestUsers {
         // Wait for acceptances to settle
         print("⏳ Waiting for acceptances to settle...")
         try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+        
+        // Have the users Johnny is following accept his requests
+        print("\n✋ Users accepting Johnny Cash's follow requests...")
+        
+        // Bob Marley accepts
+        if let pendingBob = await getPendingRequests(token: bobMarleyToken) {
+            for request in pendingBob {
+                if let requesterId = request["requesterId"] as? String, requesterId == johnnyCashUserId,
+                   let requestId = request["id"] as? String {
+                    await acceptConnectionRequest(token: bobMarleyToken, requestId: requestId, senderName: "Johnny Cash")
+                }
+            }
+        }
+        
+        // Maya Angelou accepts
+        if let pendingMaya = await getPendingRequests(token: mayaToken) {
+            for request in pendingMaya {
+                if let requesterId = request["requesterId"] as? String, requesterId == johnnyCashUserId,
+                   let requestId = request["id"] as? String {
+                    await acceptConnectionRequest(token: mayaToken, requestId: requestId, senderName: "Johnny Cash")
+                }
+            }
+        }
+        
+        // Nelson Mandela accepts
+        if let pendingNelson = await getPendingRequests(token: nelsonToken) {
+            for request in pendingNelson {
+                if let requesterId = request["requesterId"] as? String, requesterId == johnnyCashUserId,
+                   let requestId = request["id"] as? String {
+                    await acceptConnectionRequest(token: nelsonToken, requestId: requestId, senderName: "Johnny Cash")
+                }
+            }
+        }
+        
+        // Muhammad Ali accepts
+        if let pendingMuhammad = await getPendingRequests(token: muhammadToken) {
+            for request in pendingMuhammad {
+                if let requesterId = request["requesterId"] as? String, requesterId == johnnyCashUserId,
+                   let requestId = request["id"] as? String {
+                    await acceptConnectionRequest(token: muhammadToken, requestId: requestId, senderName: "Johnny Cash")
+                }
+            }
+        }
+        
+        // Winston Churchill accepts
+        if let pendingWinston = await getPendingRequests(token: winstonToken) {
+            for request in pendingWinston {
+                if let requesterId = request["requesterId"] as? String, requesterId == johnnyCashUserId,
+                   let requestId = request["id"] as? String {
+                    await acceptConnectionRequest(token: winstonToken, requestId: requestId, senderName: "Johnny Cash")
+                }
+            }
+        }
+        
+        // Frida Kahlo accepts
+        if let pendingFrida = await getPendingRequests(token: fridaToken) {
+            for request in pendingFrida {
+                if let requesterId = request["requesterId"] as? String, requesterId == johnnyCashUserId,
+                   let requestId = request["id"] as? String {
+                    await acceptConnectionRequest(token: fridaToken, requestId: requestId, senderName: "Johnny Cash")
+                }
+            }
+        }
+        
+        // Leonardo da Vinci accepts
+        if let pendingLeonardo = await getPendingRequests(token: leonardoToken) {
+            for request in pendingLeonardo {
+                if let requesterId = request["requesterId"] as? String, requesterId == johnnyCashUserId,
+                   let requestId = request["id"] as? String {
+                    await acceptConnectionRequest(token: leonardoToken, requestId: requestId, senderName: "Johnny Cash")
+                }
+            }
+        }
+        
+        // Rosa Parks accepts
+        if let pendingRosa = await getPendingRequests(token: rosaToken) {
+            for request in pendingRosa {
+                if let requesterId = request["requesterId"] as? String, requesterId == johnnyCashUserId,
+                   let requestId = request["id"] as? String {
+                    await acceptConnectionRequest(token: rosaToken, requestId: requestId, senderName: "Johnny Cash")
+                }
+            }
+        }
+        
+        // Wait for these acceptances to settle
+        print("⏳ Waiting for Johnny's following acceptances to settle...")
+        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
         
         // Create Musicians group
         print("\n🎵 Creating Musicians group...")
@@ -549,6 +846,12 @@ class CreateTestUsers {
         await acceptGroupInvite(token: janeToken, groupId: musiciansGroupId, userName: "Jane Doe")
         await acceptGroupInvite(token: billyToken, groupId: musiciansGroupId, userName: "Billy Bob")
         await acceptGroupInvite(token: bobMarleyToken, groupId: musiciansGroupId, userName: "Bob Marley")
+        
+        // Create additional groups with different themes
+        await createAdditionalGroups(userTokens: userTokens)
+        
+        // Create subnets
+        await createSubnets(userTokens: userTokens)
         
         // Create posts from various users
         print("\n📝 Creating posts from users...")
@@ -622,6 +925,264 @@ class CreateTestUsers {
         if let token = userTokens["john@kennedy.com"] {
             await createPost(token: token, content: "Community engagement event was a success! When we work together, amazing things happen. 🇺🇸", userName: "John Kennedy")
             await createPost(token: token, content: "Ask not what your community can do for you, but what you can do for your community.", userName: "John Kennedy")
+        }
+        
+        // Marie Curie posts
+        if let token = userTokens["marie@curie.com"] {
+            await createPost(token: token, content: "In science, we must be interested in things, not in persons. The work is what matters! 🔬", userName: "Marie Curie")
+            await createPost(token: token, content: "Nothing in life is to be feared, it is only to be understood. Keep learning and exploring!", userName: "Marie Curie")
+        }
+        
+        // Albert Einstein posts
+        if let token = userTokens["albert@einstein.com"] {
+            await createPost(token: token, content: "The important thing is not to stop questioning. Curiosity has its own reason for existing. 🌌", userName: "Albert Einstein")
+            await createPost(token: token, content: "Imagination is more important than knowledge. Knowledge is limited. Imagination encircles the world.", userName: "Albert Einstein")
+        }
+        
+        // Amelia Earhart posts
+        if let token = userTokens["amelia@earhart.com"] {
+            await createPost(token: token, content: "The most effective way to do it, is to do it. Adventure is worthwhile in itself! ✈️", userName: "Amelia Earhart")
+            await createPost(token: token, content: "Flying solo across new territories. The sky isn't the limit—it's just the beginning.", userName: "Amelia Earhart")
+        }
+        
+        // Leonardo da Vinci posts
+        if let token = userTokens["leonardo@davinci.com"] {
+            await createPost(token: token, content: "Learning never exhausts the mind. Art and science are not opposites—they complement each other. 🎨", userName: "Leonardo da Vinci")
+            await createPost(token: token, content: "Simplicity is the ultimate sophistication. Working on a new piece inspired by nature.", userName: "Leonardo da Vinci")
+        }
+        
+        // Rosa Parks posts
+        if let token = userTokens["rosa@parks.com"] {
+            await createPost(token: token, content: "Stand for something or you will fall for anything. Each person must live their life as a model for others. ✊", userName: "Rosa Parks")
+            await createPost(token: token, content: "I have learned over the years that when one's mind is made up, this diminishes fear.", userName: "Rosa Parks")
+        }
+        
+        // Winston Churchill posts
+        if let token = userTokens["winston@churchill.com"] {
+            await createPost(token: token, content: "Success is not final, failure is not fatal: it is the courage to continue that counts. 🎖️", userName: "Winston Churchill")
+            await createPost(token: token, content: "We make a living by what we get, but we make a life by what we give. Stay determined!", userName: "Winston Churchill")
+        }
+        
+        // Frida Kahlo posts
+        if let token = userTokens["frida@kahlo.com"] {
+            await createPost(token: token, content: "I paint myself because I am so often alone and because I am the subject I know best. 🌺", userName: "Frida Kahlo")
+            await createPost(token: token, content: "Feet, what do I need you for when I have wings to fly? Art is my freedom!", userName: "Frida Kahlo")
+        }
+        
+        // Muhammad Ali posts
+        if let token = userTokens["muhammad@ali.com"] {
+            await createPost(token: token, content: "Float like a butterfly, sting like a bee! The fight is won or lost far away from witnesses. 🥊", userName: "Muhammad Ali")
+            await createPost(token: token, content: "Don't count the days, make the days count. Champions aren't made in gyms—they're made from something deep inside.", userName: "Muhammad Ali")
+        }
+        
+        // Maya Angelou posts
+        if let token = userTokens["maya@angelou.com"] {
+            await createPost(token: token, content: "There is no greater agony than bearing an untold story inside you. Write, speak, create! ✍️", userName: "Maya Angelou")
+            await createPost(token: token, content: "We delight in the beauty of the butterfly, but rarely admit the changes it has gone through to achieve that beauty.", userName: "Maya Angelou")
+        }
+        
+        // Nelson Mandela posts
+        if let token = userTokens["nelson@mandela.com"] {
+            await createPost(token: token, content: "Education is the most powerful weapon which you can use to change the world. 📚", userName: "Nelson Mandela")
+            await createPost(token: token, content: "It always seems impossible until it's done. Keep fighting for what's right!", userName: "Nelson Mandela")
+        }
+    }
+    
+    private static func createAdditionalGroups(userTokens: [String: String]) async {
+        print("\n🎯 Creating additional groups...")
+        
+        guard let johnnyCashToken = userTokens["johnny@cash.com"],
+              let johnnyCashUserId = await getUserId(token: johnnyCashToken),
+              let albertToken = userTokens["albert@einstein.com"],
+              let albertUserId = await getUserId(token: albertToken),
+              let marieUserId = await getUserId(token: userTokens["marie@curie.com"] ?? ""),
+              let leonardoUserId = await getUserId(token: userTokens["leonardo@davinci.com"] ?? ""),
+              let rosaToken = userTokens["rosa@parks.com"],
+              let rosaUserId = await getUserId(token: rosaToken),
+              let nelsonUserId = await getUserId(token: userTokens["nelson@mandela.com"] ?? ""),
+              let mayaUserId = await getUserId(token: userTokens["maya@angelou.com"] ?? ""),
+              let muhammadToken = userTokens["muhammad@ali.com"],
+              let muhammadUserId = await getUserId(token: muhammadToken),
+              let tomUserId = await getUserId(token: userTokens["tom@brady.com"] ?? ""),
+              let billyUserId = await getUserId(token: userTokens["billy@bob.com"] ?? ""),
+              let ameliaUserId = await getUserId(token: userTokens["amelia@earhart.com"] ?? ""),
+              let fridaUserId = await getUserId(token: userTokens["frida@kahlo.com"] ?? ""),
+              let janeUserId = await getUserId(token: userTokens["jane@doe.com"] ?? ""),
+              let winstonToken = userTokens["winston@churchill.com"],
+              let winstonUserId = await getUserId(token: winstonToken) else {
+            print("❌ Failed to get required user IDs for additional groups")
+            return
+        }
+        
+        // 1. Science & Innovation (Albert Einstein as admin)
+        if let scienceGroupId = await createGroup(
+            token: albertToken,
+            name: "Science & Innovation",
+            description: "For curious minds exploring the mysteries of the universe",
+            groupType: "AUTOCRATIC",
+            privacy: "PUBLIC"
+        ) {
+            print("✅ Created Science & Innovation group")
+            await inviteToGroup(token: albertToken, groupId: scienceGroupId, userIds: [marieUserId, leonardoUserId, johnnyCashUserId])
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            if let marieToken = userTokens["marie@curie.com"] {
+                await acceptGroupInvite(token: marieToken, groupId: scienceGroupId, userName: "Marie Curie")
+            }
+            if let leonardoToken = userTokens["leonardo@davinci.com"] {
+                await acceptGroupInvite(token: leonardoToken, groupId: scienceGroupId, userName: "Leonardo da Vinci")
+            }
+            await acceptGroupInvite(token: johnnyCashToken, groupId: scienceGroupId, userName: "Johnny Cash")
+        }
+        
+        // 2. Champions Circle (Muhammad Ali as admin) - PRIVATE
+        if let championsGroupId = await createGroup(
+            token: muhammadToken,
+            name: "Champions Circle",
+            description: "Winners supporting winners. Discipline, dedication, excellence.",
+            groupType: "AUTOCRATIC",
+            privacy: "PRIVATE"
+        ) {
+            print("✅ Created Champions Circle group")
+            await inviteToGroup(token: muhammadToken, groupId: championsGroupId, userIds: [tomUserId, johnnyCashUserId, ameliaUserId])
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            if let tomToken = userTokens["tom@brady.com"] {
+                await acceptGroupInvite(token: tomToken, groupId: championsGroupId, userName: "Tom Brady")
+            }
+            await acceptGroupInvite(token: johnnyCashToken, groupId: championsGroupId, userName: "Johnny Cash")
+            if let ameliaToken = userTokens["amelia@earhart.com"] {
+                await acceptGroupInvite(token: ameliaToken, groupId: championsGroupId, userName: "Amelia Earhart")
+            }
+        }
+        
+        // 3. Change Makers (Rosa Parks as admin) - PUBLIC
+        if let changeMakersGroupId = await createGroup(
+            token: rosaToken,
+            name: "Change Makers",
+            description: "Those who stand up, speak out, and make a difference",
+            groupType: "AUTOCRATIC",
+            privacy: "PUBLIC"
+        ) {
+            print("✅ Created Change Makers group")
+            await inviteToGroup(token: rosaToken, groupId: changeMakersGroupId, userIds: [nelsonUserId, mayaUserId, johnnyCashUserId, winstonUserId])
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            if let nelsonToken = userTokens["nelson@mandela.com"] {
+                await acceptGroupInvite(token: nelsonToken, groupId: changeMakersGroupId, userName: "Nelson Mandela")
+            }
+            if let mayaToken = userTokens["maya@angelou.com"] {
+                await acceptGroupInvite(token: mayaToken, groupId: changeMakersGroupId, userName: "Maya Angelou")
+            }
+            await acceptGroupInvite(token: johnnyCashToken, groupId: changeMakersGroupId, userName: "Johnny Cash")
+            await acceptGroupInvite(token: winstonToken, groupId: changeMakersGroupId, userName: "Winston Churchill")
+        }
+        
+        // 4. Creative Souls (Frida Kahlo as admin) - PUBLIC
+        if let fridaToken = userTokens["frida@kahlo.com"],
+           let creativeSoulsGroupId = await createGroup(
+            token: fridaToken,
+            name: "Creative Souls",
+            description: "Artists, dreamers, and creators sharing inspiration",
+            groupType: "AUTOCRATIC",
+            privacy: "PUBLIC"
+        ) {
+            print("✅ Created Creative Souls group")
+            await inviteToGroup(token: fridaToken, groupId: creativeSoulsGroupId, userIds: [leonardoUserId, janeUserId, johnnyCashUserId])
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            if let leonardoToken = userTokens["leonardo@davinci.com"] {
+                await acceptGroupInvite(token: leonardoToken, groupId: creativeSoulsGroupId, userName: "Leonardo da Vinci")
+            }
+            if let janeToken = userTokens["jane@doe.com"] {
+                await acceptGroupInvite(token: janeToken, groupId: creativeSoulsGroupId, userName: "Jane Doe")
+            }
+            await acceptGroupInvite(token: johnnyCashToken, groupId: creativeSoulsGroupId, userName: "Johnny Cash")
+        }
+        
+        // 5. Adventure Seekers (Amelia Earhart as admin) - PUBLIC
+        if let ameliaToken = userTokens["amelia@earhart.com"],
+           let adventureGroupId = await createGroup(
+            token: ameliaToken,
+            name: "Adventure Seekers",
+            description: "For those who dare to explore the unknown",
+            groupType: "AUTOCRATIC",
+            privacy: "PUBLIC"
+        ) {
+            print("✅ Created Adventure Seekers group")
+            await inviteToGroup(token: ameliaToken, groupId: adventureGroupId, userIds: [billyUserId, johnnyCashUserId])
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            if let billyToken = userTokens["billy@bob.com"] {
+                await acceptGroupInvite(token: billyToken, groupId: adventureGroupId, userName: "Billy Bob")
+            }
+            await acceptGroupInvite(token: johnnyCashToken, groupId: adventureGroupId, userName: "Johnny Cash")
+        }
+    }
+    
+    private static func createSubnets(userTokens: [String: String]) async {
+        print("\n🔗 Creating subnets...")
+        
+        guard let johnnyCashToken = userTokens["johnny@cash.com"],
+              let johnnyCashUserId = await getUserId(token: johnnyCashToken),
+              let jackToken = userTokens["jack@johnson.com"],
+              let jackUserId = await getUserId(token: jackToken),
+              let johnSmithToken = userTokens["john@smith.com"],
+              let johnSmithUserId = await getUserId(token: johnSmithToken),
+              let janeUserId = await getUserId(token: userTokens["jane@doe.com"] ?? ""),
+              let bobMarleyUserId = await getUserId(token: userTokens["bob@marley.com"] ?? ""),
+              let albertUserId = await getUserId(token: userTokens["albert@einstein.com"] ?? ""),
+              let fridaUserId = await getUserId(token: userTokens["frida@kahlo.com"] ?? "") else {
+            print("❌ Failed to get required user IDs for subnets")
+            return
+        }
+        
+        // Johnny Cash's subnets (PUBLIC - so everyone can see them)
+        if let musicProjectsSubnet = await createSubnet(
+            token: johnnyCashToken,
+            name: "Music Projects",
+            description: "My ongoing musical endeavors and collaborations",
+            visibility: "PUBLIC"
+        ) {
+            print("✅ Created Johnny's Music Projects subnet")
+            await addSubnetMembers(token: johnnyCashToken, subnetId: musicProjectsSubnet, userIds: [jackUserId, bobMarleyUserId])
+        }
+        
+        if let tourMemoriesSubnet = await createSubnet(
+            token: johnnyCashToken,
+            name: "Tour Memories",
+            description: "Stories and photos from the road",
+            visibility: "CONNECTIONS"
+        ) {
+            print("✅ Created Johnny's Tour Memories subnet")
+            await addSubnetMembers(token: johnnyCashToken, subnetId: tourMemoriesSubnet, userIds: [jackUserId, janeUserId])
+        }
+        
+        if let creativesSubnet = await createSubnet(
+            token: johnnyCashToken,
+            name: "Fellow Creatives",
+            description: "Connecting with other artists and thinkers",
+            visibility: "ACQUAINTANCES"
+        ) {
+            print("✅ Created Johnny's Fellow Creatives subnet")
+            await addSubnetMembers(token: johnnyCashToken, subnetId: creativesSubnet, userIds: [fridaUserId, albertUserId, janeUserId])
+        }
+        
+        // Jack Johnson's subnet
+        if let surfAndSoundSubnet = await createSubnet(
+            token: jackToken,
+            name: "Surf & Sound",
+            description: "Where music meets the ocean",
+            visibility: "PUBLIC"
+        ) {
+            print("✅ Created Jack's Surf & Sound subnet")
+            await addSubnetMembers(token: jackToken, subnetId: surfAndSoundSubnet, userIds: [johnnyCashUserId, bobMarleyUserId])
+        }
+        
+        // John Smith's tech subnet
+        if let techInnovatorsSubnet = await createSubnet(
+            token: johnSmithToken,
+            name: "Tech Innovators",
+            description: "Exploring cutting-edge technology and innovation",
+            visibility: "PUBLIC"
+        ) {
+            print("✅ Created John Smith's Tech Innovators subnet")
+            await addSubnetMembers(token: johnSmithToken, subnetId: techInnovatorsSubnet, userIds: [albertUserId, johnnyCashUserId])
         }
     }
     
@@ -912,6 +1473,60 @@ class CreateTestUsers {
                 print("   Underlying: \(underlyingError.localizedDescription)")
             }
             return (false, nil)
+        }
+    }
+    
+    private static func createSubnet(token: String, name: String, description: String, visibility: String) async -> String? {
+        let url = AppConfig.baseURL.appendingPathComponent("subnets")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let subnetData: [String: Any] = [
+            "name": name,
+            "description": description,
+            "visibility": visibility
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: subnetData)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 {
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let subnetId = json["id"] as? String {
+                    return subnetId
+                }
+            }
+        } catch {
+            print("❌ Error creating subnet: \(error.localizedDescription)")
+        }
+        return nil
+    }
+    
+    private static func addSubnetMembers(token: String, subnetId: String, userIds: [String]) async {
+        let url = AppConfig.baseURL.appendingPathComponent("subnets/\(subnetId)/members")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let memberData: [String: Any] = ["userIds": userIds]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: memberData)
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 {
+                print("✅ Added \(userIds.count) member(s) to subnet")
+            } else {
+                print("❌ Failed to add members to subnet")
+            }
+        } catch {
+            print("❌ Error adding subnet members: \(error.localizedDescription)")
         }
     }
 }

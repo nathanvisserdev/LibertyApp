@@ -37,7 +37,12 @@ struct FollowingListView: View {
     
     private var followingList: some View {
         List(viewModel.following) { user in
-            FollowingRow(user: user)
+            NavigationLink(destination: {
+                let coordinator = ProfileCoordinator(userId: user.id)
+                coordinator.start()
+            }) {
+                FollowingRow(user: user)
+            }
         }
         .listStyle(.plain)
     }
