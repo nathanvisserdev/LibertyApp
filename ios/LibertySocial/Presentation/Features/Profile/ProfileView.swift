@@ -63,7 +63,7 @@ struct ProfileView: View {
                         // Public/Private Badge
                         HStack(spacing: 4) {
                             Image(systemName: profile.isPrivate ? "lock.fill" : "globe")
-                            Text(profile.isPrivate ? "Private Profile" : "Public Profile")
+                            Text(profile.isPrivate ? "Private User" : "Public User")
                         }
                         .font(.caption)
                         .fontWeight(.medium)

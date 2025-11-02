@@ -938,6 +938,310 @@ class CreateTestUsers {
         print("⏳ Waiting for Johnny's following acceptances to settle...")
         try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
         
+        // Add more interconnections between other users
+        print("\n🌐 Creating additional connections between users...")
+        
+        // Scientists connect with each other
+        await sendConnectionRequest(token: albertToken, requestedId: marieUserId, type: "ACQUAINTANCE", senderName: "Albert Einstein to Marie Curie")
+        await sendConnectionRequest(token: albertToken, requestedId: nikolaUserId, type: "ACQUAINTANCE", senderName: "Albert Einstein to Nikola Tesla")
+        await sendConnectionRequest(token: marieToken, requestedId: nikolaUserId, type: "ACQUAINTANCE", senderName: "Marie Curie to Nikola Tesla")
+        
+        // Artists and creatives connect
+        await sendConnectionRequest(token: leonardoToken, requestedId: fridaUserId, type: "ACQUAINTANCE", senderName: "Leonardo da Vinci to Frida Kahlo")
+        await sendConnectionRequest(token: leonardoToken, requestedId: mayaUserId, type: "ACQUAINTANCE", senderName: "Leonardo da Vinci to Maya Angelou")
+        await sendConnectionRequest(token: fridaToken, requestedId: mayaUserId, type: "ACQUAINTANCE", senderName: "Frida Kahlo to Maya Angelou")
+        
+        // Civil rights leaders connect
+        await sendConnectionRequest(token: rosaToken, requestedId: martinUserId, type: "ACQUAINTANCE", senderName: "Rosa Parks to Martin Luther King")
+        await sendConnectionRequest(token: rosaToken, requestedId: nelsonUserId, type: "ACQUAINTANCE", senderName: "Rosa Parks to Nelson Mandela")
+        await sendConnectionRequest(token: martinToken, requestedId: nelsonUserId, type: "ACQUAINTANCE", senderName: "Martin Luther King to Nelson Mandela")
+        await sendConnectionRequest(token: martinToken, requestedId: harrietUserId, type: "ACQUAINTANCE", senderName: "Martin Luther King to Harriet Tubman")
+        
+        // Athletes connect
+        await sendConnectionRequest(token: muhammadToken, requestedId: tomUserId, type: "ACQUAINTANCE", senderName: "Muhammad Ali to Tom Brady")
+        
+        // Musicians connect with each other
+        await sendConnectionRequest(token: bobMarleyToken, requestedId: ellaUserId, type: "ACQUAINTANCE", senderName: "Bob Marley to Ella Fitzgerald")
+        await sendConnectionRequest(token: bobMarleyToken, requestedId: jackUserId, type: "ACQUAINTANCE", senderName: "Bob Marley to Jack Johnson")
+        await sendConnectionRequest(token: ellaToken, requestedId: jackUserId, type: "ACQUAINTANCE", senderName: "Ella Fitzgerald to Jack Johnson")
+        
+        // Entertainers connect
+        await sendConnectionRequest(token: daveToken, requestedId: mayaUserId, type: "ACQUAINTANCE", senderName: "Dave Chappelle to Maya Angelou")
+        await sendConnectionRequest(token: daveToken, requestedId: muhammadUserId, type: "ACQUAINTANCE", senderName: "Dave Chappelle to Muhammad Ali")
+        
+        // Historical figures connect across eras
+        await sendConnectionRequest(token: winstonToken, requestedId: jfkUserId, type: "ACQUAINTANCE", senderName: "Winston Churchill to JFK")
+        await sendConnectionRequest(token: winstonToken, requestedId: harryUserId, type: "ACQUAINTANCE", senderName: "Winston Churchill to Harry Truman")
+        await sendConnectionRequest(token: cleopatraToken, requestedId: leonardoUserId, type: "ACQUAINTANCE", senderName: "Cleopatra to Leonardo da Vinci")
+        
+        // Explorers and adventurers
+        await sendConnectionRequest(token: ameliaToken, requestedId: janeUserId, type: "ACQUAINTANCE", senderName: "Amelia Earhart to Jane Doe")
+        await sendConnectionRequest(token: ameliaToken, requestedId: harrietUserId, type: "ACQUAINTANCE", senderName: "Amelia Earhart to Harriet Tubman")
+        
+        // Some FOLLOW connections for variety
+        await sendConnectionRequest(token: billyToken, requestedId: bobMarleyUserId, type: "FOLLOW", senderName: "Billy Bob to Bob Marley")
+        await sendConnectionRequest(token: johnSmithToken, requestedId: albertUserId, type: "FOLLOW", senderName: "John Smith to Albert Einstein")
+        await sendConnectionRequest(token: janeToken, requestedId: fridaUserId, type: "FOLLOW", senderName: "Jane Doe to Frida Kahlo")
+        await sendConnectionRequest(token: johnDoeToken, requestedId: leonardoUserId, type: "FOLLOW", senderName: "John Doe to Leonardo da Vinci")
+        
+        // Wait for requests to settle
+        print("⏳ Waiting for additional connection requests to settle...")
+        try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+        
+        // Auto-accept ACQUAINTANCE connections
+        print("✋ Auto-accepting mutual connection requests...")
+        
+        // Scientists accept each other
+        if let pendingMarie = await getPendingRequests(token: marieToken) {
+            for request in pendingMarie {
+                if let requesterId = request["requesterId"] as? String,
+                   let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: marieToken, requestId: requestId, senderName: "Scientists")
+                }
+            }
+        }
+        
+        if let pendingNikola = await getPendingRequests(token: nikolaToken) {
+            for request in pendingNikola {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: nikolaToken, requestId: requestId, senderName: "Scientists")
+                }
+            }
+        }
+        
+        // Artists accept each other
+        if let pendingFrida = await getPendingRequests(token: fridaToken) {
+            for request in pendingFrida {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: fridaToken, requestId: requestId, senderName: "Artists")
+                }
+            }
+        }
+        
+        if let pendingMaya = await getPendingRequests(token: mayaToken) {
+            for request in pendingMaya {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: mayaToken, requestId: requestId, senderName: "Writers/Artists")
+                }
+            }
+        }
+        
+        // Civil rights leaders accept each other
+        if let pendingMartin = await getPendingRequests(token: martinToken) {
+            for request in pendingMartin {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: martinToken, requestId: requestId, senderName: "Civil Rights Leaders")
+                }
+            }
+        }
+        
+        if let pendingNelson = await getPendingRequests(token: nelsonToken) {
+            for request in pendingNelson {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: nelsonToken, requestId: requestId, senderName: "Civil Rights Leaders")
+                }
+            }
+        }
+        
+        if let pendingHarriet = await getPendingRequests(token: harrietToken) {
+            for request in pendingHarriet {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: harrietToken, requestId: requestId, senderName: "Freedom Fighters")
+                }
+            }
+        }
+        
+        // Musicians accept each other
+        if let pendingBob = await getPendingRequests(token: bobMarleyToken) {
+            for request in pendingBob {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: bobMarleyToken, requestId: requestId, senderName: "Musicians")
+                }
+            }
+        }
+        
+        if let pendingElla = await getPendingRequests(token: ellaToken) {
+            for request in pendingElla {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: ellaToken, requestId: requestId, senderName: "Musicians")
+                }
+            }
+        }
+        
+        if let pendingJack = await getPendingRequests(token: jackToken) {
+            for request in pendingJack {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: jackToken, requestId: requestId, senderName: "Musicians")
+                }
+            }
+        }
+        
+        // Others accept
+        if let pendingTom = await getPendingRequests(token: tomToken) {
+            for request in pendingTom {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: tomToken, requestId: requestId, senderName: "Athletes")
+                }
+            }
+        }
+        
+        if let pendingMuhammad = await getPendingRequests(token: muhammadToken) {
+            for request in pendingMuhammad {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: muhammadToken, requestId: requestId, senderName: "Athletes")
+                }
+            }
+        }
+        
+        if let pendingDave = await getPendingRequests(token: daveToken) {
+            for request in pendingDave {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: daveToken, requestId: requestId, senderName: "Entertainers")
+                }
+            }
+        }
+        
+        if let pendingWinston = await getPendingRequests(token: winstonToken) {
+            for request in pendingWinston {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: winstonToken, requestId: requestId, senderName: "Leaders")
+                }
+            }
+        }
+        
+        if let pendingJFK = await getPendingRequests(token: jfkToken) {
+            for request in pendingJFK {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: jfkToken, requestId: requestId, senderName: "Leaders")
+                }
+            }
+        }
+        
+        if let pendingHarry = await getPendingRequests(token: harryToken) {
+            for request in pendingHarry {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: harryToken, requestId: requestId, senderName: "Leaders")
+                }
+            }
+        }
+        
+        if let pendingLeonardo = await getPendingRequests(token: leonardoToken) {
+            for request in pendingLeonardo {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: leonardoToken, requestId: requestId, senderName: "Renaissance People")
+                }
+            }
+        }
+        
+        if let pendingCleopatra = await getPendingRequests(token: cleopatraToken) {
+            for request in pendingCleopatra {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: cleopatraToken, requestId: requestId, senderName: "Historical Figures")
+                }
+            }
+        }
+        
+        if let pendingAmelia = await getPendingRequests(token: ameliaToken) {
+            for request in pendingAmelia {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: ameliaToken, requestId: requestId, senderName: "Adventurers")
+                }
+            }
+        }
+        
+        if let pendingJane = await getPendingRequests(token: janeToken) {
+            for request in pendingJane {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "ACQUAINTANCE" {
+                    await acceptConnectionRequest(token: janeToken, requestId: requestId, senderName: "Modern Users")
+                }
+            }
+        }
+        
+        // Accept FOLLOW requests (one-way)
+        if let pendingBobFollows = await getPendingRequests(token: bobMarleyToken) {
+            for request in pendingBobFollows {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "FOLLOW" {
+                    await acceptConnectionRequest(token: bobMarleyToken, requestId: requestId, senderName: "Followers")
+                }
+            }
+        }
+        
+        if let pendingAlbertFollows = await getPendingRequests(token: albertToken) {
+            for request in pendingAlbertFollows {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "FOLLOW" {
+                    await acceptConnectionRequest(token: albertToken, requestId: requestId, senderName: "Followers")
+                }
+            }
+        }
+        
+        if let pendingFridaFollows = await getPendingRequests(token: fridaToken) {
+            for request in pendingFridaFollows {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "FOLLOW" {
+                    await acceptConnectionRequest(token: fridaToken, requestId: requestId, senderName: "Followers")
+                }
+            }
+        }
+        
+        if let pendingLeonardoFollows = await getPendingRequests(token: leonardoToken) {
+            for request in pendingLeonardoFollows {
+                if let requestId = request["id"] as? String,
+                   let type = request["type"] as? String,
+                   type == "FOLLOW" {
+                    await acceptConnectionRequest(token: leonardoToken, requestId: requestId, senderName: "Followers")
+                }
+            }
+        }
+        
+        print("✅ Additional connections created and accepted!")
+        print("⏳ Waiting for all connections to fully settle...")
+        try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+        
         // Create Musicians group
         print("\n🎵 Creating Musicians group...")
         guard let musiciansGroupId = await createGroup(
