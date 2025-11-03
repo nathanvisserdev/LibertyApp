@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct ProfilePost: Decodable {
-    let id: String
+struct ProfilePost: Decodable, Identifiable {
+    let postId: String
     let content: String?
     let media: String?
     let orientation: String?
@@ -16,6 +16,8 @@ struct ProfilePost: Decodable {
     let visibility: String
     let groupId: String?
     let userId: String
+    
+    var id: String { postId } // Identifiable conformance
 }
 
 struct UserProfile: Decodable {

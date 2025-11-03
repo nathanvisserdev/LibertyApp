@@ -30,7 +30,7 @@ struct CreatePostRequest: Codable {
 }
 
 struct CreatePostResponse: Codable {
-    let id: String
+    let postId: String
     let content: String?
     let media: String?
     let createdAt: String
