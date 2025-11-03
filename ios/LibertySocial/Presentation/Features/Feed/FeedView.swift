@@ -52,10 +52,7 @@ struct FeedView: View {
                 post: PostItem(from: item),
                 currentUserId: item.userId,
                 showMenu: viewModel.isUsersPost(item),
-                makeMediaVM: viewModel.makeMediaViewModel,
-                onOpen: {
-                    viewModel.open(postId: item.postId)
-                }
+                makeMediaVM: viewModel.makeMediaViewModel
             )
         }
     }

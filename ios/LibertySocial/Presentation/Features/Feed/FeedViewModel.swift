@@ -25,7 +25,6 @@ final class FeedViewModel: ObservableObject {
     
     // MARK: - Coordinator Callbacks
     var onLogout: (() -> Void)?
-    var onOpenPost: ((String) -> Void)?
     
     // MARK: - Init
     init(model: FeedModel, 
@@ -64,10 +63,6 @@ final class FeedViewModel: ObservableObject {
     // MARK: - Actions
     func logoutTapped() {
         onLogout?()
-    }
-    
-    func open(postId: String) {
-        onOpenPost?(postId)
     }
 
     func load() async {

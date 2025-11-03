@@ -13,22 +13,20 @@ struct PostRowView: View {
     let currentUserId: String?
     let showMenu: Bool
     let makeMediaVM: (String) -> MediaViewModel
-    let onOpen: (() -> Void)?
     
     @State private var showComments = false
+    @State private var comments: [CommentItem] = []
     @State private var commentText = ""
     @FocusState private var isCommentFieldFocused: Bool
     
     init(post: PostItem, 
          currentUserId: String?, 
          showMenu: Bool,
-         makeMediaVM: @escaping (String) -> MediaViewModel,
-         onOpen: (() -> Void)? = nil) {
+         makeMediaVM: @escaping (String) -> MediaViewModel) {
         self.post = post
         self.currentUserId = currentUserId
         self.showMenu = showMenu
         self.makeMediaVM = makeMediaVM
-        self.onOpen = onOpen
     }
     
     // MARK: - Computed Properties
@@ -145,6 +143,16 @@ struct PostRowView: View {
             if showComments {
                 Divider()
                 
+                // Display existing comments
+                ForEach(comments) { c in
+                    CommentRowView(
+                        comment: c,
+                        isMine: c.user?.id == currentUserId,
+                        formattedDate: DateFormatter.feed.string(fromISO: c.createdAt)
+                    )
+                }
+                
+                // Comment input
                 HStack {
                     TextField("Add a comment...", text: $commentText, axis: .vertical)
                         .textFieldStyle(.roundedBorder)
@@ -163,10 +171,6 @@ struct PostRowView: View {
             }
         }
         .padding(.vertical, 4)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onOpen?()
-        }
     }
 }
 

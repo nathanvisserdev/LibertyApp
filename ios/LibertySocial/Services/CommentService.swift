@@ -15,8 +15,17 @@ struct CommentItem: Codable, Identifiable {
     let userId: String
     let postId: String
     let parentId: String?
+    let user: UserSummary?
     
     var id: String { commentId }
+    
+    struct UserSummary: Codable {
+        let id: String
+        let username: String
+        let firstName: String
+        let lastName: String
+        let profilePhoto: String
+    }
 }
 
 protocol CommentService {

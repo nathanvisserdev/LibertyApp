@@ -17,9 +17,6 @@ final class FeedCoordinator: ObservableObject {
     private let commentService: CommentService
     private let reactionService: ReactionService
     
-    // MARK: - State
-    @Published var navigationPath = NavigationPath()
-    
     init(authSession: AuthSession = AuthService.shared,
          authService: AuthServiceProtocol = AuthService.shared,
          feedService: FeedSession = FeedService.shared,
@@ -54,20 +51,7 @@ final class FeedCoordinator: ObservableObject {
             self?.handleLogout()
         }
         
-        viewModel.onOpenPost = { [weak self] postId in
-            self?.openPostDetail(postId: postId)
-        }
-        
         return FeedView(viewModel: viewModel)
-    }
-    
-    func makePostDetailView(postId: String) -> some View {
-        let viewModel = PostDetailViewModel(
-            postId: postId,
-            comments: commentService,
-            reactions: reactionService
-        )
-        return PostDetailView(viewModel: viewModel)
     }
     
     // MARK: - Navigation Actions
@@ -76,10 +60,6 @@ final class FeedCoordinator: ObservableObject {
         // Navigation reset will be handled by SessionStore in LibertySocialApp
         NotificationCenter.default.post(name: NSNotification.Name("UserDidLogout"), object: nil)
     }
-    
-    private func openPostDetail(postId: String) {
-        navigationPath.append(postId)
-    }
 }
 
 // MARK: - Coordinator View
@@ -87,11 +67,8 @@ private struct FeedCoordinatorView: View {
     @ObservedObject var coordinator: FeedCoordinator
     
     var body: some View {
-        NavigationStack(path: $coordinator.navigationPath) {
+        NavigationStack {
             coordinator.makeFeedView()
-                .navigationDestination(for: String.self) { postId in
-                    coordinator.makePostDetailView(postId: postId)
-                }
         }
     }
 }
