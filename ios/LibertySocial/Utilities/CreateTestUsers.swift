@@ -1439,13 +1439,32 @@ class CreateTestUsers {
         // Martin Luther King posts
         if let token = userTokens["martin@king.com"] {
             await createPost(token: token, content: "I have a dream that one day this nation will rise up and live out the true meaning of its creed. ✊", userName: "Martin Luther King")
-            await createPost(token: token, content: "Darkness cannot drive out darkness; only light can do that. Hate cannot drive out hate; only love can do that.", userName: "Martin Luther King")
+            if let postId = await createPost(token: token, content: "Darkness cannot drive out darkness; only light can do that. Hate cannot drive out hate; only love can do that.", userName: "Martin Luther King") {
+                // Add 3 comments to this post
+                if let rosaToken = userTokens["rosa@parks.com"] {
+                    await createComment(token: rosaToken, postId: postId, content: "Powerful words that still ring true today. Thank you for your leadership.", userName: "Rosa Parks")
+                }
+                if let nelsonToken = userTokens["nelson@mandela.com"] {
+                    await createComment(token: nelsonToken, postId: postId, content: "Your message of nonviolence and love inspired my own journey. We must continue this work.", userName: "Nelson Mandela")
+                }
+                if let mayaToken = userTokens["maya@angelou.com"] {
+                    await createComment(token: mayaToken, postId: postId, content: "Light and love are the only weapons that truly transform hearts. Beautiful reminder!", userName: "Maya Angelou")
+                }
+            }
         }
         
         // Cleopatra posts
         if let token = userTokens["cleopatra@egypt.com"] {
             await createPost(token: token, content: "I will not be triumphed over. Leadership is about vision, strategy, and the courage to act. 👑", userName: "Cleopatra")
-            await createPost(token: token, content: "All strange and terrible events are welcome, but comforts we despise. History favors the bold!", userName: "Cleopatra")
+            if let postId = await createPost(token: token, content: "All strange and terrible events are welcome, but comforts we despise. History favors the bold!", userName: "Cleopatra") {
+                // Add 2 comments to this post
+                if let winstonToken = userTokens["winston@churchill.com"] {
+                    await createComment(token: winstonToken, postId: postId, content: "Courage is what it takes to stand up and speak. Well said!", userName: "Winston Churchill")
+                }
+                if let leonardoToken = userTokens["leonardo@davinci.com"] {
+                    await createComment(token: leonardoToken, postId: postId, content: "Boldness has genius, power, and magic in it. The bold create history.", userName: "Leonardo da Vinci")
+                }
+            }
         }
     }
     
@@ -1732,7 +1751,7 @@ class CreateTestUsers {
         }
     }
     
-    private static func createPost(token: String, content: String, userName: String) async {
+    private static func createPost(token: String, content: String, userName: String) async -> String? {
         let url = AppConfig.baseURL.appendingPathComponent("posts")
         
         var request = URLRequest(url: url)
@@ -1747,15 +1766,48 @@ class CreateTestUsers {
         
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: postData)
-            let (_, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
             
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 {
                 print("✅ Created post from \(userName)")
+                
+                // Parse response to get post ID
+                if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let postId = json["postId"] as? String {
+                    return postId
+                }
             } else {
                 print("❌ Failed to create post from \(userName)")
             }
         } catch {
             print("❌ Error creating post from \(userName): \(error.localizedDescription)")
+        }
+        return nil
+    }
+    
+    private static func createComment(token: String, postId: String, content: String, userName: String) async {
+        let url = AppConfig.baseURL.appendingPathComponent("posts/\(postId)/comments")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let commentData: [String: Any] = [
+            "content": content
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: commentData)
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 {
+                print("✅ Created comment from \(userName)")
+            } else {
+                print("❌ Failed to create comment from \(userName)")
+            }
+        } catch {
+            print("❌ Error creating comment from \(userName): \(error.localizedDescription)")
         }
     }
     

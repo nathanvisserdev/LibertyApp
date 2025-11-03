@@ -15,6 +15,10 @@ struct PostRowView: View {
     let makeMediaVM: (String) -> MediaViewModel
     let onOpen: (() -> Void)?
     
+    @State private var showComments = false
+    @State private var commentText = ""
+    @FocusState private var isCommentFieldFocused: Bool
+    
     init(post: PostItem, 
          currentUserId: String?, 
          showMenu: Bool,
@@ -43,6 +47,18 @@ struct PostRowView: View {
     
     private var formattedDate: String {
         DateFormatter.feed.string(fromISO: post.createdAt)
+    }
+    
+    // MARK: - Methods
+    private func submitComment() {
+        guard !commentText.isEmpty else { return }
+        
+        // TODO: Implement comment submission
+        // This will need to call the CommentService to post the comment
+        print("Submitting comment: \(commentText)")
+        
+        // Clear the text field after submission
+        commentText = ""
     }
     
     var body: some View {
@@ -83,9 +99,20 @@ struct PostRowView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                 
-                Image(systemName: "message")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Button {
+                    showComments.toggle()
+                    if showComments {
+                        // Focus the text field when showing comments
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isCommentFieldFocused = true
+                        }
+                    }
+                } label: {
+                    Image(systemName: "message")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
                 
                 Image(systemName: "bell")
                     .font(.caption)
@@ -112,6 +139,27 @@ struct PostRowView: View {
                         .font(.caption)
                 }
                 .foregroundStyle(.secondary)
+            }
+            
+            // Comments section
+            if showComments {
+                Divider()
+                
+                HStack {
+                    TextField("Add a comment...", text: $commentText, axis: .vertical)
+                        .textFieldStyle(.roundedBorder)
+                        .focused($isCommentFieldFocused)
+                        .lineLimit(1...5)
+                    
+                    Button {
+                        submitComment()
+                    } label: {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .foregroundColor(commentText.isEmpty ? .secondary : .blue)
+                    }
+                    .disabled(commentText.isEmpty)
+                }
+                .padding(.top, 8)
             }
         }
         .padding(.vertical, 4)
