@@ -126,6 +126,7 @@ private class MockReactionService: ReactionService {
             bellCount: 0,
             trueCount: 0,
             falseCount: 0,
+            outOfContextCount: 0,
             emojiReactions: [],
             userReactions: []
         )

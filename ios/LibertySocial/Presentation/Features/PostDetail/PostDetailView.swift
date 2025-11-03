@@ -72,6 +72,7 @@ struct PostDetailView: View {
                 reactionButton(type: .bell, count: summary.bellCount, emoji: "🔔")
                 reactionButton(type: .trueReaction, count: summary.trueCount, emoji: "✅")
                 reactionButton(type: .falseReaction, count: summary.falseCount, emoji: "❌")
+                reactionButton(type: .outOfContext, count: summary.outOfContextCount, emoji: "🤔")
             }
             
             if !summary.emojiReactions.isEmpty {

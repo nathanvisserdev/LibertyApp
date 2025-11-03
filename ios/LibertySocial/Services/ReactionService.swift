@@ -12,6 +12,7 @@ enum ReactionType: String, Codable {
     case bell = "BELL"
     case trueReaction = "TRUE"
     case falseReaction = "FALSE"
+    case outOfContext = "OUT_OF_CONTEXT"
     case emoji = "EMOJI"
 }
 
@@ -20,6 +21,7 @@ struct ReactionSummary: Codable {
     let bellCount: Int
     let trueCount: Int
     let falseCount: Int
+    let outOfContextCount: Int
     let emojiReactions: [EmojiCount]
     let userReactions: [UserReaction]
     

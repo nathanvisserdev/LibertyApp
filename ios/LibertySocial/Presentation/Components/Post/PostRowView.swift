@@ -77,10 +77,42 @@ struct PostRowView: View {
                     .font(.body)
             }
             
-            // Timestamp
-            Text(formattedDate)
-                .font(.caption2)
+            // Timestamp with action icons
+            HStack(spacing: 8) {
+                Text(formattedDate)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                
+                Image(systemName: "message")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                Image(systemName: "bell")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                Image(systemName: "face.smiling")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                Spacer()
+                
+                Menu {
+                    Button("True") {
+                        // Handle true selection
+                    }
+                    Button("False") {
+                        // Handle false selection
+                    }
+                    Button("Out of Context") {
+                        // Handle out of context selection
+                    }
+                } label: {
+                    Image(systemName: "rectangle.and.pencil.and.ellipsis")
+                        .font(.caption)
+                }
                 .foregroundStyle(.secondary)
+            }
         }
         .padding(.vertical, 4)
         .contentShape(Rectangle())
