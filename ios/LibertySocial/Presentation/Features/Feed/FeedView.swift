@@ -9,60 +9,54 @@ import SwiftUI
 import Combine
 
 struct FeedView: View {
-    @StateObject private var vm: FeedViewModel
-    @EnvironmentObject private var session: SessionStore
+    @ObservedObject var viewModel: FeedViewModel
     
     init(viewModel: FeedViewModel) {
-        _vm = StateObject(wrappedValue: viewModel)
+        self.viewModel = viewModel
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if vm.isLoading && vm.items.isEmpty {
-                    ProgressView("Loading…")
-                } else if let err = vm.error {
-                    VStack(spacing: 12) {
-                        Text(err).foregroundStyle(.red)
-                        Button("Retry") { Task { await vm.load() } }
-                    }
-                } else {
-                    List {
-                        if !vm.mine.isEmpty          { Section("Your posts") { rows(vm.mine) } }
-                        if !vm.acquaintances.isEmpty { Section("Acquaintances") { rows(vm.acquaintances) } }
-                        if !vm.strangers.isEmpty     { Section("Strangers") { rows(vm.strangers) } }
-                        if !vm.following.isEmpty     { Section("Following") { rows(vm.following) } }
-                    }
-                    .listStyle(.insetGrouped)
-                    .refreshable { await vm.refresh() }
+        Group {
+            if viewModel.isLoading && viewModel.items.isEmpty {
+                ProgressView("Loading…")
+            } else if let err = viewModel.error {
+                VStack(spacing: 12) {
+                    Text(err).foregroundStyle(.red)
+                    Button("Retry") { Task { await viewModel.load() } }
                 }
+            } else {
+                List {
+                    if !viewModel.mine.isEmpty          { Section("Your posts") { rows(viewModel.mine) } }
+                    if !viewModel.acquaintances.isEmpty { Section("Acquaintances") { rows(viewModel.acquaintances) } }
+                    if !viewModel.strangers.isEmpty     { Section("Strangers") { rows(viewModel.strangers) } }
+                    if !viewModel.following.isEmpty     { Section("Following") { rows(viewModel.following) } }
+                }
+                .listStyle(.insetGrouped)
+                .refreshable { await viewModel.refresh() }
             }
-            .navigationTitle("Feed")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Log out") {
-                        AuthService.shared.deleteToken()
-                        Task {
-                            await session.refresh()
-                        }
-                    }
+        }
+        .navigationTitle("Feed")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Log out") {
+                    viewModel.logoutTapped()
                 }
             }
         }
-        .task { await vm.load() }
-        .safeAreaInset(edge: .bottom) {
-            TabBarCoordinator().start()
-                .ignoresSafeArea(edges: .bottom)
-        }
+        .task { await viewModel.load() }
     }
 
     @ViewBuilder private func rows(_ items: [FeedItem]) -> some View {
         ForEach(items, id: \.id) { item in
-            PostView(viewModel: PostViewModel(
+            PostRowView(
                 post: PostItem(from: item),
                 currentUserId: item.userId,
-                showMenu: vm.isUsersPost(item)
-            ))
+                showMenu: viewModel.isUsersPost(item),
+                makeMediaVM: viewModel.makeMediaViewModel,
+                onOpen: {
+                    viewModel.open(postId: item.postId)
+                }
+            )
         }
     }
 }

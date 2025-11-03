@@ -242,9 +242,12 @@ struct ProfileView: View {
                                 VStack(alignment: .leading, spacing: 6) {
                                     // Display media if available
                                     if let mediaKey = post.media {
-                                        MediaImageView(mediaKey: mediaKey, orientation: post.orientation)
-                                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                                            .padding(.horizontal, 20)
+                                        MediaImageView(
+                                            viewModel: viewModel.makeMediaViewModel(for: mediaKey),
+                                            orientation: post.orientation
+                                        )
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                        .padding(.horizontal, 20)
                                     }
                                     
                                     // Display content if available

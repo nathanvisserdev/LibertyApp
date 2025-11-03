@@ -27,6 +27,7 @@ protocol AuthServiceProtocol {
     func searchUsers(query: String) async throws -> SearchResponse
     func fetchUserProfile(userId: String) async throws -> UserProfile
     func fetchConnections() async throws -> [Connection]
+    func deleteToken()
 }
 
 struct APIUser: Decodable { 

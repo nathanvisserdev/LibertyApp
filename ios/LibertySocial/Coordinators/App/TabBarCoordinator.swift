@@ -7,18 +7,30 @@
 
 import SwiftUI
 
-/// Stateless coordinator for TabBar - navigation is SwiftUI-owned
+/// Coordinator for TabBar - owns the main feed view and tab bar UI
+@MainActor
 final class TabBarCoordinator {
     
+    // MARK: - Dependencies
+    private let feedCoordinator: FeedCoordinator
+    
     // MARK: - Init
-    init() {
-        // Initialize with dependencies if needed
+    init(feedCoordinator: FeedCoordinator) {
+        self.feedCoordinator = feedCoordinator
+    }
+    
+    convenience init() {
+        self.init(feedCoordinator: FeedCoordinator())
     }
     
     // MARK: - Start
-    /// Builds the TabBarView with its ViewModel
+    /// Builds the TabBarView with FeedView and tab bar at bottom
     func start() -> some View {
-        let viewModel = TabBarViewModel()
-        return TabBarView(viewModel: viewModel)
+        feedCoordinator.start()
+            .safeAreaInset(edge: .bottom) {
+                let viewModel = TabBarViewModel()
+                TabBarView(viewModel: viewModel)
+                    .ignoresSafeArea(edges: .bottom)
+            }
     }
 }

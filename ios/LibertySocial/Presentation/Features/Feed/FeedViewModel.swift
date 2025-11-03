@@ -14,6 +14,8 @@ final class FeedViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: FeedModel
     private let feedService: FeedSession
+    private let makeMediaVM: (String) -> MediaViewModel
+    private let auth: AuthServiceProtocol
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Published
@@ -21,10 +23,19 @@ final class FeedViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var error: String?
     
+    // MARK: - Coordinator Callbacks
+    var onLogout: (() -> Void)?
+    var onOpenPost: ((String) -> Void)?
+    
     // MARK: - Init
-    init(model: FeedModel = FeedModel(), feedService: FeedSession = FeedService.shared) {
+    init(model: FeedModel, 
+         feedService: FeedSession, 
+         makeMediaVM: @escaping (String) -> MediaViewModel,
+         auth: AuthServiceProtocol) {
         self.model = model
         self.feedService = feedService
+        self.makeMediaVM = makeMediaVM
+        self.auth = auth
         
         // Subscribe to feed changes from the service
         feedService.feedDidChange
@@ -43,6 +54,20 @@ final class FeedViewModel: ObservableObject {
     
     func isUsersPost(_ item: FeedItem) -> Bool {
         return item.relation == "SELF"
+    }
+    
+    // MARK: - Media VM Factory
+    func makeMediaViewModel(for mediaKey: String) -> MediaViewModel {
+        return makeMediaVM(mediaKey)
+    }
+    
+    // MARK: - Actions
+    func logoutTapped() {
+        onLogout?()
+    }
+    
+    func open(postId: String) {
+        onOpenPost?(postId)
     }
 
     func load() async {

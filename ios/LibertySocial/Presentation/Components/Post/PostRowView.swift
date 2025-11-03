@@ -1,5 +1,5 @@
 //
-//  PostView.swift
+//  PostRowView.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-11-03.
@@ -8,24 +8,54 @@
 import SwiftUI
 import Combine
 
-struct PostView: View {
-    @StateObject private var viewModel: PostViewModel
+struct PostRowView: View {
+    let post: PostItem
+    let currentUserId: String?
+    let showMenu: Bool
+    let makeMediaVM: (String) -> MediaViewModel
+    let onOpen: (() -> Void)?
     
-    init(viewModel: PostViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
+    init(post: PostItem, 
+         currentUserId: String?, 
+         showMenu: Bool,
+         makeMediaVM: @escaping (String) -> MediaViewModel,
+         onOpen: (() -> Void)? = nil) {
+        self.post = post
+        self.currentUserId = currentUserId
+        self.showMenu = showMenu
+        self.makeMediaVM = makeMediaVM
+        self.onOpen = onOpen
+    }
+    
+    // MARK: - Computed Properties
+    private var isCurrentUsersPost: Bool {
+        guard let currentUserId = currentUserId else { return false }
+        return post.userId == currentUserId
+    }
+    
+    private var authorDisplayName: String {
+        "\(post.user.firstName) \(post.user.lastName)"
+    }
+    
+    private var authorUsername: String {
+        "@\(post.user.username)"
+    }
+    
+    private var formattedDate: String {
+        DateFormatter.feed.string(fromISO: post.createdAt)
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             // Author header
             HStack {
-                Text("\(viewModel.authorDisplayName) (\(viewModel.authorUsername))")
+                Text("\(authorDisplayName) (\(authorUsername))")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                 
                 Spacer()
                 
-                if viewModel.showMenu && viewModel.isCurrentUsersPost {
+                if showMenu && isCurrentUsersPost {
                     Image(systemName: "ellipsis")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -33,33 +63,40 @@ struct PostView: View {
             }
             
             // Media if available
-            if let mediaKey = viewModel.post.media {
-                MediaImageView(mediaKey: mediaKey, orientation: viewModel.post.orientation)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            if let mediaKey = post.media {
+                MediaImageView(
+                    viewModel: makeMediaVM(mediaKey),
+                    orientation: post.orientation
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             
             // Content if available
-            if let content = viewModel.post.content {
+            if let content = post.content {
                 Text(content)
                     .font(.body)
             }
             
             // Timestamp
-            Text(viewModel.formattedDate)
+            Text(formattedDate)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
         .padding(.vertical, 4)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onOpen?()
+        }
     }
 }
 
 // MARK: - MediaImageView
 struct MediaImageView: View {
-    @StateObject private var viewModel: MediaViewModel
+    @ObservedObject var viewModel: MediaViewModel
     let orientation: String?
     
-    init(mediaKey: String, orientation: String?) {
-        _viewModel = StateObject(wrappedValue: MediaViewModel(mediaKey: mediaKey))
+    init(viewModel: MediaViewModel, orientation: String?) {
+        self.viewModel = viewModel
         self.orientation = orientation
     }
     
@@ -152,5 +189,3 @@ extension DateFormatter {
         return string(from: iso.date(from: s) ?? Date())
     }
 }
-
-

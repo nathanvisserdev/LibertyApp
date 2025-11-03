@@ -32,20 +32,24 @@ extension ParentCoordinator {
 // MARK: - App Coordinator
 
 /// Stateless coordinator for the main authenticated user flow
+@MainActor
 final class AppCoordinator {
     
     // MARK: - Dependencies
-    // Add navigation controller or factory/services if needed in future
+    private let tabBarCoordinator: TabBarCoordinator
     
     // MARK: - Init
-    init() {
-        // Initialize with navigation controller or dependencies if needed
+    init(tabBarCoordinator: TabBarCoordinator) {
+        self.tabBarCoordinator = tabBarCoordinator
+    }
+    
+    convenience init() {
+        self.init(tabBarCoordinator: TabBarCoordinator())
     }
     
     // MARK: - Start
-    /// Builds the main authenticated view (FeedView) and returns it
+    /// Builds the main authenticated view with TabBar at root
     func start() -> some View {
-        let feedCoordinator = FeedCoordinator()
-        return feedCoordinator.start()
+        tabBarCoordinator.start()
     }
 }

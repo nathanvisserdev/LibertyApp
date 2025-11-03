@@ -12,6 +12,7 @@ import Combine
 class ProfileViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: ProfileModel
+    private let makeMediaVM: (String) -> MediaViewModel
     
     // MARK: - Published
     @Published var profile: UserProfile?
@@ -20,8 +21,18 @@ class ProfileViewModel: ObservableObject {
     @Published var isOwnProfile: Bool = false
     
     // MARK: - Init
-    init(model: ProfileModel = ProfileModel()) {
+    init(model: ProfileModel = ProfileModel(), makeMediaVM: @escaping (String) -> MediaViewModel) {
         self.model = model
+        self.makeMediaVM = makeMediaVM
+    }
+    
+    convenience init() {
+        self.init(model: ProfileModel(), makeMediaVM: { MediaViewModel(mediaKey: $0) })
+    }
+    
+    // MARK: - Media VM Factory
+    func makeMediaViewModel(for mediaKey: String) -> MediaViewModel {
+        return makeMediaVM(mediaKey)
     }
     
     func loadProfile(userId: String) async {
