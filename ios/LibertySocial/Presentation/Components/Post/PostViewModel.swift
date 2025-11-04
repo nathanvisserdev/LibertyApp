@@ -38,6 +38,6 @@ final class PostViewModel: ObservableObject {
     }
     
     var formattedDate: String {
-        DateFormatter.feed.string(fromISO: post.createdAt)
+        DateFormatters.string(fromISO: post.createdAt)
     }
 }

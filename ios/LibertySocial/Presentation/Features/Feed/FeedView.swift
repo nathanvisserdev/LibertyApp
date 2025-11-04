@@ -52,7 +52,11 @@ struct FeedView: View {
                 post: PostItem(from: item),
                 currentUserId: item.userId,
                 showMenu: viewModel.isUsersPost(item),
-                makeMediaVM: viewModel.makeMediaViewModel
+                makeMediaVM: viewModel.makeMediaViewModel(for:),
+                thread: viewModel.bindThread(for: item.postId),
+                onToggleComments: { viewModel.toggleComments(for: item.postId) },
+                onChangeInput: { viewModel.updateInput(for: item.postId, to: $0) },
+                onSubmitComment: { Task { await viewModel.submitComment(for: item.postId) } }
             )
         }
     }

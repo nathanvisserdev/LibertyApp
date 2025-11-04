@@ -13,52 +13,38 @@ struct PostRowView: View {
     let currentUserId: String?
     let showMenu: Bool
     let makeMediaVM: (String) -> MediaViewModel
-    
-    @State private var showComments = false
-    @State private var comments: [CommentItem] = []
-    @State private var commentText = ""
-    @FocusState private var isCommentFieldFocused: Bool
-    
-    init(post: PostItem, 
-         currentUserId: String?, 
+    @Binding var thread: CommentThreadState
+    let onToggleComments: () -> Void
+    let onChangeInput: (String) -> Void
+    let onSubmitComment: () -> Void
+
+    init(post: PostItem,
+         currentUserId: String?,
          showMenu: Bool,
-         makeMediaVM: @escaping (String) -> MediaViewModel) {
+         makeMediaVM: @escaping (String) -> MediaViewModel,
+         thread: Binding<CommentThreadState>,
+         onToggleComments: @escaping () -> Void,
+         onChangeInput: @escaping (String) -> Void,
+         onSubmitComment: @escaping () -> Void) {
         self.post = post
         self.currentUserId = currentUserId
         self.showMenu = showMenu
         self.makeMediaVM = makeMediaVM
+        self._thread = thread
+        self.onToggleComments = onToggleComments
+        self.onChangeInput = onChangeInput
+        self.onSubmitComment = onSubmitComment
     }
-    
-    // MARK: - Computed Properties
+
     private var isCurrentUsersPost: Bool {
         guard let currentUserId = currentUserId else { return false }
         return post.userId == currentUserId
     }
-    
-    private var authorDisplayName: String {
-        "\(post.user.firstName) \(post.user.lastName)"
-    }
-    
-    private var authorUsername: String {
-        "@\(post.user.username)"
-    }
-    
-    private var formattedDate: String {
-        DateFormatter.feed.string(fromISO: post.createdAt)
-    }
-    
-    // MARK: - Methods
-    private func submitComment() {
-        guard !commentText.isEmpty else { return }
-        
-        // TODO: Implement comment submission
-        // This will need to call the CommentService to post the comment
-        print("Submitting comment: \(commentText)")
-        
-        // Clear the text field after submission
-        commentText = ""
-    }
-    
+
+    private var authorDisplayName: String { "\(post.user.firstName) \(post.user.lastName)" }
+    private var authorUsername: String { "@\(post.user.username)" }
+    private var formattedDate: String { DateFormatters.string(fromISO: post.createdAt) }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             // Author header
@@ -66,16 +52,14 @@ struct PostRowView: View {
                 Text("\(authorDisplayName) (\(authorUsername))")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                
                 Spacer()
-                
                 if showMenu && isCurrentUsersPost {
                     Image(systemName: "ellipsis")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
             }
-            
+
             // Media if available
             if let mediaKey = post.media {
                 MediaImageView(
@@ -84,88 +68,83 @@ struct PostRowView: View {
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
-            
-            // Content if available
+
+            // Content
             if let content = post.content {
-                Text(content)
-                    .font(.body)
+                Text(content).font(.body)
             }
-            
-            // Timestamp with action icons
+
+            // Timestamp + action icons
             HStack(spacing: 8) {
                 Text(formattedDate)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                
+
                 Button {
-                    showComments.toggle()
-                    if showComments {
-                        // Focus the text field when showing comments
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            isCommentFieldFocused = true
-                        }
-                    }
+                    onToggleComments()
                 } label: {
                     Image(systemName: "message")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
-                
+
                 Image(systemName: "bell")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                
+
                 Image(systemName: "face.smiling")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                
+
                 Spacer()
-                
+
                 Menu {
-                    Button("True") {
-                        // Handle true selection
-                    }
-                    Button("False") {
-                        // Handle false selection
-                    }
-                    Button("Out of Context") {
-                        // Handle out of context selection
-                    }
+                    Button("True") {}
+                    Button("False") {}
+                    Button("Out of Context") {}
                 } label: {
                     Image(systemName: "rectangle.and.pencil.and.ellipsis")
                         .font(.caption)
                 }
                 .foregroundStyle(.secondary)
             }
-            
+
             // Comments section
-            if showComments {
+            if thread.isOpen {
                 Divider()
                 
-                // Display existing comments
-                ForEach(comments) { c in
+                // Loading state
+                if thread.isLoading {
+                    ProgressView()
+                        .padding(.vertical, 8)
+                }
+                
+                // Display comments
+                ForEach(thread.comments) { c in
                     CommentRowView(
                         comment: c,
                         isMine: c.user?.id == currentUserId,
-                        formattedDate: DateFormatter.feed.string(fromISO: c.createdAt)
+                        formattedDate: DateFormatters.string(fromISO: c.createdAt)
                     )
                 }
                 
                 // Comment input
                 HStack {
-                    TextField("Add a comment...", text: $commentText, axis: .vertical)
+                    TextField("Add a comment...", text: Binding(
+                        get: { thread.inputText },
+                        set: { onChangeInput($0) }
+                    ), axis: .vertical)
                         .textFieldStyle(.roundedBorder)
-                        .focused($isCommentFieldFocused)
                         .lineLimit(1...5)
                     
                     Button {
-                        submitComment()
+                        onSubmitComment()
                     } label: {
                         Image(systemName: "arrow.up.circle.fill")
-                            .foregroundColor(commentText.isEmpty ? .secondary : .blue)
+                            .foregroundColor(thread.inputText.isEmpty ? .secondary : .blue)
                     }
-                    .disabled(commentText.isEmpty)
+                    .disabled(thread.inputText.isEmpty)
                 }
                 .padding(.top, 8)
             }
@@ -256,20 +235,5 @@ class MediaViewModel: ObservableObject {
             print("📸 MediaViewModel: Error fetching presigned URL: \(error.localizedDescription)")
             isLoading = false
         }
-    }
-}
-
-// MARK: - DateFormatter Extension
-extension DateFormatter {
-    static let feed: DateFormatter = {
-        let f = DateFormatter()
-        f.dateStyle = .short
-        f.timeStyle = .short
-        return f
-    }()
-
-    func string(fromISO s: String) -> String {
-        let iso = ISO8601DateFormatter()
-        return string(from: iso.date(from: s) ?? Date())
     }
 }

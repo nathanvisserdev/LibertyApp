@@ -15,105 +15,37 @@ final class FeedCoordinator: ObservableObject {
     private let authService: AuthServiceProtocol
     private let feedService: FeedSession
     private let commentService: CommentService
-    private let reactionService: ReactionService
-    
+
     init(authSession: AuthSession = AuthService.shared,
          authService: AuthServiceProtocol = AuthService.shared,
-         feedService: FeedSession = FeedService.shared,
-         commentService: CommentService? = nil,
-         reactionService: ReactionService? = nil) {
+         feedService: FeedSession = FeedService.shared) {
         self.authSession = authSession
         self.authService = authService
         self.feedService = feedService
-        // TODO: Replace with actual implementations when available
-        self.commentService = commentService ?? MockCommentService()
-        self.reactionService = reactionService ?? MockReactionService()
+        self.commentService = CommentHTTPService(authSession: authSession) // ensure this init exists
     }
-    
+
     func start() -> some View {
-        FeedCoordinatorView(coordinator: self)
+        NavigationStack { makeFeedView() }
     }
-    
-    // MARK: - Factory Methods
+
+    // MARK: - Factory
     func makeFeedView() -> some View {
         let model = FeedModel(authService: authService)
-        let viewModel = FeedViewModel(
+        let vm = FeedViewModel(
             model: model,
             feedService: feedService,
-            makeMediaVM: { mediaKey in
-                MediaViewModel(mediaKey: mediaKey)
-            },
-            auth: authService
+            makeMediaVM: { MediaViewModel(mediaKey: $0) },
+            auth: authService,
+            commentService: commentService
         )
-        
-        // Set up coordinator callbacks
-        viewModel.onLogout = { [weak self] in
-            self?.handleLogout()
-        }
-        
-        return FeedView(viewModel: viewModel)
+        vm.onLogout = { [weak self] in self?.handleLogout() }
+        return FeedView(viewModel: vm)
     }
-    
-    // MARK: - Navigation Actions
+
+    // MARK: - Actions
     private func handleLogout() {
         authService.deleteToken()
-        // Navigation reset will be handled by SessionStore in LibertySocialApp
-        NotificationCenter.default.post(name: NSNotification.Name("UserDidLogout"), object: nil)
-    }
-}
-
-// MARK: - Coordinator View
-private struct FeedCoordinatorView: View {
-    @ObservedObject var coordinator: FeedCoordinator
-    
-    var body: some View {
-        NavigationStack {
-            coordinator.makeFeedView()
-        }
-    }
-}
-
-// MARK: - Mock Services (temporary)
-private class MockCommentService: CommentService {
-    func fetch(postId: String, cursor: String?) async throws -> ([CommentItem], String?) {
-        return ([], nil)
-    }
-    
-    func create(postId: String, content: String) async throws -> CommentItem {
-        return CommentItem(
-            commentId: UUID().uuidString,
-            content: content,
-            createdAt: ISO8601DateFormatter().string(from: Date()),
-            updatedAt: ISO8601DateFormatter().string(from: Date()),
-            userId: "",
-            postId: postId,
-            parentId: nil
-        )
-    }
-    
-    func delete(commentId: String) async throws {
-        // Mock implementation
-    }
-}
-
-private class MockReactionService: ReactionService {
-    private let subject = CurrentValueSubject<ReactionSummary, Never>(
-        ReactionSummary(
-            postId: "",
-            bellCount: 0,
-            trueCount: 0,
-            falseCount: 0,
-            outOfContextCount: 0,
-            emojiReactions: [],
-            userReactions: []
-        )
-    )
-    
-    func summary(for postId: String) -> AnyPublisher<ReactionSummary, Never> {
-        return subject.eraseToAnyPublisher()
-    }
-    
-    func toggle(postId: String, type: ReactionType, emoji: String?) async throws {
-        // Mock implementation
+        NotificationCenter.default.post(name: .init("UserDidLogout"), object: nil)
     }
 }
