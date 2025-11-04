@@ -12,7 +12,7 @@ import Combine
 
 @MainActor
 final class NotificationManager: NSObject, ObservableObject, NotificationManaging {
-    static let shared = NotificationManager(tokenProvider: AuthService())
+//    static let shared = NotificationManager(tokenProvider: AuthService())
 
     @Published private(set) var deviceToken: String?
 

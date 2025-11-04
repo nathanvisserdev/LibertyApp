@@ -16,23 +16,32 @@ struct LibertySocialApp: App {
     private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
     private let notificationManager: NotificationManaging
+    private let feedService: FeedSession
+    private let groupInviteService: GroupInviteSession
+    private let groupService: GroupSession
+    private let subnetService: SubnetSession
 
     @StateObject private var session: SessionStore
-
-    // Coordinators
     private let appCoordinator: AppCoordinator
     private let loginCoordinator: LoginCoordinator
 
     @MainActor
     init() {
-        // Concrete implementations
         let authManager = AuthService()
         let tokenProvider: TokenProviding = authManager
         let notificationManager = NotificationManager(tokenProvider: tokenProvider)
-
+        let feedService = FeedService()
+        let groupInviteService = GroupInviteService()
+        let groupService = GroupService()
+        let subnetService = SubnetService()
+        
         self.authManager = authManager
         self.tokenProvider = tokenProvider
         self.notificationManager = notificationManager
+        self.feedService = feedService
+        self.groupInviteService = groupInviteService
+        self.groupService = groupService
+        self.subnetService = subnetService
 
         _session = StateObject(
             wrappedValue: SessionStore(
@@ -45,6 +54,8 @@ struct LibertySocialApp: App {
         let loginCoordinator = LoginCoordinator()
         self.loginCoordinator = loginCoordinator
         self.appCoordinator = AppCoordinator(loginCoordinator: loginCoordinator)
+        
+        defer { appDelegate.notificationManager = notificationManager }
     }
 
     var body: some Scene {
@@ -53,9 +64,9 @@ struct LibertySocialApp: App {
                 .environmentObject(session)
                 .onAppear { Task { await session.refresh() } }
         }
-        .onChange(of: scenePhase) { phase in
-            if phase == .active { Task { await session.refresh() } }
-        }
+//        .onChange(of: scenePhase) { phase in
+//            if phase == .active { Task { await session.refresh() } }
+//        }
     }
 }
 
