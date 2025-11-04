@@ -19,14 +19,14 @@ struct Connection: Decodable, Identifiable {
 }
 
 struct ConnectionsModel {
-    private let authService: AuthServiceProtocol
+    private let AuthManager: AuthManaging
     
-    init(authService: AuthServiceProtocol = AuthService.shared) {
-        self.authService = authService
+    init(AuthManager: AuthManaging = AuthService.shared) {
+        self.AuthManager = AuthManager
     }
     
     /// Fetch connections - AuthService handles token
     func fetchConnections() async throws -> [Connection] {
-        return try await authService.fetchConnections()
+        return try await AuthManager.fetchConnections()
     }
 }

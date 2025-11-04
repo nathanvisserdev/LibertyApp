@@ -38,12 +38,12 @@ struct SubnetMemberUser: Codable {
 
 // MARK: - API
 struct SubnetModel {
-    private let authSession: AuthSession
-    private let authService: AuthServiceProtocol
+    private let TokenProvider: TokenProviding
+    private let AuthManager: AuthManaging
     
-    init(authSession: AuthSession = AuthService.shared, authService: AuthServiceProtocol = AuthService.shared) {
-        self.authSession = authSession
-        self.authService = authService
+    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
+        self.TokenProvider = TokenProvider
+        self.AuthManager = AuthManager
     }
     
     /// Fetch subnet members
@@ -57,7 +57,7 @@ struct SubnetModel {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -93,7 +93,7 @@ struct SubnetModel {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)

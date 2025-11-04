@@ -9,11 +9,11 @@ import Foundation
 
 class CommentHTTPService: CommentService {
     private let baseURL: URL
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     
-    init(baseURL: URL = AppConfig.baseURL, authSession: AuthSession) {
+    init(baseURL: URL = AppConfig.baseURL, TokenProvider: TokenProviding) {
         self.baseURL = baseURL
-        self.authSession = authSession
+        self.TokenProvider = TokenProvider
     }
     
     // GET /posts/:postId/comments
@@ -36,7 +36,7 @@ class CommentHTTPService: CommentService {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        if let token = try? authSession.getAuthToken() {
+        if let token = try? TokenProvider.getAuthToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             print("🌐 Authorization header set")
         } else {
@@ -82,7 +82,7 @@ class CommentHTTPService: CommentService {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        if let token = try? authSession.getAuthToken() {
+        if let token = try? TokenProvider.getAuthToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
@@ -119,7 +119,7 @@ class CommentHTTPService: CommentService {
         request.httpMethod = "PATCH"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        if let token = try? authSession.getAuthToken() {
+        if let token = try? TokenProvider.getAuthToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
@@ -155,7 +155,7 @@ class CommentHTTPService: CommentService {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         
-        if let token = try? authSession.getAuthToken() {
+        if let token = try? TokenProvider.getAuthToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         

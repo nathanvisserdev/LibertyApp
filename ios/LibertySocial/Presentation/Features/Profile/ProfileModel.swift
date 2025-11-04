@@ -38,14 +38,14 @@ struct UserProfile: Decodable {
 }
 
 struct ProfileModel {
-    private let authService: AuthServiceProtocol
+    private let AuthManager: AuthManaging
     
-    init(authService: AuthServiceProtocol = AuthService.shared) {
-        self.authService = authService
+    init(AuthManager: AuthManaging = AuthService.shared) {
+        self.AuthManager = AuthManager
     }
     
     /// Fetch a specific user's profile - AuthService handles token
     func fetchUserProfile(userId: String) async throws -> UserProfile {
-        return try await authService.fetchUserProfile(userId: userId)
+        return try await AuthManager.fetchUserProfile(userId: userId)
     }
 }

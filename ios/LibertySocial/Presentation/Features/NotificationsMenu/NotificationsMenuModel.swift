@@ -63,12 +63,12 @@ struct GroupJoinRequester: Decodable {
 }
 
 struct NotificationsMenuModel {
-    private let authSession: AuthSession
-    private let authService: AuthServiceProtocol
+    private let TokenProvider: TokenProviding
+    private let AuthManager: AuthManaging
     
-    init(authSession: AuthSession = AuthService.shared, authService: AuthServiceProtocol = AuthService.shared) {
-        self.authSession = authSession
-        self.authService = authService
+    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
+        self.TokenProvider = TokenProvider
+        self.AuthManager = AuthManager
     }
     
     /// Fetch all notifications (connection requests, group invites, group join requests)
@@ -101,7 +101,7 @@ struct NotificationsMenuModel {
     
     /// Fetch incoming connection requests - AuthService handles token
     private func fetchIncomingConnectionRequests() async throws -> [IncomingConnectionRequest] {
-        let requests = try await authService.fetchIncomingConnectionRequests()
+        let requests = try await AuthManager.fetchIncomingConnectionRequests()
         return requests.compactMap { req in
             guard let requester = req.requester else { return nil }
             return IncomingConnectionRequest(
@@ -127,7 +127,7 @@ struct NotificationsMenuModel {
         var notifications: [NotificationItem] = []
         
         // First, get all groups where the current user is a member
-        guard let currentUser = try? await authService.fetchCurrentUserTyped() else {
+        guard let currentUser = try? await AuthManager.fetchCurrentUserTyped() else {
             return []
         }
         
@@ -139,7 +139,7 @@ struct NotificationsMenuModel {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -197,7 +197,7 @@ struct NotificationsMenuModel {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -246,12 +246,12 @@ struct NotificationsMenuModel {
     
     /// Accept a connection request
     func acceptConnectionRequest(requestId: String) async throws {
-        try await authService.acceptConnectionRequest(requestId: requestId)
+        try await AuthManager.acceptConnectionRequest(requestId: requestId)
     }
     
     /// Decline a connection request
     func declineConnectionRequest(requestId: String) async throws {
-        try await authService.declineConnectionRequest(requestId: requestId)
+        try await AuthManager.declineConnectionRequest(requestId: requestId)
     }
     
     /// Accept a group join request
@@ -264,7 +264,7 @@ struct NotificationsMenuModel {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -289,7 +289,7 @@ struct NotificationsMenuModel {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)

@@ -16,15 +16,15 @@ struct FollowerUser: Codable, Identifiable {
 }
 
 struct FollowersListModel {
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     
-    init(authSession: AuthSession = AuthService.shared) {
-        self.authSession = authSession
+    init(TokenProvider: TokenProviding = AuthService.shared) {
+        self.TokenProvider = TokenProvider
     }
     
     /// Fetch the list of followers for a specific user
     func fetchFollowers(userId: String) async throws -> [FollowerUser] {
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         
         guard let url = URL(string: "\(AppConfig.baseURL)/users/\(userId)/followers") else {
             throw URLError(.badURL)

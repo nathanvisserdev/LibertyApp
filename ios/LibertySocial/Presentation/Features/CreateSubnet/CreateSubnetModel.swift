@@ -27,10 +27,10 @@ struct CreateSubnetResponse: Codable {
 // MARK: - CreateSubnetModel
 struct CreateSubnetModel {
     
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     
-    init(authSession: AuthSession = AuthService.shared) {
-        self.authSession = authSession
+    init(TokenProvider: TokenProviding = AuthService.shared) {
+        self.TokenProvider = TokenProvider
     }
     
     // MARK: - Create Subnet
@@ -40,7 +40,7 @@ struct CreateSubnetModel {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let body = CreateSubnetRequest(
@@ -72,7 +72,7 @@ struct CreateSubnetModel {
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let body = ["subnetId": subnetId]

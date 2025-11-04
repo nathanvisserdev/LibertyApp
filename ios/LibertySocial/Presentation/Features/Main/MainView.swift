@@ -47,11 +47,11 @@ struct MainView: View {
     }
 }
 
-#Preview {
-    let model = MainModel()
-    let viewModel = MainViewModel(model: model)
-    return MainView(viewModel: viewModel)
-        .environmentObject(SessionStore())
-}
+//#Preview {
+//    let model = MainModel()
+//    let viewModel = MainViewModel(model: model)
+//    return MainView(viewModel: viewModel)
+//        .environmentObject(SessionStore())
+//}
 
 

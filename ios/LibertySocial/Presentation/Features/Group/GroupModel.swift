@@ -9,12 +9,12 @@ import Foundation
 
 // MARK: - Model
 struct GroupModel {
-    private let authSession: AuthSession
-    private let authService: AuthServiceProtocol
+    private let TokenProvider: TokenProviding
+    private let AuthManager: AuthManaging
     
-    init(authSession: AuthSession = AuthService.shared, authService: AuthServiceProtocol = AuthService.shared) {
-        self.authSession = authSession
-        self.authService = authService
+    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
+        self.TokenProvider = TokenProvider
+        self.AuthManager = AuthManager
     }
     
     // Future: Add methods for fetching group details, members, posts, etc.

@@ -13,7 +13,7 @@ final class GroupsMenuViewModel: ObservableObject {
     
     // MARK: - Dependencies
     private let model: GroupsMenuModel
-    private let authService: AuthServiceProtocol
+    private let AuthManager: AuthManaging
     private let groupService: GroupSession
     private var cancellables = Set<AnyCancellable>()
     
@@ -28,9 +28,9 @@ final class GroupsMenuViewModel: ObservableObject {
     @Published var selectedGroup: UserGroup?
     
     // MARK: - Init
-    init(model: GroupsMenuModel = GroupsMenuModel(), authService: AuthServiceProtocol = AuthService.shared, groupService: GroupSession = GroupService.shared) {
+    init(model: GroupsMenuModel = GroupsMenuModel(), AuthManager: AuthManaging = AuthService.shared, groupService: GroupSession = GroupService.shared) {
         self.model = model
-        self.authService = authService
+        self.AuthManager = AuthManager
         self.groupService = groupService
         
         // Subscribe to group changes
@@ -50,7 +50,7 @@ final class GroupsMenuViewModel: ObservableObject {
         
         do {
             // Get current user ID
-            let currentUser = try await authService.fetchCurrentUserTyped()
+            let currentUser = try await AuthManager.fetchCurrentUserTyped()
             
             // Fetch user's groups via service (with caching)
             userGroups = try await groupService.getUserGroups(userId: currentUser.id)

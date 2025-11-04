@@ -122,12 +122,12 @@ struct CreateGroupResponse: Codable {
 
 // MARK: - Model
 struct CreateGroupModel {
-    private let authSession: AuthSession
-    private let authService: AuthServiceProtocol
+    private let TokenProvider: TokenProviding
+    private let AuthManager: AuthManaging
     
-    init(authSession: AuthSession = AuthService.shared, authService: AuthServiceProtocol = AuthService.shared) {
-        self.authSession = authSession
-        self.authService = authService
+    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
+        self.TokenProvider = TokenProvider
+        self.AuthManager = AuthManager
     }
     
     /// Create autocratic group
@@ -139,7 +139,7 @@ struct CreateGroupModel {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let body = CreateGroupRequest(
@@ -172,7 +172,7 @@ struct CreateGroupModel {
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         var body: [String: Any] = [
@@ -210,6 +210,6 @@ struct CreateGroupModel {
     
     /// Fetch user connections - used for selecting Round Table admins
     func fetchConnections() async throws -> [Connection] {
-        return try await authService.fetchConnections()
+        return try await AuthManager.fetchConnections()
     }
 }

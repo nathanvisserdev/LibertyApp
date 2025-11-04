@@ -8,20 +8,20 @@
 import SwiftUI
 
 final class GroupDetailCoordinator {
-    private let authSession: AuthSession
-    private let authService: AuthServiceProtocol
+    private let TokenProvider: TokenProviding
+    private let AuthManager: AuthManaging
     private let group: UserGroup
     
     init(group: UserGroup,
-         authSession: AuthSession = AuthService.shared,
-         authService: AuthServiceProtocol = AuthService.shared) {
+         TokenProvider: TokenProviding = AuthService.shared,
+         AuthManager: AuthManaging = AuthService.shared) {
         self.group = group
-        self.authSession = authSession
-        self.authService = authService
+        self.TokenProvider = TokenProvider
+        self.AuthManager = AuthManager
     }
     
     func start() -> some View {
-        let model = GroupDetailModel(authSession: authSession)
+        let model = GroupDetailModel(TokenProvider: TokenProvider)
         let viewModel = GroupDetailViewModel(groupId: group.id, model: model)
         return GroupDetailView(viewModel: viewModel)
     }

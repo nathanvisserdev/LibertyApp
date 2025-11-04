@@ -11,20 +11,20 @@ import Combine
 /// Coordinator for CreateGroup flow - manages ViewModel lifecycle and navigation
 final class CreateGroupCoordinator {
     
-    private let authSession: AuthSession
-    private let authService: AuthServiceProtocol
+    private let TokenProvider: TokenProviding
+    private let AuthManager: AuthManaging
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Init
-    init(authSession: AuthSession = AuthService.shared, authService: AuthServiceProtocol = AuthService.shared) {
-        self.authSession = authSession
-        self.authService = authService
+    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
+        self.TokenProvider = TokenProvider
+        self.AuthManager = AuthManager
     }
     
     // MARK: - Start
     /// Builds the CreateGroupView with its ViewModel and sets up navigation observation
     func start() -> some View {
-        let model = CreateGroupModel(authSession: authSession, authService: authService)
+        let model = CreateGroupModel(TokenProvider: TokenProvider, AuthManager: AuthManager)
         let viewModel = CreateGroupViewModel(model: model)
         
         return CreateGroupViewWrapper(viewModel: viewModel, coordinator: self)

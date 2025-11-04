@@ -10,19 +10,19 @@ import SwiftUI
 /// Stateless coordinator for SuggestedGroups flow - navigation is SwiftUI-owned
 final class SuggestedGroupsCoordinator {
     
-    private let authSession: AuthSession
-    private let authService: AuthServiceProtocol
+    private let TokenProvider: TokenProviding
+    private let AuthManager: AuthManaging
     
     // MARK: - Init
-    init(authSession: AuthSession = AuthService.shared, authService: AuthServiceProtocol = AuthService.shared) {
-        self.authSession = authSession
-        self.authService = authService
+    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
+        self.TokenProvider = TokenProvider
+        self.AuthManager = AuthManager
     }
     
     // MARK: - Start
     /// Builds the SuggestedGroupsView with its ViewModel
     func start() -> some View {
-        let model = SuggestedGroupsModel(authSession: authSession, authService: authService)
+        let model = SuggestedGroupsModel(TokenProvider: TokenProvider, AuthManager: AuthManager)
         let viewModel = SuggestedGroupsViewModel(model: model)
         return SuggestedGroupsView(viewModel: viewModel)
     }

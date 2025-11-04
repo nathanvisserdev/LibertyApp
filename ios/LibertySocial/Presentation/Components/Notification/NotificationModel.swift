@@ -8,14 +8,14 @@
 import Foundation
 
 struct NotificationModel {
-    private let authService: AuthServiceProtocol
+    private let AuthManager: AuthManaging
     
-    init(authService: AuthServiceProtocol = AuthService.shared) {
-        self.authService = authService
+    init(AuthManager: AuthManaging = AuthService.shared) {
+        self.AuthManager = AuthManager
     }
     
     /// Fetch incoming connection requests - AuthService handles token
     func fetchIncomingConnectionRequests() async throws -> [ConnectionRequestRow] {
-        return try await authService.fetchIncomingConnectionRequests()
+        return try await AuthManager.fetchIncomingConnectionRequests()
     }
 }

@@ -11,11 +11,11 @@ import Foundation
 struct SubnetMenuModel {
     
     private let subnetSession: SubnetSession
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     
-    init(subnetSession: SubnetSession = SubnetService.shared, authSession: AuthSession = AuthService.shared) {
+    init(subnetSession: SubnetSession = SubnetService.shared, TokenProvider: TokenProviding = AuthService.shared) {
         self.subnetSession = subnetSession
-        self.authSession = authSession
+        self.TokenProvider = TokenProvider
     }
     
     func fetchSubnets() async throws -> [Subnet] {
@@ -30,7 +30,7 @@ struct SubnetMenuModel {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -56,7 +56,7 @@ struct SubnetMenuModel {
         request.httpMethod = "PATCH"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let body = ["ordering": ordering]

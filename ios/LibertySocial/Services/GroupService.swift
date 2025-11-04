@@ -20,7 +20,7 @@ final class GroupService: GroupSession {
     static let shared = GroupService()
     
     // MARK: - Dependencies
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     
     // MARK: - Cache Management
     private var cachedGroups: [UserGroup]?
@@ -33,8 +33,8 @@ final class GroupService: GroupSession {
     }
     
     // MARK: - Init
-    init(authSession: AuthSession = AuthService.shared) {
-        self.authSession = authSession
+    init(TokenProvider: TokenProviding = AuthService.shared) {
+        self.TokenProvider = TokenProvider
     }
     
     // MARK: - Public API
@@ -66,7 +66,7 @@ final class GroupService: GroupSession {
     // MARK: - Private Helpers
     
     private func fetchFromServer(userId: String) async throws -> [UserGroup] {
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         
         guard let url = URL(string: "\(AppConfig.baseURL)/users/\(userId)/groups") else {
             throw NSError(domain: "GroupService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])

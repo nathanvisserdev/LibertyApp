@@ -40,18 +40,18 @@ struct CreatePostResponse: Codable {
 // MARK: - CreatePostModel
 struct CreatePostModel {
     
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     private let subnetSession: SubnetSession
     
-    init(authSession: AuthSession = AuthService.shared,
+    init(TokenProvider: TokenProviding = AuthService.shared,
          subnetSession: SubnetSession = SubnetService.shared) {
-        self.authSession = authSession
+        self.TokenProvider = TokenProvider
         self.subnetSession = subnetSession
     }
     
     // MARK: - Get Current User's isPrivate status
     func getCurrentUserIsPrivate() async throws -> Bool {
-        return try await authSession.getCurrentUserIsPrivate()
+        return try await TokenProvider.getCurrentUserIsPrivate()
     }
     
     // MARK: - Get Current User's Subnets
@@ -66,7 +66,7 @@ struct CreatePostModel {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         let body = PresignedUploadRequest(contentType: contentType)
@@ -115,7 +115,7 @@ struct CreatePostModel {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         let body = CreatePostRequest(

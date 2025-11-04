@@ -14,7 +14,7 @@ final class GroupInviteViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: GroupInviteModel
     private let groupId: String
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     private let inviteService: GroupInviteSession
     private let groupService: GroupSession
     
@@ -65,13 +65,13 @@ final class GroupInviteViewModel: ObservableObject {
     init(
         model: GroupInviteModel = GroupInviteModel(),
         groupId: String,
-        authSession: AuthSession = AuthService.shared,
+        TokenProvider: TokenProviding = AuthService.shared,
         inviteService: GroupInviteSession = GroupInviteService.shared,
         groupService: GroupSession = GroupService.shared
     ) {
         self.model = model
         self.groupId = groupId
-        self.authSession = authSession
+        self.TokenProvider = TokenProvider
         self.inviteService = inviteService
         self.groupService = groupService
         
@@ -120,7 +120,7 @@ final class GroupInviteViewModel: ObservableObject {
     
     func loadUserPrivacyStatus() async {
         do {
-            isPrivate = try await authSession.getCurrentUserIsPrivate()
+            isPrivate = try await TokenProvider.getCurrentUserIsPrivate()
         } catch {
             print("Error fetching user privacy status: \(error)")
             // Default to false if we can't fetch

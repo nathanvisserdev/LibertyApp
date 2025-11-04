@@ -10,20 +10,20 @@ import Foundation
 struct LoginResponse: Decodable { let accessToken: String }
 
 struct LoginModel {
-    private let authService: AuthServiceProtocol
+    private let AuthManager: AuthManaging
     
-    init(authService: AuthServiceProtocol = AuthService.shared) {
-        self.authService = authService
+    init(AuthManager: AuthManaging = AuthService.shared) {
+        self.AuthManager = AuthManager
     }
     
     /// Login user - AuthService handles token storage
     func login(email: String, password: String) async throws {
-        _ = try await authService.login(email: email, password: password)
+        _ = try await AuthManager.login(email: email, password: password)
     }
     
     /// Fetch current user data
     func fetchCurrentUser() async throws -> [String: Any] {
-        return try await authService.fetchCurrentUser()
+        return try await AuthManager.fetchCurrentUser()
     }
     
     /// Delete stored authentication token

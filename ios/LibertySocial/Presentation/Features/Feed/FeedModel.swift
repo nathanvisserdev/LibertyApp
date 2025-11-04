@@ -29,14 +29,14 @@ struct FeedItem: Decodable, Identifiable {
 }
 
 struct FeedModel {
-    private let authService: AuthServiceProtocol
+    private let AuthManager: AuthManaging
     
-    init(authService: AuthServiceProtocol = AuthService.shared) {
-        self.authService = authService
+    init(AuthManager: AuthManaging = AuthService.shared) {
+        self.AuthManager = AuthManager
     }
     
     /// Fetch feed - AuthService handles token
     func fetchFeed() async throws -> [FeedItem] {
-        return try await authService.fetchFeed()
+        return try await AuthManager.fetchFeed()
     }
 }

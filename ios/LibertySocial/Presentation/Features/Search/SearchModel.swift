@@ -28,14 +28,14 @@ struct SearchResponse: Decodable {
 }
 
 struct SearchModel {
-    private let authService: AuthServiceProtocol
+    private let AuthManager: AuthManaging
     
-    init(authService: AuthServiceProtocol = AuthService.shared) {
-        self.authService = authService
+    init(AuthManager: AuthManaging = AuthService.shared) {
+        self.AuthManager = AuthManager
     }
     
     /// Search for users and groups
     func searchUsers(query: String) async throws -> SearchResponse {
-        return try await authService.searchUsers(query: query)
+        return try await AuthManager.searchUsers(query: query)
     }
 }

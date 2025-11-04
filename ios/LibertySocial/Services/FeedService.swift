@@ -21,7 +21,7 @@ protocol FeedSession {
 final class FeedService: FeedSession {
     static let shared = FeedService()
     
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     
     // MARK: - Cache & Change Signaling
     private var cachedFeed: [FeedItem]?
@@ -32,8 +32,8 @@ final class FeedService: FeedSession {
         feedDidChangeSubject.eraseToAnyPublisher()
     }
     
-    init(authSession: AuthSession = AuthService.shared) {
-        self.authSession = authSession
+    init(TokenProvider: TokenProviding = AuthService.shared) {
+        self.TokenProvider = TokenProvider
     }
     
     // MARK: - Public Methods
@@ -66,7 +66,7 @@ final class FeedService: FeedSession {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)

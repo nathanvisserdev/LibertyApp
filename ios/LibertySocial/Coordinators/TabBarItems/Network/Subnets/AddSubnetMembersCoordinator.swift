@@ -8,20 +8,20 @@
 import SwiftUI
 
 final class AddSubnetMembersCoordinator {
-    private let authSession: AuthSession
-    private let authService: AuthServiceProtocol
+    private let TokenProvider: TokenProviding
+    private let AuthManager: AuthManaging
     private let subnetId: String
     
     init(subnetId: String,
-         authSession: AuthSession = AuthService.shared,
-         authService: AuthServiceProtocol = AuthService.shared) {
+         TokenProvider: TokenProviding = AuthService.shared,
+         AuthManager: AuthManaging = AuthService.shared) {
         self.subnetId = subnetId
-        self.authSession = authSession
-        self.authService = authService
+        self.TokenProvider = TokenProvider
+        self.AuthManager = AuthManager
     }
     
     func start() -> some View {
-        let model = AddSubnetMembersModel(authSession: authSession)
+        let model = AddSubnetMembersModel(TokenProvider: TokenProvider)
         let viewModel = AddSubnetMembersViewModel(model: model)
         return AddSubnetMembersView(viewModel: viewModel, subnetId: subnetId)
     }

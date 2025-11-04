@@ -45,10 +45,10 @@ struct MemberUser: Codable {
 // MARK: - API
 struct GroupDetailModel {
     
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     
-    init(authSession: AuthSession = AuthService.shared) {
-        self.authSession = authSession
+    init(TokenProvider: TokenProviding = AuthService.shared) {
+        self.TokenProvider = TokenProvider
     }
     
     func fetchGroupDetail(groupId: String) async throws -> GroupDetail {
@@ -59,7 +59,7 @@ struct GroupDetailModel {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -88,7 +88,7 @@ struct GroupDetailModel {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)

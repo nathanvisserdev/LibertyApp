@@ -17,7 +17,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         
         // Request push notification permissions
         Task {
-            try? await PushNotificationManager.shared.requestAuthorization()
+            try? await NotificationManager.shared.requestAuthorization()
         }
         
         return true
@@ -27,7 +27,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     func application(_ application: UIApplication, 
                     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Task { @MainActor in
-            PushNotificationManager.shared.didRegisterForRemoteNotifications(deviceToken: deviceToken)
+            NotificationManager.shared.didRegisterForRemoteNotifications(deviceToken: deviceToken)
         }
     }
     
@@ -35,7 +35,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     func application(_ application: UIApplication, 
                     didFailToRegisterForRemoteNotificationsWithError error: Error) {
         Task { @MainActor in
-            PushNotificationManager.shared.didFailToRegisterForRemoteNotifications(error: error)
+            NotificationManager.shared.didFailToRegisterForRemoteNotifications(error: error)
         }
     }
     
@@ -45,7 +45,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         let userInfo = notification.request.content.userInfo
         Task { @MainActor in
-            PushNotificationManager.shared.didReceiveRemoteNotification(userInfo: userInfo)
+            NotificationManager.shared.didReceiveRemoteNotification(userInfo: userInfo)
         }
         
         // Show banner, sound, and badge even when app is in foreground
@@ -58,7 +58,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                                withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = response.notification.request.content.userInfo
         Task { @MainActor in
-            PushNotificationManager.shared.didReceiveRemoteNotification(userInfo: userInfo)
+            NotificationManager.shared.didReceiveRemoteNotification(userInfo: userInfo)
         }
         
         completionHandler()
@@ -69,7 +69,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                     didReceiveRemoteNotification userInfo: [AnyHashable : Any],
                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         Task { @MainActor in
-            PushNotificationManager.shared.didReceiveRemoteNotification(userInfo: userInfo)
+            NotificationManager.shared.didReceiveRemoteNotification(userInfo: userInfo)
         }
         
         completionHandler(.newData)

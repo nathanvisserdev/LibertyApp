@@ -9,14 +9,14 @@
 import Foundation
 
 struct ProfilePhotoModel {
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     
-    init(authSession: AuthSession = AuthService.shared) {
-        self.authSession = authSession
+    init(TokenProvider: TokenProviding = AuthService.shared) {
+        self.TokenProvider = TokenProvider
     }
     
     func fetchPresignedURL(for photoKey: String) async throws -> (url: URL, expiresAt: Date) {
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         
         let body = ["key": photoKey]
         let data = try JSONSerialization.data(withJSONObject: body)

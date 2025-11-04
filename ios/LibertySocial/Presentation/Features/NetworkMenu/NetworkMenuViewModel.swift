@@ -13,7 +13,7 @@ final class NetworkMenuViewModel: ObservableObject {
     
     // MARK: - Dependencies
     private let model: NetworkMenuModel
-    private let authService: AuthServiceProtocol
+    private let AuthManager: AuthManaging
     
     // MARK: - Published (UI State for Navigation)
     @Published var showConnections: Bool = false
@@ -21,9 +21,9 @@ final class NetworkMenuViewModel: ObservableObject {
     @Published var showSubnetMenu: Bool = false
     
     // MARK: - Init
-    init(model: NetworkMenuModel = NetworkMenuModel(), authService: AuthServiceProtocol = AuthService.shared) {
+    init(model: NetworkMenuModel = NetworkMenuModel(), AuthManager: AuthManaging = AuthService.shared) {
         self.model = model
-        self.authService = authService
+        self.AuthManager = AuthManager
     }
     
     // MARK: - Intents (User Actions)

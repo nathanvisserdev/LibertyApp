@@ -8,17 +8,17 @@
 import SwiftUI
 
 final class MainCoordinator {
-    private let authSession: AuthSession
-    private let authService: AuthServiceProtocol
+    private let TokenProvider: TokenProviding
+    private let AuthManager: AuthManaging
     
-    init(authSession: AuthSession = AuthService.shared,
-         authService: AuthServiceProtocol = AuthService.shared) {
-        self.authSession = authSession
-        self.authService = authService
+    init(TokenProvider: TokenProviding = AuthService.shared,
+         AuthManager: AuthManaging = AuthService.shared) {
+        self.TokenProvider = TokenProvider
+        self.AuthManager = AuthManager
     }
     
     func start() -> some View {
-        let model = MainModel(authSession: authSession)
+        let model = MainModel(TokenProvider: TokenProvider)
         let viewModel = MainViewModel(model: model)
         return MainView(viewModel: viewModel)
     }

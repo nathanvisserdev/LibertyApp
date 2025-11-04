@@ -60,7 +60,7 @@ protocol SubnetSession {
 final class SubnetService: SubnetSession {
     static let shared = SubnetService()
     
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     
     // MARK: - Cache & Change Signaling
     private var cachedSubnets: [Subnet]?
@@ -71,8 +71,8 @@ final class SubnetService: SubnetSession {
         subnetsDidChangeSubject.eraseToAnyPublisher()
     }
     
-    init(authSession: AuthSession = AuthService.shared) {
-        self.authSession = authSession
+    init(TokenProvider: TokenProviding = AuthService.shared) {
+        self.TokenProvider = TokenProvider
     }
     
     // MARK: - Public Methods
@@ -105,7 +105,7 @@ final class SubnetService: SubnetSession {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let (data, response) = try await URLSession.shared.data(for: request)

@@ -8,14 +8,14 @@
 import Foundation
 
 struct MainModel {
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     
-    init(authSession: AuthSession = AuthService.shared) {
-        self.authSession = authSession
+    init(TokenProvider: TokenProviding = AuthService.shared) {
+        self.TokenProvider = TokenProvider
     }
     
     func fetchCurrentUser() async throws -> [String: Any] {
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         
         var request = URLRequest(url: AuthService.baseURL.appendingPathComponent("/me"))
         request.httpMethod = "GET"

@@ -13,15 +13,15 @@ struct CurrentUserInfo {
 }
 
 struct TabBarModel {
-    private let authService: AuthServiceProtocol
+    private let AuthManager: AuthManaging
     
-    init(authService: AuthServiceProtocol = AuthService.shared) {
-        self.authService = authService
+    init(AuthManager: AuthManaging = AuthService.shared) {
+        self.AuthManager = AuthManager
     }
     
     /// Fetch current user's photo and ID - AuthService handles token
     func fetchCurrentUserInfo() async throws -> CurrentUserInfo {
-        let userInfo = try await authService.fetchCurrentUser()
+        let userInfo = try await AuthManager.fetchCurrentUser()
         let photoKey = userInfo["profilePhoto"] as? String
         let userId = userInfo["id"] as? String
         return CurrentUserInfo(photoKey: photoKey, userId: userId)

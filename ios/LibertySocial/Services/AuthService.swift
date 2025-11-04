@@ -7,14 +7,19 @@
 
 import Foundation
 
+// MARK: - Notification Names
+extension Notification.Name {
+    static let userDidLogout = Notification.Name("userDidLogout")
+}
+
 // MARK: - Auth Session Protocol
 /// Minimal interface for authenticated API requests - exposes only auth token retrieval
-protocol AuthSession {
+protocol TokenProviding {
     func getAuthToken() throws -> String
     func getCurrentUserIsPrivate() async throws -> Bool
 }
 
-protocol AuthServiceProtocol {
+protocol AuthManaging {
     func signup(_ request: SignupRequest) async throws -> String
     func login(email: String, password: String) async throws -> String
     func fetchCurrentUser() async throws -> [String: Any]
@@ -28,6 +33,7 @@ protocol AuthServiceProtocol {
     func fetchUserProfile(userId: String) async throws -> UserProfile
     func fetchConnections() async throws -> [Connection]
     func deleteToken()
+    func logout()
 }
 
 struct APIUser: Decodable { 
@@ -37,9 +43,12 @@ struct APIUser: Decodable {
 }
 
 @MainActor
-final class AuthService: AuthServiceProtocol, AuthSession {
+final class AuthService: AuthManaging, TokenProviding {
     static let baseURL = AppConfig.baseURL
     static let shared = AuthService()
+    
+    // MARK: - In-Memory State
+    private var cachedUser: APIUser?
     
     // MARK: - Token Management (Private - isolated to AuthService)
     private func getToken() throws -> String {
@@ -49,7 +58,7 @@ final class AuthService: AuthServiceProtocol, AuthSession {
         return token
     }
     
-    // MARK: - AuthSession Protocol
+    // MARK: - TokenProviding Protocol
     /// Public interface for authenticated requests - used by feature models
     func getAuthToken() throws -> String {
         return try getToken()
@@ -67,6 +76,20 @@ final class AuthService: AuthServiceProtocol, AuthSession {
     
     func deleteToken() {
         KeychainHelper.delete()
+    }
+    
+    // MARK: - Logout
+    func logout() {
+        print("🔵 AuthService.logout() called")
+        // Clear Keychain
+        KeychainHelper.delete()
+        
+        // Reset in-memory state
+        cachedUser = nil
+        
+        print("🔵 Token deleted, cached user cleared, posting userDidLogout notification")
+        // Post notification for observers
+        NotificationCenter.default.post(name: .userDidLogout, object: nil)
     }
     
     // MARK: - Signup (returns JWT and saves it)

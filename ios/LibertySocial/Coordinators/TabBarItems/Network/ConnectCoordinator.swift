@@ -8,8 +8,8 @@
 import SwiftUI
 
 final class ConnectCoordinator {
-    private let authSession: AuthSession
-    private let authService: AuthServiceProtocol
+    private let TokenProvider: TokenProviding
+    private let AuthManager: AuthManaging
     private let firstName: String
     private let userId: String
     private let isPrivate: Bool
@@ -17,17 +17,17 @@ final class ConnectCoordinator {
     init(firstName: String,
          userId: String,
          isPrivate: Bool,
-         authSession: AuthSession = AuthService.shared,
-         authService: AuthServiceProtocol = AuthService.shared) {
+         TokenProvider: TokenProviding = AuthService.shared,
+         AuthManager: AuthManaging = AuthService.shared) {
         self.firstName = firstName
         self.userId = userId
         self.isPrivate = isPrivate
-        self.authSession = authSession
-        self.authService = authService
+        self.TokenProvider = TokenProvider
+        self.AuthManager = AuthManager
     }
     
     func start() -> some View {
-        let model = ConnectModel(authService: authService)
+        let model = ConnectModel(AuthManager: AuthManager)
         let viewModel = ConnectViewModel(model: model, userId: userId)
         return ConnectView(viewModel: viewModel, firstName: firstName, userId: userId, isPrivate: isPrivate)
     }

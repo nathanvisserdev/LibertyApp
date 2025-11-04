@@ -23,7 +23,7 @@ final class FeedViewModel: ObservableObject {
     private let model: FeedModel
     private let feedService: FeedSession
     private let makeMediaVM: (String) -> MediaViewModel
-    private let auth: AuthServiceProtocol
+    private let auth: AuthManaging
     private let commentService: CommentService
     private var cancellables = Set<AnyCancellable>()
 
@@ -33,14 +33,11 @@ final class FeedViewModel: ObservableObject {
     @Published var error: String?
     @Published var threads: [String: CommentThreadState] = [:]   // postId → comment thread
 
-    // MARK: - Coordinator Callbacks
-    var onLogout: (() -> Void)?
-
     // MARK: - Init
     init(model: FeedModel,
          feedService: FeedSession,
          makeMediaVM: @escaping (String) -> MediaViewModel,
-         auth: AuthServiceProtocol,
+         auth: AuthManaging,
          commentService: CommentService) {
         self.model = model
         self.feedService = feedService
@@ -68,7 +65,10 @@ final class FeedViewModel: ObservableObject {
     }
 
     // MARK: - Feed actions
-    func logoutTapped() { onLogout?() }
+    func logoutTapped() {
+        print("🔵 FeedViewModel.logoutTapped() - calling AuthManager.logout()")
+        auth.logout()
+    }
 
     func load() async {
         guard !isLoading else { return }

@@ -33,9 +33,9 @@ struct GroupAdmin: Codable {
 
 // MARK: - Model
 struct NetworkMenuModel {
-    private let authService: AuthServiceProtocol
+    private let AuthManager: AuthManaging
     
-    init(authService: AuthServiceProtocol = AuthService.shared) {
-        self.authService = authService
+    init(AuthManager: AuthManaging = AuthService.shared) {
+        self.AuthManager = AuthManager
     }
 }

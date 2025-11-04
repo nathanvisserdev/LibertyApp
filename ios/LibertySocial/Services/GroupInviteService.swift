@@ -30,7 +30,7 @@ final class GroupInviteService: GroupInviteSession {
     static let shared = GroupInviteService()
     
     // MARK: - Dependencies
-    private let authSession: AuthSession
+    private let TokenProvider: TokenProviding
     
     // MARK: - Event Signaling
     private let inviteEventsSubject = PassthroughSubject<GroupInviteEvent, Never>()
@@ -39,8 +39,8 @@ final class GroupInviteService: GroupInviteSession {
     }
     
     // MARK: - Init
-    init(authSession: AuthSession = AuthService.shared) {
-        self.authSession = authSession
+    init(TokenProvider: TokenProviding = AuthService.shared) {
+        self.TokenProvider = TokenProvider
     }
     
     // MARK: - Public API
@@ -48,7 +48,7 @@ final class GroupInviteService: GroupInviteSession {
     /// Send invites to multiple users for a group
     func sendInvites(groupId: String, userIds: [String]) async throws {
         do {
-            let token = try authSession.getAuthToken()
+            let token = try TokenProvider.getAuthToken()
             
             guard let url = URL(string: "\(AppConfig.baseURL)/groups/\(groupId)/invite") else {
                 throw URLError(.badURL)

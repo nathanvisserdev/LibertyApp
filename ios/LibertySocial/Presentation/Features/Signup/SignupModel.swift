@@ -17,12 +17,12 @@ struct AvailabilityResponse: Decodable {
 }
 
 struct SignupModel {
-    private let authSession: AuthSession
-    private let authService: AuthServiceProtocol
+    private let TokenProvider: TokenProviding
+    private let AuthManager: AuthManaging
     
-    init(authSession: AuthSession = AuthService.shared, authService: AuthServiceProtocol = AuthService.shared) {
-        self.authSession = authSession
-        self.authService = authService
+    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
+        self.TokenProvider = TokenProvider
+        self.AuthManager = AuthManager
     }
     
     /// Check if email or username is available
@@ -50,7 +50,7 @@ struct SignupModel {
     
     /// Signup user - AuthService handles token storage
     func signup(_ request: SignupRequest) async throws {
-        _ = try await authService.signup(request)
+        _ = try await AuthManager.signup(request)
     }
     
     /// Upload profile photo - must be called after signup (requires auth token)
@@ -70,7 +70,7 @@ struct SignupModel {
     // MARK: - Private Photo Upload Methods
     
     private func getPresignedURL(contentType: String) async throws -> PresignResponse {
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         
         let body = ["contentType": contentType]
         let data = try JSONSerialization.data(withJSONObject: body)
@@ -104,7 +104,7 @@ struct SignupModel {
     }
     
     private func updateUserPhoto(key: String) async throws -> String {
-        let token = try authSession.getAuthToken()
+        let token = try TokenProvider.getAuthToken()
         
         let body = ["key": key]
         let data = try JSONSerialization.data(withJSONObject: body)

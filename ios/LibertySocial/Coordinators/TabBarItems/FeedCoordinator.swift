@@ -11,18 +11,18 @@ import Combine
 @MainActor
 final class FeedCoordinator: ObservableObject {
     // MARK: - Dependencies
-    private let authSession: AuthSession
-    private let authService: AuthServiceProtocol
+    private let TokenProvider: TokenProviding
+    private let AuthManager: AuthManaging
     private let feedService: FeedSession
     private let commentService: CommentService
 
-    init(authSession: AuthSession = AuthService.shared,
-         authService: AuthServiceProtocol = AuthService.shared,
+    init(TokenProvider: TokenProviding = AuthService.shared,
+         AuthManager: AuthManaging = AuthService.shared,
          feedService: FeedSession = FeedService.shared) {
-        self.authSession = authSession
-        self.authService = authService
+        self.TokenProvider = TokenProvider
+        self.AuthManager = AuthManager
         self.feedService = feedService
-        self.commentService = CommentHTTPService(authSession: authSession) // ensure this init exists
+        self.commentService = CommentHTTPService(TokenProvider: TokenProvider) // ensure this init exists
     }
 
     func start() -> some View {
@@ -31,21 +31,14 @@ final class FeedCoordinator: ObservableObject {
 
     // MARK: - Factory
     func makeFeedView() -> some View {
-        let model = FeedModel(authService: authService)
+        let model = FeedModel(AuthManager: AuthManager)
         let vm = FeedViewModel(
             model: model,
             feedService: feedService,
             makeMediaVM: { MediaViewModel(mediaKey: $0) },
-            auth: authService,
+            auth: AuthManager,
             commentService: commentService
         )
-        vm.onLogout = { [weak self] in self?.handleLogout() }
         return FeedView(viewModel: vm)
-    }
-
-    // MARK: - Actions
-    private func handleLogout() {
-        authService.deleteToken()
-        NotificationCenter.default.post(name: .init("UserDidLogout"), object: nil)
     }
 }
