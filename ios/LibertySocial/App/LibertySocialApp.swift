@@ -17,13 +17,12 @@ struct LibertySocialApp: App {
     private let tokenProvider: TokenProviding
     private let notificationManager: NotificationManaging
 
-    // Session
     @StateObject private var session: SessionStore
 
-    // Coordinators (use your existing initializers)
-    private let appCoordinator = AppCoordinator()
-    private let loginCoordinator = LoginCoordinator()
+    private let appCoordinator: AppCoordinator
+    private let loginCoordinator: LoginCoordinator
 
+    @MainActor
     init() {
         // Concrete implementations
         let authManager = AuthService()
@@ -34,7 +33,6 @@ struct LibertySocialApp: App {
         self.tokenProvider = tokenProvider
         self.notificationManager = notificationManager
 
-        // Inject into SessionStore
         _session = StateObject(
             wrappedValue: SessionStore(
                 authManager: authManager,
@@ -43,8 +41,9 @@ struct LibertySocialApp: App {
             )
         )
 
-        // If AppDelegate exposes an injection point, wire it here:
-        // appDelegate.notificationManager = notificationManager
+        // Coordinators created on main actor here
+        self.appCoordinator = AppCoordinator()
+        self.loginCoordinator = LoginCoordinator()
     }
 
     var body: some Scene {
@@ -64,4 +63,3 @@ struct LibertySocialApp: App {
         }
     }
 }
-
