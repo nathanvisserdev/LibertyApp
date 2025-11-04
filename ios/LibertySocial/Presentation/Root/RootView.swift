@@ -10,21 +10,23 @@ import SwiftUI
 struct RootView: View {
     @StateObject private var viewModel: RootViewModel
     private let tabBarCoordinator: TabBarCoordinator
+    private let loginCoordinator: LoginCoordinator
     @EnvironmentObject private var session: SessionStore
 
-    init(viewModel: RootViewModel, tabBarCoordinator: TabBarCoordinator) {
+    init(viewModel: RootViewModel,
+         tabBarCoordinator: TabBarCoordinator,
+         loginCoordinator: LoginCoordinator) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.tabBarCoordinator = tabBarCoordinator
+        self.loginCoordinator = loginCoordinator
     }
 
     var body: some View {
         NavigationStack {
-            // Gate by auth if you have it; otherwise always show the authenticated area
             if session.isAuthenticated {
                 tabBarCoordinator.start()
             } else {
-                // Replace with your unauthenticated flow coordinator when ready
-                Text("Sign in flow")
+                loginCoordinator.start()
             }
         }
     }

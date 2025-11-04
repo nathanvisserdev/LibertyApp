@@ -11,13 +11,13 @@ import SwiftUI
 final class AppCoordinator {
     private let rootCoordinator: RootCoordinator
     
-    init() {
+    init(loginCoordinator: LoginCoordinator) {
         let tabBarCoordinator = TabBarCoordinator()
         self.rootCoordinator = RootCoordinator(
-            tabBarCoordinator: tabBarCoordinator
+            tabBarCoordinator: tabBarCoordinator,
+            loginCoordinator: loginCoordinator
         )
     }
-    
     /// Builds the main authenticated view with TabBar at root
     func start() -> some View {
         rootCoordinator.start()

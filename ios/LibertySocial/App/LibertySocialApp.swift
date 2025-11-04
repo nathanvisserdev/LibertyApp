@@ -19,6 +19,7 @@ struct LibertySocialApp: App {
 
     @StateObject private var session: SessionStore
 
+    // Coordinators
     private let appCoordinator: AppCoordinator
     private let loginCoordinator: LoginCoordinator
 
@@ -41,25 +42,20 @@ struct LibertySocialApp: App {
             )
         )
 
-        // Coordinators created on main actor here
-        self.appCoordinator = AppCoordinator()
-        self.loginCoordinator = LoginCoordinator()
+        let loginCoordinator = LoginCoordinator()
+        self.loginCoordinator = loginCoordinator
+        self.appCoordinator = AppCoordinator(loginCoordinator: loginCoordinator)
     }
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                if session.isAuthenticated {
-                    appCoordinator.start()
-                } else {
-                    loginCoordinator.start()
-                }
-            }
-            .environmentObject(session)
-            .onAppear { Task { await session.refresh() } }
+            appCoordinator.start()
+                .environmentObject(session)
+                .onAppear { Task { await session.refresh() } }
         }
         .onChange(of: scenePhase) { phase in
             if phase == .active { Task { await session.refresh() } }
         }
     }
 }
+

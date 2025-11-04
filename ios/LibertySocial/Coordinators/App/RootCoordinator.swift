@@ -10,9 +10,12 @@ import SwiftUI
 @MainActor
 final class RootCoordinator {
     private let tabBarCoordinator: TabBarCoordinator
+    private let loginCoordinator: LoginCoordinator
 
-    init(tabBarCoordinator: TabBarCoordinator) {
+    init(tabBarCoordinator: TabBarCoordinator,
+         loginCoordinator: LoginCoordinator) {
         self.tabBarCoordinator = tabBarCoordinator
+        self.loginCoordinator = loginCoordinator
     }
 
     /// Container for the authenticated app
@@ -22,7 +25,8 @@ final class RootCoordinator {
         )
         return RootView(
             viewModel: rootViewModel,
-            tabBarCoordinator: tabBarCoordinator
+            tabBarCoordinator: tabBarCoordinator,
+            loginCoordinator: loginCoordinator
         )
     }
 }
