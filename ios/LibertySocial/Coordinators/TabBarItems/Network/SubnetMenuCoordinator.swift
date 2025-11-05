@@ -7,16 +7,20 @@
 
 import SwiftUI
 
-/// Stateless coordinator for SubnetMenu flow - navigation is SwiftUI-owned
+@MainActor
 final class SubnetMenuCoordinator {
-    
+    // MARK: - Dependencies
+    private let authenticationManager: AuthManaging
+    private let tokenProvider: TokenProviding
+
     // MARK: - Init
-    init() {
-        // Initialize with dependencies if needed
+    init(authenticationManager: AuthManaging,
+         tokenProvider: TokenProviding) {
+        self.authenticationManager = authenticationManager
+        self.tokenProvider = tokenProvider
     }
-    
+
     // MARK: - Start
-    /// Builds the SubnetMenuView with its ViewModel
     func start() -> some View {
         let viewModel = SubnetMenuViewModel()
         return SubnetMenuView(viewModel: viewModel)

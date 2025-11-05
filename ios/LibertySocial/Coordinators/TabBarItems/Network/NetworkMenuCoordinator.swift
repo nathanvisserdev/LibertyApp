@@ -7,18 +7,43 @@
 
 import SwiftUI
 
-/// Stateless coordinator for NetworkMenu flow - navigation is SwiftUI-owned
+@MainActor
 final class NetworkMenuCoordinator {
-    
+    // MARK: - Dependencies
+    private let authenticationManager: AuthManaging
+    private let tokenProvider: TokenProviding
+
     // MARK: - Init
-    init() {
-        // Initialize with dependencies if needed
+    init(authenticationManager: AuthManaging,
+         tokenProvider: TokenProviding) {
+        self.authenticationManager = authenticationManager
+        self.tokenProvider = tokenProvider
     }
     
     // MARK: - Start
     /// Builds the NetworkMenuView with its ViewModel
     func start() -> some View {
         let viewModel = NetworkMenuViewModel()
-        return NetworkMenuView(viewModel: viewModel)
+        return NetworkMenuView(
+            viewModel: viewModel,
+            makeConnectionsCoordinator: {
+                ConnectionsCoordinator(
+                    authenticationManager: self.authenticationManager,
+                    tokenProvider: self.tokenProvider
+                )
+            },
+            makeGroupsMenuCoordinator: {
+                GroupsMenuCoordinator(
+                    authenticationManager: self.authenticationManager,
+                    tokenProvider: self.tokenProvider
+                )
+            },
+            makeSubnetMenuCoordinator: {
+                SubnetMenuCoordinator(
+                    authenticationManager: self.authenticationManager,
+                    tokenProvider: self.tokenProvider
+                )
+            }
+        )
     }
 }

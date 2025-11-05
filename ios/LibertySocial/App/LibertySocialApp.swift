@@ -20,6 +20,7 @@ struct LibertySocialApp: App {
     private let groupInviteService: GroupInviteSession
     private let groupService: GroupSession
     private let subnetService: SubnetSession
+    private let commentService: CommentService
 
     @StateObject private var session: SessionStore
     private let appCoordinator: AppCoordinator
@@ -34,6 +35,7 @@ struct LibertySocialApp: App {
         let groupInviteService = GroupInviteService()
         let groupService = GroupService()
         let subnetService = SubnetService()
+        let commentService = DefaultCommentService(auth: authManager)
         
         self.authManager = authManager
         self.tokenProvider = tokenProvider
@@ -42,6 +44,7 @@ struct LibertySocialApp: App {
         self.groupInviteService = groupInviteService
         self.groupService = groupService
         self.subnetService = subnetService
+        self.commentService = commentService
 
         _session = StateObject(
             wrappedValue: SessionStore(
@@ -53,8 +56,13 @@ struct LibertySocialApp: App {
 
         let loginCoordinator = LoginCoordinator()
         self.loginCoordinator = loginCoordinator
-        self.appCoordinator = AppCoordinator(loginCoordinator: loginCoordinator)
-        
+        self.appCoordinator = AppCoordinator(
+            loginCoordinator: loginCoordinator,
+            authManager: authManager,
+            tokenProvider: tokenProvider,
+            feedService: feedService,
+            commentService: commentService
+        )
         defer { appDelegate.notificationManager = notificationManager }
     }
 
@@ -64,9 +72,6 @@ struct LibertySocialApp: App {
                 .environmentObject(session)
                 .onAppear { Task { await session.refresh() } }
         }
-//        .onChange(of: scenePhase) { phase in
-//            if phase == .active { Task { await session.refresh() } }
-//        }
     }
 }
 

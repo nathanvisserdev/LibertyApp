@@ -16,7 +16,7 @@ struct MediaModel {
     
     private let TokenProvider: TokenProviding
     
-    init(TokenProvider: TokenProviding = AuthService.shared) {
+    init(TokenProvider: TokenProviding) {
         self.TokenProvider = TokenProvider
     }
     

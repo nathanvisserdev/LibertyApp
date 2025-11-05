@@ -33,3 +33,34 @@ protocol CommentService {
     func create(postId: String, content: String) async throws -> CommentItem
     func delete(commentId: String) async throws
 }
+
+final class DefaultCommentService: CommentService {
+    private let auth: AuthManaging
+
+    init(auth: AuthManaging) {
+        self.auth = auth
+    }
+
+    func fetch(postId: String, cursor: String?) async throws -> ([CommentItem], String?) {
+        // TODO: implement network request
+        return ([], nil)
+    }
+
+    func create(postId: String, content: String) async throws -> CommentItem {
+        // TODO: implement network request
+        return CommentItem(
+            commentId: UUID().uuidString,
+            content: content,
+            createdAt: "",
+            updatedAt: "",
+            userId: "",
+            postId: postId,
+            parentId: nil,
+            user: nil
+        )
+    }
+
+    func delete(commentId: String) async throws {
+        // TODO: implement deletion call
+    }
+}

@@ -9,9 +9,12 @@ import SwiftUI
 
 struct FollowersListView: View {
     @StateObject private var viewModel: FollowersListViewModel
-    
-    init(viewModel: FollowersListViewModel) {
+    private let makeProfileCoordinator: (String) -> ProfileCoordinator
+
+    init(viewModel: FollowersListViewModel,
+         makeProfileCoordinator: @escaping (String) -> ProfileCoordinator) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.makeProfileCoordinator = makeProfileCoordinator
     }
     
     var body: some View {
@@ -28,19 +31,15 @@ struct FollowersListView: View {
         }
         .navigationTitle("Followers")
         .navigationBarTitleDisplayMode(.inline)
-        .task {
-            await viewModel.fetchFollowers()
-        }
+        .task { await viewModel.fetchFollowers() }
     }
     
     // MARK: - Subviews
-    
     private var followersList: some View {
         List(viewModel.followers) { follower in
-            NavigationLink(destination: {
-                let coordinator = ProfileCoordinator(userId: follower.id)
-                coordinator.start()
-            }) {
+            NavigationLink {
+                makeProfileCoordinator(follower.id).start()
+            } label: {
                 FollowerRow(follower: follower)
             }
         }
@@ -52,8 +51,7 @@ struct FollowersListView: View {
             Image(systemName: "person.2.slash")
                 .font(.system(size: 60))
                 .foregroundColor(.secondary)
-            Text("No Followers")
-                .font(.headline)
+            Text("No Followers").font(.headline)
             Text("This user doesn't have any followers yet.")
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -67,30 +65,23 @@ struct FollowersListView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 60))
                 .foregroundColor(.orange)
-            Text("Error")
-                .font(.headline)
+            Text("Error").font(.headline)
             Text(message)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-            Button("Try Again") {
-                Task {
-                    await viewModel.fetchFollowers()
-                }
-            }
-            .buttonStyle(.bordered)
+            Button("Try Again") { Task { await viewModel.fetchFollowers() } }
+                .buttonStyle(.bordered)
         }
         .padding()
     }
 }
 
-// MARK: - Follower Row Component
+// MARK: - Follower Row
 struct FollowerRow: View {
     let follower: FollowerUser
-    
     var body: some View {
         HStack(spacing: 12) {
-            // Profile Photo
             if let photoKey = follower.profilePhoto, !photoKey.isEmpty {
                 ProfilePhotoView(photoKey: photoKey)
                     .frame(width: 50, height: 50)
@@ -104,33 +95,14 @@ struct FollowerRow: View {
                             .foregroundColor(.gray)
                     )
             }
-            
             VStack(alignment: .leading, spacing: 4) {
-                Text("\(follower.firstName) \(follower.lastName)")
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
-                
-                Text("@\(follower.username)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Text("\(follower.firstName) \(follower.lastName)").font(.body).fontWeight(.medium)
+                Text("@\(follower.username)").font(.caption).foregroundColor(.secondary)
             }
-            
             Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            Image(systemName: "chevron.right").font(.caption).foregroundColor(.secondary)
         }
         .padding(.vertical, 4)
         .contentShape(Rectangle())
-    }
-}
-
-#Preview {
-    let model = FollowersListModel()
-    let viewModel = FollowersListViewModel(model: model, userId: "preview-user-id")
-    return NavigationStack {
-        FollowersListView(viewModel: viewModel)
     }
 }

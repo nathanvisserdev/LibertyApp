@@ -219,7 +219,7 @@ class MediaViewModel: ObservableObject {
     let mediaKey: String
     private let model: MediaModel
     
-    init(mediaKey: String, model: MediaModel = MediaModel()) {
+    init(mediaKey: String, model: MediaModel) {
         self.mediaKey = mediaKey
         self.model = model
     }

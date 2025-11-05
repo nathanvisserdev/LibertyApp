@@ -7,18 +7,32 @@
 
 import SwiftUI
 
-/// Stateless coordinator for ProfileMenu flow - navigation is SwiftUI-owned
+@MainActor
 final class ProfileMenuCoordinator {
-    
+    // MARK: - Dependencies
+    private let authenticationManager: AuthManaging
+    private let tokenProvider: TokenProviding
+
     // MARK: - Init
-    init() {
-        // Initialize with dependencies if needed
+    init(authenticationManager: AuthManaging,
+         tokenProvider: TokenProviding) {
+        self.authenticationManager = authenticationManager
+        self.tokenProvider = tokenProvider
     }
     
     // MARK: - Start
-    /// Builds the ProfileMenuView with its ViewModel
     func start(userId: String?) -> some View {
         let viewModel = ProfileMenuViewModel()
-        return ProfileMenuView(viewModel: viewModel, userId: userId)
+        return ProfileMenuView(
+            viewModel: viewModel,
+            userId: userId,
+            makeProfileCoordinator: { id in
+                ProfileCoordinator(
+                    userId: id,
+                    authenticationManager: self.authenticationManager,
+                    tokenProvider: self.tokenProvider
+                )
+            }
+        )
     }
 }

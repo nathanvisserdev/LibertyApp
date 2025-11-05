@@ -7,18 +7,28 @@
 
 import SwiftUI
 
-/// Stateless coordinator for Search flow - navigation is SwiftUI-owned
+@MainActor
 final class SearchCoordinator {
-    
-    // MARK: - Init
-    init() {
-        // Initialize with dependencies if needed
+    private let authenticationManager: AuthManaging
+    private let tokenProvider: TokenProviding
+
+    init(authenticationManager: AuthManaging,
+         tokenProvider: TokenProviding) {
+        self.authenticationManager = authenticationManager
+        self.tokenProvider = tokenProvider
     }
-    
-    // MARK: - Start
-    /// Builds the SearchView with its ViewModel
+
     func start() -> some View {
         let viewModel = SearchViewModel()
-        return SearchView(viewModel: viewModel)
+        return SearchView(
+            viewModel: viewModel,
+            makeProfileCoordinator: { id in
+                ProfileCoordinator(
+                    userId: id,
+                    authenticationManager: self.authenticationManager,
+                    tokenProvider: self.tokenProvider
+                )
+            }
+        )
     }
 }

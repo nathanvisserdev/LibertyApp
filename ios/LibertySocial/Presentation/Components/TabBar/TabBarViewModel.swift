@@ -28,7 +28,7 @@ final class TabBarViewModel: ObservableObject {
     @Published var selectedUserId: String?
     
     // MARK: - Init
-    init(model: TabBarModel = TabBarModel()) {
+    init(model: TabBarModel) {
         self.model = model
     }
     

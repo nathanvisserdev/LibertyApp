@@ -14,8 +14,7 @@ struct CurrentUserInfo {
 
 struct TabBarModel {
     private let AuthManager: AuthManaging
-    
-    init(AuthManager: AuthManaging = AuthService.shared) {
+    init(AuthManager: AuthManaging) {
         self.AuthManager = AuthManager
     }
     

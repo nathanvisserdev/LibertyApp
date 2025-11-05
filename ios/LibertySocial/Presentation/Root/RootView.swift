@@ -22,7 +22,7 @@ struct RootView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        Group {
             if session.isAuthenticated {
                 tabBarCoordinator.start()
             } else {

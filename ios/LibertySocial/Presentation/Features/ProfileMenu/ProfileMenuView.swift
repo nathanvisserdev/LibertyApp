@@ -11,64 +11,45 @@ struct ProfileMenuView: View {
     @StateObject private var viewModel: ProfileMenuViewModel
     @Environment(\.dismiss) var dismiss
     let userId: String?
-    
-    init(viewModel: ProfileMenuViewModel, userId: String?) {
+
+    // Injected factory
+    private let makeProfileCoordinator: (String) -> ProfileCoordinator
+
+    init(
+        viewModel: ProfileMenuViewModel,
+        userId: String?,
+        makeProfileCoordinator: @escaping (String) -> ProfileCoordinator
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.userId = userId
+        self.makeProfileCoordinator = makeProfileCoordinator
     }
     
     var body: some View {
         NavigationStack {
             List {
-                // Profile option
-                Button {
-                    viewModel.tapProfile()
-                } label: {
+                // Profile
+                Button { viewModel.tapProfile() } label: {
                     HStack(spacing: 12) {
-                        Image(systemName: "person")
-                            .font(.title2)
-                            .foregroundColor(.blue)
-                        
+                        Image(systemName: "person").font(.title2).foregroundColor(.blue)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Profile")
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .foregroundColor(.primary)
-                            
-                            Text("View profile")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                            Text("Profile").font(.body).fontWeight(.medium).foregroundColor(.primary)
+                            Text("View profile").font(.caption).foregroundColor(.secondary)
                         }
-                        
                         Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        Image(systemName: "chevron.right").font(.caption).foregroundColor(.secondary)
                     }
                     .padding(.vertical, 4)
                 }
                 .buttonStyle(.plain)
-                
-                // Settings option
-                Button {
-                    viewModel.tapSettings()
-                } label: {
+
+                // Settings
+                Button { viewModel.tapSettings() } label: {
                     HStack(spacing: 12) {
-                        Image(systemName: "gearshape")
-                            .font(.title2)
-                            .foregroundColor(.gray)
-                        
-                        Text("Settings")
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundColor(.primary)
-                        
+                        Image(systemName: "gearshape").font(.title2).foregroundColor(.gray)
+                        Text("Settings").font(.body).fontWeight(.medium).foregroundColor(.primary)
                         Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        Image(systemName: "chevron.right").font(.caption).foregroundColor(.secondary)
                     }
                     .padding(.vertical, 4)
                 }
@@ -77,23 +58,16 @@ struct ProfileMenuView: View {
             .navigationTitle("Menu")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
+                    Button("Done") { dismiss() }
                 }
             }
             .sheet(isPresented: $viewModel.showProfile) {
-                if let userId = userId {
-                    let coordinator = ProfileCoordinator(userId: userId)
-                    coordinator.start()
+                if let uid = userId {
+                    makeProfileCoordinator(uid).start()
                         .presentationDetents([.large])
                         .presentationDragIndicator(.visible)
                 }
             }
         }
     }
-}
-
-#Preview {
-    ProfileMenuCoordinator().start(userId: "sample-user-id")
 }

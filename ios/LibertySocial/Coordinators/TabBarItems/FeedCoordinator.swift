@@ -16,13 +16,14 @@ final class FeedCoordinator: ObservableObject {
     private let feedService: FeedSession
     private let commentService: CommentService
 
-    init(TokenProvider: TokenProviding = AuthService.shared,
-         AuthManager: AuthManaging = AuthService.shared,
-         feedService: FeedSession = FeedService.shared) {
+    init(TokenProvider: TokenProviding,
+         AuthManager: AuthManaging,
+         feedService: FeedSession,
+         commentService: CommentService) {
         self.TokenProvider = TokenProvider
         self.AuthManager = AuthManager
         self.feedService = feedService
-        self.commentService = CommentHTTPService(TokenProvider: TokenProvider) // ensure this init exists
+        self.commentService = commentService
     }
 
     func start() -> some View {
@@ -35,10 +36,14 @@ final class FeedCoordinator: ObservableObject {
         let vm = FeedViewModel(
             model: model,
             feedService: feedService,
-            makeMediaVM: { MediaViewModel(mediaKey: $0) },
+            makeMediaVM: { key in
+                let mediaModel = MediaModel(TokenProvider: self.TokenProvider)
+                return MediaViewModel(mediaKey: key, model: mediaModel)
+            },
             auth: AuthManager,
             commentService: commentService
         )
         return FeedView(viewModel: vm)
     }
+
 }

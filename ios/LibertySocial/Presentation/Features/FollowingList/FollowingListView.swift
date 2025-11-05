@@ -9,9 +9,12 @@ import SwiftUI
 
 struct FollowingListView: View {
     @StateObject private var viewModel: FollowingListViewModel
-    
-    init(viewModel: FollowingListViewModel) {
+    private let makeProfileCoordinator: (String) -> ProfileCoordinator
+
+    init(viewModel: FollowingListViewModel,
+         makeProfileCoordinator: @escaping (String) -> ProfileCoordinator) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.makeProfileCoordinator = makeProfileCoordinator
     }
     
     var body: some View {
@@ -28,19 +31,15 @@ struct FollowingListView: View {
         }
         .navigationTitle("Following")
         .navigationBarTitleDisplayMode(.inline)
-        .task {
-            await viewModel.fetchFollowing()
-        }
+        .task { await viewModel.fetchFollowing() }
     }
     
     // MARK: - Subviews
-    
     private var followingList: some View {
         List(viewModel.following) { user in
-            NavigationLink(destination: {
-                let coordinator = ProfileCoordinator(userId: user.id)
-                coordinator.start()
-            }) {
+            NavigationLink {
+                makeProfileCoordinator(user.id).start()
+            } label: {
                 FollowingRow(user: user)
             }
         }
@@ -52,8 +51,7 @@ struct FollowingListView: View {
             Image(systemName: "person.2.slash")
                 .font(.system(size: 60))
                 .foregroundColor(.secondary)
-            Text("Not Following Anyone")
-                .font(.headline)
+            Text("Not Following Anyone").font(.headline)
             Text("This user isn't following anyone yet.")
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -67,18 +65,13 @@ struct FollowingListView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 60))
                 .foregroundColor(.orange)
-            Text("Error")
-                .font(.headline)
+            Text("Error").font(.headline)
             Text(message)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-            Button("Try Again") {
-                Task {
-                    await viewModel.fetchFollowing()
-                }
-            }
-            .buttonStyle(.bordered)
+            Button("Try Again") { Task { await viewModel.fetchFollowing() } }
+                .buttonStyle(.bordered)
         }
         .padding()
     }
@@ -90,13 +83,12 @@ struct FollowingRow: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Profile Photo
             if let photoKey = user.profilePhoto, !photoKey.isEmpty {
                 ProfilePhotoView(photoKey: photoKey)
                     .frame(width: 50, height: 50)
             } else {
                 Circle()
-                    .fill(Color.gray.opacity(0.3))
+                    .fill(Color.gray.opacity(0.3)) // ← fixed
                     .frame(width: 50, height: 50)
                     .overlay(
                         Image(systemName: "person.fill")
@@ -124,13 +116,5 @@ struct FollowingRow: View {
         }
         .padding(.vertical, 4)
         .contentShape(Rectangle())
-    }
-}
-
-#Preview {
-    let model = FollowingListModel()
-    let viewModel = FollowingListViewModel(model: model, userId: "preview-user-id")
-    return NavigationStack {
-        FollowingListView(viewModel: viewModel)
     }
 }

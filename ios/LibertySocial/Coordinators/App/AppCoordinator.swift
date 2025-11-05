@@ -11,8 +11,17 @@ import SwiftUI
 final class AppCoordinator {
     private let rootCoordinator: RootCoordinator
     
-    init(loginCoordinator: LoginCoordinator) {
-        let tabBarCoordinator = TabBarCoordinator()
+    init(loginCoordinator: LoginCoordinator,
+         authManager: AuthManaging,
+         tokenProvider: TokenProviding,
+         feedService: FeedSession,
+         commentService: CommentService) {
+        let tabBarCoordinator = TabBarCoordinator(
+            authManager: authManager,
+            tokenProvider: tokenProvider,
+            feedService: feedService,
+            commentService: commentService
+        )
         self.rootCoordinator = RootCoordinator(
             tabBarCoordinator: tabBarCoordinator,
             loginCoordinator: loginCoordinator

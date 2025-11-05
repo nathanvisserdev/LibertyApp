@@ -9,59 +9,56 @@ import Foundation
 import Combine
 
 @MainActor
-class ProfileViewModel: ObservableObject {
+final class ProfileViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: ProfileModel
     private let makeMediaVM: (String) -> MediaViewModel
-    
+    private let authenticationManager: AuthManaging
+
     // MARK: - Published
     @Published var profile: UserProfile?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var isOwnProfile: Bool = false
-    
+
     // MARK: - Init
-    init(model: ProfileModel = ProfileModel(), makeMediaVM: @escaping (String) -> MediaViewModel) {
+    init(
+        model: ProfileModel,
+        makeMediaVM: @escaping (String) -> MediaViewModel,
+        authenticationManager: AuthManaging
+    ) {
         self.model = model
         self.makeMediaVM = makeMediaVM
+        self.authenticationManager = authenticationManager
     }
-    
-    convenience init() {
-        self.init(model: ProfileModel(), makeMediaVM: { MediaViewModel(mediaKey: $0) })
-    }
-    
+
     // MARK: - Media VM Factory
     func makeMediaViewModel(for mediaKey: String) -> MediaViewModel {
-        return makeMediaVM(mediaKey)
+        makeMediaVM(mediaKey)
     }
-    
+
+    // MARK: - Intents
     func loadProfile(userId: String) async {
         isLoading = true
         errorMessage = nil
-        
         do {
             profile = try await model.fetchUserProfile(userId: userId)
-            
-            // Check if this is the current user's profile by fetching their own profile
             isOwnProfile = await checkIfOwnProfile(userId: userId)
         } catch {
             errorMessage = error.localizedDescription
         }
-        
         isLoading = false
     }
-    
+
+    // MARK: - Helpers
     private func checkIfOwnProfile(userId: String) async -> Bool {
         do {
-            // Fetch current user info to get their ID
-            let currentUser = try await AuthService.shared.fetchCurrentUser()
-            if let currentUserId = currentUser["id"] as? String {
-                return currentUserId == userId
-            }
+            let currentUser = try await authenticationManager.fetchCurrentUserTyped()
+            // Assumes the typed user has an `id: String` property.
+            return currentUser.id == userId
         } catch {
             print("❌ Failed to check if own profile: \(error)")
+            return false
         }
-        
-        return false
     }
 }

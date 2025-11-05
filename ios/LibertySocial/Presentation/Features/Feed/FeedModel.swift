@@ -30,8 +30,7 @@ struct FeedItem: Decodable, Identifiable {
 
 struct FeedModel {
     private let AuthManager: AuthManaging
-    
-    init(AuthManager: AuthManaging = AuthService.shared) {
+    init(AuthManager: AuthManaging) {
         self.AuthManager = AuthManager
     }
     

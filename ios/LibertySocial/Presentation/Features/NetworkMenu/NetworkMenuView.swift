@@ -10,101 +10,48 @@ import SwiftUI
 struct NetworkMenuView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel: NetworkMenuViewModel
-    
-    init(viewModel: NetworkMenuViewModel) {
+
+    // Factories injected by the parent coordinator
+    private let makeConnectionsCoordinator: () -> ConnectionsCoordinator
+    private let makeGroupsMenuCoordinator: () -> GroupsMenuCoordinator
+    private let makeSubnetMenuCoordinator: () -> SubnetMenuCoordinator
+
+    init(
+        viewModel: NetworkMenuViewModel,
+        makeConnectionsCoordinator: @escaping () -> ConnectionsCoordinator,
+        makeGroupsMenuCoordinator: @escaping () -> GroupsMenuCoordinator,
+        makeSubnetMenuCoordinator: @escaping () -> SubnetMenuCoordinator
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.makeConnectionsCoordinator = makeConnectionsCoordinator
+        self.makeGroupsMenuCoordinator = makeGroupsMenuCoordinator
+        self.makeSubnetMenuCoordinator = makeSubnetMenuCoordinator
     }
 
     var body: some View {
         NavigationStack {
             List {
-                // Connections Section
+                // Connections
                 Button {
                     viewModel.showConnectionsView()
                 } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "person.2.fill")
-                            .font(.title2)
-                            .foregroundColor(.blue)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Connections")
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .foregroundColor(.primary)
-                            
-                            Text("View your connections")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 4)
+                    row(icon: "person.2.fill", title: "Connections", subtitle: "View your connections")
                 }
                 .buttonStyle(.plain)
-                
-                // Groups Section
+
+                // Groups
                 Button {
                     viewModel.showGroupsMenuView()
                 } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "person.3.sequence")
-                            .font(.title2)
-                            .foregroundColor(.blue)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Groups")
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .foregroundColor(.primary)
-                            
-                            Text("View your groups")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 4)
+                    row(icon: "person.3.sequence", title: "Groups", subtitle: "View your groups")
                 }
                 .buttonStyle(.plain)
-                
-                // Subnets Section
+
+                // Subnets
                 Button {
                     viewModel.showSubnetMenuView()
                 } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "network.badge.shield.half.filled")
-                            .font(.title2)
-                            .foregroundColor(.blue)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Subnets")
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .foregroundColor(.primary)
-                            
-                            Text("View your subnets")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 4)
+                    row(icon: "network.badge.shield.half.filled", title: "Subnets", subtitle: "View your subnets")
                 }
                 .buttonStyle(.plain)
             }
@@ -112,30 +59,51 @@ struct NetworkMenuView: View {
             .navigationTitle("Social Network")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
+                    Button("Done") { dismiss() }
                 }
             }
             .sheet(isPresented: $viewModel.showConnections) {
-                ConnectionsCoordinator().start()
+                makeConnectionsCoordinator().start()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $viewModel.showGroupsMenu) {
-                GroupsMenuCoordinator().start()
+                makeGroupsMenuCoordinator().start()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $viewModel.showSubnetMenu) {
-                SubnetMenuCoordinator().start()
+                makeSubnetMenuCoordinator().start()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
         }
     }
-}
 
-#Preview {
-    NetworkMenuView(viewModel: NetworkMenuViewModel())
+    // MARK: - Row builder
+    private func row(icon: String, title: String, subtitle: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(.blue)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(.primary)
+
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 4)
+    }
 }

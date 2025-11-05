@@ -7,16 +7,20 @@
 
 import SwiftUI
 
-/// Stateless coordinator for GroupsMenu flow - navigation is SwiftUI-owned
+@MainActor
 final class GroupsMenuCoordinator {
-    
+    // MARK: - Dependencies
+    private let authenticationManager: AuthManaging
+    private let tokenProvider: TokenProviding
+
     // MARK: - Init
-    init() {
-        // Initialize with dependencies if needed
+    init(authenticationManager: AuthManaging,
+         tokenProvider: TokenProviding) {
+        self.authenticationManager = authenticationManager
+        self.tokenProvider = tokenProvider
     }
-    
+
     // MARK: - Start
-    /// Builds the GroupsMenuView with its ViewModel
     func start() -> some View {
         let viewModel = GroupsMenuViewModel()
         return GroupsMenuView(viewModel: viewModel)
