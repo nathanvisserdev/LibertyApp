@@ -9,18 +9,16 @@ import SwiftUI
 
 struct SearchView: View {
     @StateObject private var viewModel: SearchViewModel
+    @ObservedObject private var coordinator: SearchCoordinator
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isTextFieldFocused: Bool
-    @State private var selectedUserId: String?
-
-    private let makeProfileCoordinator: (String) -> ProfileCoordinator
 
     init(
         viewModel: SearchViewModel,
-        makeProfileCoordinator: @escaping (String) -> ProfileCoordinator
+        coordinator: SearchCoordinator
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.makeProfileCoordinator = makeProfileCoordinator
+        self.coordinator = coordinator
     }
 
     var body: some View {
@@ -33,11 +31,8 @@ struct SearchView: View {
             }
             .navigationTitle("Search")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } } }
-            .sheet(item: Binding(
-                get: { selectedUserId.map { UserIdWrapper(id: $0) } },
-                set: { selectedUserId = $0?.id }
-            )) { wrapper in
-                makeProfileCoordinator(wrapper.id).start()
+            .sheet(isPresented: $coordinator.isShowingProfile) {
+                coordinator.makeProfileView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
@@ -112,7 +107,7 @@ struct SearchView: View {
         Section(header: Text("Users")) {
             ForEach(viewModel.users, id: \.id) { user in
                 Button {
-                    selectedUserId = user.id
+                    viewModel.selectUser(userId: user.id)
                 } label: {
                     UserRow(
                         fullName: "\(user.firstName) \(user.lastName)",

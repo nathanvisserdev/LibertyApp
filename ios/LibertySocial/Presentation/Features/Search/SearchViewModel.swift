@@ -14,6 +14,9 @@ final class SearchViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: SearchModel
     
+    // MARK: - Callbacks
+    private let onUserSelected: (String) -> Void
+    
     // MARK: - Published (Input State)
     @Published var query: String = ""
     @Published var isLoading: Bool = false
@@ -24,11 +27,18 @@ final class SearchViewModel: ObservableObject {
     @Published var groups: [SearchGroup] = []
     
     // MARK: - Init
-    init(model: SearchModel = SearchModel()) {
+    init(model: SearchModel = SearchModel(),
+         onUserSelected: @escaping (String) -> Void) {
         self.model = model
+        self.onUserSelected = onUserSelected
     }
 
     // MARK: - Intents (User Actions)
+    
+    func selectUser(userId: String) {
+        onUserSelected(userId)
+    }
+    
     func performSearch() async {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         
