@@ -10,22 +10,20 @@ import SwiftUI
 struct NetworkMenuView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel: NetworkMenuViewModel
-
-    // Factories injected by the parent coordinator
-    private let makeConnectionsCoordinator: () -> ConnectionsCoordinator
-    private let makeGroupsMenuCoordinator: () -> GroupsMenuCoordinator
-    private let makeSubnetMenuCoordinator: () -> SubnetMenuCoordinator
+    @ObservedObject private var connectionsCoordinator: ConnectionsCoordinator
+    @ObservedObject private var groupsMenuCoordinator: GroupsMenuCoordinator
+    @ObservedObject private var subnetMenuCoordinator: SubnetMenuCoordinator
 
     init(
         viewModel: NetworkMenuViewModel,
-        makeConnectionsCoordinator: @escaping () -> ConnectionsCoordinator,
-        makeGroupsMenuCoordinator: @escaping () -> GroupsMenuCoordinator,
-        makeSubnetMenuCoordinator: @escaping () -> SubnetMenuCoordinator
+        connectionsCoordinator: ConnectionsCoordinator,
+        groupsMenuCoordinator: GroupsMenuCoordinator,
+        subnetMenuCoordinator: SubnetMenuCoordinator
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.makeConnectionsCoordinator = makeConnectionsCoordinator
-        self.makeGroupsMenuCoordinator = makeGroupsMenuCoordinator
-        self.makeSubnetMenuCoordinator = makeSubnetMenuCoordinator
+        self.connectionsCoordinator = connectionsCoordinator
+        self.groupsMenuCoordinator = groupsMenuCoordinator
+        self.subnetMenuCoordinator = subnetMenuCoordinator
     }
 
     var body: some View {
@@ -62,18 +60,18 @@ struct NetworkMenuView: View {
                     Button("Done") { dismiss() }
                 }
             }
-            .sheet(isPresented: $viewModel.showConnections) {
-                makeConnectionsCoordinator().start()
+            .sheet(isPresented: $connectionsCoordinator.isShowingConnections) {
+                connectionsCoordinator.makeView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
-            .sheet(isPresented: $viewModel.showGroupsMenu) {
-                makeGroupsMenuCoordinator().start()
+            .sheet(isPresented: $groupsMenuCoordinator.isShowingGroupsMenu) {
+                groupsMenuCoordinator.makeView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
-            .sheet(isPresented: $viewModel.showSubnetMenu) {
-                makeSubnetMenuCoordinator().start()
+            .sheet(isPresented: $subnetMenuCoordinator.isShowingSubnetMenu) {
+                subnetMenuCoordinator.makeView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }

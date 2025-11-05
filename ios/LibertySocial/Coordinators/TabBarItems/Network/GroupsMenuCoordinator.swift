@@ -6,9 +6,15 @@
 //
 
 import SwiftUI
+import Combine
 
+/// Coordinator for GroupsMenu flow
 @MainActor
-final class GroupsMenuCoordinator {
+final class GroupsMenuCoordinator: ObservableObject {
+    
+    // MARK: - Published State
+    @Published var isShowingGroupsMenu: Bool = false
+    
     // MARK: - Dependencies
     private let authenticationManager: AuthManaging
     private let tokenProvider: TokenProviding
@@ -19,9 +25,16 @@ final class GroupsMenuCoordinator {
         self.authenticationManager = authenticationManager
         self.tokenProvider = tokenProvider
     }
+    
+    // MARK: - Public Methods
+    
+    /// Presents the GroupsMenuView
+    func showGroupsMenu() {
+        isShowingGroupsMenu = true
+    }
 
-    // MARK: - Start
-    func start() -> some View {
+    /// Builds the GroupsMenuView with its ViewModel
+    func makeView() -> some View {
         let viewModel = GroupsMenuViewModel()
         return GroupsMenuView(viewModel: viewModel)
     }

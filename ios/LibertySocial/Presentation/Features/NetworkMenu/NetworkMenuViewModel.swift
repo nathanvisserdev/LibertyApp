@@ -14,40 +14,35 @@ final class NetworkMenuViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: NetworkMenuModel
     private let AuthManager: AuthManaging
-    
-    // MARK: - Published (UI State for Navigation)
-    @Published var showConnections: Bool = false
-    @Published var showGroupsMenu: Bool = false
-    @Published var showSubnetMenu: Bool = false
+    private let onConnectionsTapped: () -> Void
+    private let onGroupsMenuTapped: () -> Void
+    private let onSubnetMenuTapped: () -> Void
     
     // MARK: - Init
-    init(model: NetworkMenuModel = NetworkMenuModel(), AuthManager: AuthManaging = AuthService.shared) {
+    init(
+        model: NetworkMenuModel = NetworkMenuModel(),
+        AuthManager: AuthManaging = AuthService.shared,
+        onConnectionsTapped: @escaping () -> Void,
+        onGroupsMenuTapped: @escaping () -> Void,
+        onSubnetMenuTapped: @escaping () -> Void
+    ) {
         self.model = model
         self.AuthManager = AuthManager
+        self.onConnectionsTapped = onConnectionsTapped
+        self.onGroupsMenuTapped = onGroupsMenuTapped
+        self.onSubnetMenuTapped = onSubnetMenuTapped
     }
     
     // MARK: - Intents (User Actions)
     func showConnectionsView() {
-        showConnections = true
-    }
-    
-    func hideConnectionsView() {
-        showConnections = false
+        onConnectionsTapped()
     }
     
     func showGroupsMenuView() {
-        showGroupsMenu = true
-    }
-    
-    func hideGroupsMenuView() {
-        showGroupsMenu = false
+        onGroupsMenuTapped()
     }
     
     func showSubnetMenuView() {
-        showSubnetMenu = true
-    }
-    
-    func hideSubnetMenuView() {
-        showSubnetMenu = false
+        onSubnetMenuTapped()
     }
 }

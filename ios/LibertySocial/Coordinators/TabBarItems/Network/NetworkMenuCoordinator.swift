@@ -18,11 +18,28 @@ final class NetworkMenuCoordinator: ObservableObject {
     // MARK: - Dependencies
     private let authenticationManager: AuthManaging
     private let tokenProvider: TokenProviding
+    
+    // MARK: - Child Coordinators
+    private let connectionsCoordinator: ConnectionsCoordinator
+    private let groupsMenuCoordinator: GroupsMenuCoordinator
+    private let subnetMenuCoordinator: SubnetMenuCoordinator
 
     init(authenticationManager: AuthManaging,
          tokenProvider: TokenProviding) {
         self.authenticationManager = authenticationManager
         self.tokenProvider = tokenProvider
+        self.connectionsCoordinator = ConnectionsCoordinator(
+            authenticationManager: authenticationManager,
+            tokenProvider: tokenProvider
+        )
+        self.groupsMenuCoordinator = GroupsMenuCoordinator(
+            authenticationManager: authenticationManager,
+            tokenProvider: tokenProvider
+        )
+        self.subnetMenuCoordinator = SubnetMenuCoordinator(
+            authenticationManager: authenticationManager,
+            tokenProvider: tokenProvider
+        )
     }
     
     // MARK: - Public Methods
@@ -32,29 +49,39 @@ final class NetworkMenuCoordinator: ObservableObject {
         isShowingNetworkMenu = true
     }
     
+    /// Presents the ConnectionsView
+    private func showConnections() {
+        connectionsCoordinator.showConnections()
+    }
+    
+    /// Presents the GroupsMenuView
+    private func showGroupsMenu() {
+        groupsMenuCoordinator.showGroupsMenu()
+    }
+    
+    /// Presents the SubnetMenuView
+    private func showSubnetMenu() {
+        subnetMenuCoordinator.showSubnetMenu()
+    }
+    
     /// Builds the NetworkMenuView with its ViewModel
     func makeView() -> some View {
-        let viewModel = NetworkMenuViewModel()
+        let viewModel = NetworkMenuViewModel(
+            onConnectionsTapped: { [weak self] in
+                self?.showConnections()
+            },
+            onGroupsMenuTapped: { [weak self] in
+                self?.showGroupsMenu()
+            },
+            onSubnetMenuTapped: { [weak self] in
+                self?.showSubnetMenu()
+            }
+        )
         return NetworkMenuView(
             viewModel: viewModel,
-            makeConnectionsCoordinator: {
-                ConnectionsCoordinator(
-                    authenticationManager: self.authenticationManager,
-                    tokenProvider: self.tokenProvider
-                )
-            },
-            makeGroupsMenuCoordinator: {
-                GroupsMenuCoordinator(
-                    authenticationManager: self.authenticationManager,
-                    tokenProvider: self.tokenProvider
-                )
-            },
-            makeSubnetMenuCoordinator: {
-                SubnetMenuCoordinator(
-                    authenticationManager: self.authenticationManager,
-                    tokenProvider: self.tokenProvider
-                )
-            }
+            connectionsCoordinator: connectionsCoordinator,
+            groupsMenuCoordinator: groupsMenuCoordinator,
+            subnetMenuCoordinator: subnetMenuCoordinator
         )
     }
 }

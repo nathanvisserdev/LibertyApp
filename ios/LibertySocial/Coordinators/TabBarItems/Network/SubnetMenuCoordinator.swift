@@ -6,9 +6,15 @@
 //
 
 import SwiftUI
+import Combine
 
+/// Coordinator for SubnetMenu flow
 @MainActor
-final class SubnetMenuCoordinator {
+final class SubnetMenuCoordinator: ObservableObject {
+    
+    // MARK: - Published State
+    @Published var isShowingSubnetMenu: Bool = false
+    
     // MARK: - Dependencies
     private let authenticationManager: AuthManaging
     private let tokenProvider: TokenProviding
@@ -19,9 +25,16 @@ final class SubnetMenuCoordinator {
         self.authenticationManager = authenticationManager
         self.tokenProvider = tokenProvider
     }
+    
+    // MARK: - Public Methods
+    
+    /// Presents the SubnetMenuView
+    func showSubnetMenu() {
+        isShowingSubnetMenu = true
+    }
 
-    // MARK: - Start
-    func start() -> some View {
+    /// Builds the SubnetMenuView with its ViewModel
+    func makeView() -> some View {
         let viewModel = SubnetMenuViewModel()
         return SubnetMenuView(viewModel: viewModel)
     }
