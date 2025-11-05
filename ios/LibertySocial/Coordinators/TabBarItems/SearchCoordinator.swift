@@ -6,9 +6,16 @@
 //
 
 import SwiftUI
+import Combine
 
+/// Coordinator for Search flow
 @MainActor
-final class SearchCoordinator {
+final class SearchCoordinator: ObservableObject {
+    
+    // MARK: - Published State
+    @Published var isShowingSearch: Bool = false
+    
+    // MARK: - Dependencies
     private let authenticationManager: AuthManaging
     private let tokenProvider: TokenProviding
 
@@ -17,8 +24,16 @@ final class SearchCoordinator {
         self.authenticationManager = authenticationManager
         self.tokenProvider = tokenProvider
     }
+    
+    // MARK: - Public Methods
+    
+    /// Presents the SearchView
+    func showSearch() {
+        isShowingSearch = true
+    }
 
-    func start() -> some View {
+    /// Builds the SearchView with its ViewModel
+    func makeView() -> some View {
         let viewModel = SearchViewModel()
         return SearchView(
             viewModel: viewModel,

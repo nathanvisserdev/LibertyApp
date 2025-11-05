@@ -6,23 +6,34 @@
 //
 
 import SwiftUI
+import Combine
 
+/// Coordinator for NetworkMenu flow
 @MainActor
-final class NetworkMenuCoordinator {
+final class NetworkMenuCoordinator: ObservableObject {
+    
+    // MARK: - Published State
+    @Published var isShowingNetworkMenu: Bool = false
+    
     // MARK: - Dependencies
     private let authenticationManager: AuthManaging
     private let tokenProvider: TokenProviding
 
-    // MARK: - Init
     init(authenticationManager: AuthManaging,
          tokenProvider: TokenProviding) {
         self.authenticationManager = authenticationManager
         self.tokenProvider = tokenProvider
     }
     
-    // MARK: - Start
+    // MARK: - Public Methods
+    
+    /// Presents the NetworkMenuView
+    func showNetworkMenu() {
+        isShowingNetworkMenu = true
+    }
+    
     /// Builds the NetworkMenuView with its ViewModel
-    func start() -> some View {
+    func makeView() -> some View {
         let viewModel = NetworkMenuViewModel()
         return NetworkMenuView(
             viewModel: viewModel,

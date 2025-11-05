@@ -12,6 +12,10 @@ import Combine
 final class TabBarViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: TabBarModel
+    private let onNotificationsTapped: () -> Void
+    private let onNetworkMenuTapped: () -> Void
+    private let onSearchTapped: () -> Void
+    private let onProfileTapped: (String) -> Void
     
     // MARK: - Published (State)
     @Published var currentUserPhotoKey: String?
@@ -21,15 +25,14 @@ final class TabBarViewModel: ObservableObject {
     
     // MARK: - Published (UI State for Navigation)
     @Published var isShowingCompose: Bool = false
-    @Published var isShowingSearch: Bool = false
-    @Published var isShowingNotifications: Bool = false
-    @Published var isShowingProfile: Bool = false
-    @Published var isShowingNetworkMenu: Bool = false
-    @Published var selectedUserId: String?
     
     // MARK: - Init
-    init(model: TabBarModel) {
+    init(model: TabBarModel, onNotificationsTapped: @escaping () -> Void, onNetworkMenuTapped: @escaping () -> Void, onSearchTapped: @escaping () -> Void, onProfileTapped: @escaping (String) -> Void) {
         self.model = model
+        self.onNotificationsTapped = onNotificationsTapped
+        self.onNetworkMenuTapped = onNetworkMenuTapped
+        self.onSearchTapped = onSearchTapped
+        self.onProfileTapped = onProfileTapped
     }
     
     // MARK: - Intents (Data Actions)
@@ -61,37 +64,19 @@ final class TabBarViewModel: ObservableObject {
     }
     
     func tapSearch() {
-        isShowingSearch = true
-    }
-    
-    func hideSearch() {
-        isShowingSearch = false
+        onSearchTapped()
     }
     
     func tapNotifications() {
-        isShowingNotifications = true
-    }
-    
-    func hideNotifications() {
-        isShowingNotifications = false
+        onNotificationsTapped()
     }
     
     func tapNetworkMenu() {
-        isShowingNetworkMenu = true
-    }
-    
-    func hideNetworkMenu() {
-        isShowingNetworkMenu = false
+        onNetworkMenuTapped()
     }
     
     func tapProfile(userId: String) {
-        selectedUserId = userId
-        isShowingProfile = true
-    }
-    
-    func hideProfile() {
-        isShowingProfile = false
-        selectedUserId = nil
+        onProfileTapped(userId)
     }
     
     func tapCurrentUserProfile() {

@@ -6,9 +6,18 @@
 //
 
 import SwiftUI
+import Combine
 
+/// Coordinator for ProfileMenu flow
 @MainActor
-final class ProfileMenuCoordinator {
+final class ProfileMenuCoordinator: ObservableObject {
+    
+    // MARK: - Published State
+    @Published var isShowingProfile: Bool = false
+    
+    // MARK: - Private State
+    private var currentUserId: String?
+    
     // MARK: - Dependencies
     private let authenticationManager: AuthManaging
     private let tokenProvider: TokenProviding
@@ -20,12 +29,20 @@ final class ProfileMenuCoordinator {
         self.tokenProvider = tokenProvider
     }
     
-    // MARK: - Start
-    func start(userId: String?) -> some View {
+    // MARK: - Public Methods
+    
+    /// Presents the ProfileMenuView for the specified user
+    func showProfile(userId: String) {
+        currentUserId = userId
+        isShowingProfile = true
+    }
+    
+    /// Builds the ProfileMenuView with its ViewModel
+    func makeView() -> some View {
         let viewModel = ProfileMenuViewModel()
         return ProfileMenuView(
             viewModel: viewModel,
-            userId: userId,
+            userId: currentUserId,
             makeProfileCoordinator: { id in
                 ProfileCoordinator(
                     userId: id,

@@ -9,20 +9,23 @@ import SwiftUI
 
 struct TabBarView: View {
     @StateObject private var viewModel: TabBarViewModel
-    private let makeNetworkMenuCoordinator: () -> NetworkMenuCoordinator
-    private let makeProfileMenuCoordinator: () -> ProfileMenuCoordinator
-    private let makeSearchCoordinator: () -> SearchCoordinator
+    @ObservedObject private var notificationsMenuCoordinator: NotificationsMenuCoordinator
+    @ObservedObject private var networkMenuCoordinator: NetworkMenuCoordinator
+    @ObservedObject private var searchCoordinator: SearchCoordinator
+    @ObservedObject private var profileMenuCoordinator: ProfileMenuCoordinator
 
     init(
         viewModel: TabBarViewModel,
-        makeNetworkMenuCoordinator: @escaping () -> NetworkMenuCoordinator,
-        makeProfileMenuCoordinator: @escaping () -> ProfileMenuCoordinator,
-        makeSearchCoordinator: @escaping () -> SearchCoordinator
+        notificationsMenuCoordinator: NotificationsMenuCoordinator,
+        networkMenuCoordinator: NetworkMenuCoordinator,
+        searchCoordinator: SearchCoordinator,
+        profileMenuCoordinator: ProfileMenuCoordinator
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.makeNetworkMenuCoordinator = makeNetworkMenuCoordinator
-        self.makeProfileMenuCoordinator = makeProfileMenuCoordinator
-        self.makeSearchCoordinator = makeSearchCoordinator
+        self.notificationsMenuCoordinator = notificationsMenuCoordinator
+        self.networkMenuCoordinator = networkMenuCoordinator
+        self.searchCoordinator = searchCoordinator
+        self.profileMenuCoordinator = profileMenuCoordinator
     }
 
     var body: some View {
@@ -55,33 +58,30 @@ struct TabBarView: View {
         .padding(.vertical, 8)
         .background(.ultraThinMaterial)
         .task { await viewModel.fetchCurrentUserInfo() }
+        .sheet(isPresented: $notificationsMenuCoordinator.isShowingNotifications) {
+            notificationsMenuCoordinator.makeView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $networkMenuCoordinator.isShowingNetworkMenu) {
+            networkMenuCoordinator.makeView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $searchCoordinator.isShowingSearch) {
+            searchCoordinator.makeView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $profileMenuCoordinator.isShowingProfile) {
+            profileMenuCoordinator.makeView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
         .sheet(isPresented: $viewModel.isShowingCompose) {
-            CreatePostCoordinator().start()
+            CreatePostView(viewModel: CreatePostViewModel())
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $viewModel.isShowingSearch) {
-            makeSearchCoordinator().start()
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $viewModel.isShowingNotifications) {
-            NotificationsMenuCoordinator().start()
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $viewModel.isShowingNetworkMenu) {
-            makeNetworkMenuCoordinator().start()
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $viewModel.isShowingProfile) {
-            if let userId = viewModel.selectedUserId {
-                makeProfileMenuCoordinator().start(userId: userId)
-                    .presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.visible)
-            }
         }
     }
 }
-

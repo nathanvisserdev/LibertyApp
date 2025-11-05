@@ -39,7 +39,7 @@
 				Presentation/Features/Feed/FeedViewModel.swift,
 				Presentation/Features/Login/LoginModel.swift,
 				Presentation/Features/Login/LoginViewModel.swift,
-				Presentation/Features/Main/MainViewModel.swift,
+				Presentation/Root/RootViewModel.swift,
 				Services/AuthService.swift,
 			);
 			target = 15913F732E8EB4B800A015C7 /* LibertySocialTests */;
@@ -55,8 +55,8 @@
 				Presentation/Features/Feed/FeedView.swift,
 				Presentation/Features/Feed/FeedViewModel.swift,
 				Presentation/Features/Login/LoginView.swift,
-				Presentation/Features/Main/MainView.swift,
-				Presentation/Features/Main/MainViewModel.swift,
+				Presentation/Root/RootView.swift,
+				Presentation/Root/RootViewModel.swift,
 			);
 			target = 15913F7D2E8EB4B800A015C7 /* LibertySocialUITests */;
 		};
