@@ -76,7 +76,7 @@ struct LibertySocialApp: App {
                 .environmentObject(session)
                 .onAppear { Task { await session.refresh() } }
                 .onOpenURL { url in
-                    appCoordinator.handleDeeplink(url)
+                    appCoordinator.root.handleDeeplink(url)
                 }
         }
     }

@@ -11,7 +11,6 @@ struct RootView: View {
     @StateObject private var viewModel: RootViewModel
     private let tabBarCoordinator: TabBarCoordinator
     private let loginCoordinator: LoginCoordinator
-    @EnvironmentObject private var session: SessionStore
 
     init(viewModel: RootViewModel,
          tabBarCoordinator: TabBarCoordinator,
@@ -23,15 +22,11 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if session.isAuthenticated {
+            if viewModel.isAuthenticated {
                 tabBarCoordinator.start()
             } else {
                 loginCoordinator.start()
             }
         }
-        .onChange(of: session.isAuthenticated) { _, newValue in
-            viewModel.notifyAuthenticationChanged(isAuthenticated: newValue)
-        }
     }
 }
-

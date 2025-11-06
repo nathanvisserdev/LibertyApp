@@ -53,7 +53,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         Task { @MainActor in
             notificationManager.didReceiveRemoteNotification(userInfo: userInfo)
             // Handle notification tap for routing
-            appCoordinator?.handleNotification(userInfo: userInfo)
+            appCoordinator?.root.handleNotification(userInfo)
         }
         completionHandler()
     }
