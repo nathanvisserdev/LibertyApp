@@ -13,17 +13,27 @@ final class ConnectionsViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: ConnectionsModel
     
+    // MARK: - Callbacks
+    private let onUserSelected: (String) -> Void
+    
     // MARK: - Published
     @Published var connections: [Connection] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
     // MARK: - Init
-    init(model: ConnectionsModel = ConnectionsModel()) {
+    init(model: ConnectionsModel = ConnectionsModel(),
+         onUserSelected: @escaping (String) -> Void) {
         self.model = model
+        self.onUserSelected = onUserSelected
     }
     
     // MARK: - Actions
+    
+    func selectUser(userId: String) {
+        onUserSelected(userId)
+    }
+    
     func loadConnections() async {
         isLoading = true
         errorMessage = nil

@@ -7,17 +7,14 @@
 
 import SwiftUI
 
-struct UserIdWrapper: Identifiable { let id: String }
-
 struct ConnectionsView: View {
     @StateObject private var viewModel: ConnectionsViewModel
-    @State private var selectedUserId: String?
-    private let makeProfileCoordinator: (String) -> ProfileCoordinator
+    @ObservedObject private var coordinator: ConnectionsCoordinator
 
     init(viewModel: ConnectionsViewModel,
-         makeProfileCoordinator: @escaping (String) -> ProfileCoordinator) {
+         coordinator: ConnectionsCoordinator) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.makeProfileCoordinator = makeProfileCoordinator
+        self.coordinator = coordinator
     }
 
     var body: some View {
@@ -32,7 +29,7 @@ struct ConnectionsView: View {
                 } else {
                     List(viewModel.connections) { c in
                         Button {
-                            selectedUserId = c.userId
+                            viewModel.selectUser(userId: c.userId)
                         } label: {
                             ConnectionRow(
                                 firstName: c.firstName,
@@ -50,11 +47,8 @@ struct ConnectionsView: View {
             .navigationTitle("Connections")
             .navigationBarTitleDisplayMode(.inline)
             .task { await viewModel.loadConnections() }
-            .sheet(item: Binding(
-                get: { selectedUserId.map { UserIdWrapper(id: $0) } },
-                set: { selectedUserId = $0?.id }
-            )) { wrapper in
-                makeProfileCoordinator(wrapper.id).start()
+            .sheet(isPresented: $coordinator.isShowingProfile) {
+                coordinator.makeProfileView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
