@@ -146,6 +146,13 @@ struct CreateGroupView: View {
             }
             .navigationTitle("Create Group")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") {
+                        viewModel.cancel()
+                    }
+                }
+            }
             .disabled(viewModel.isSubmitting)
             .sheet(isPresented: $showAdminSelection) {
                 SelectRoundTableAdminsView(viewModel: viewModel)

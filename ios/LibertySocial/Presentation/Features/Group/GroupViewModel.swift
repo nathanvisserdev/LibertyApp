@@ -17,6 +17,9 @@ final class GroupViewModel: ObservableObject {
     // MARK: - Published (State)
     @Published var group: UserGroup
     
+    // MARK: - Callbacks
+    var onClose: (() -> Void)?
+    
     // MARK: - Init
     init(group: UserGroup, model: GroupModel = GroupModel()) {
         self.group = group
@@ -25,4 +28,10 @@ final class GroupViewModel: ObservableObject {
     
     // MARK: - Intents (User Actions)
     // Future: Add methods for group actions (join, leave, post, etc.)
+    
+    // MARK: - Actions
+    
+    func close() {
+        onClose?()
+    }
 }

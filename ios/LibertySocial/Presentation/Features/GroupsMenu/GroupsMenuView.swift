@@ -9,9 +9,11 @@ import SwiftUI
 
 struct GroupsMenuView: View {
     @StateObject private var viewModel: GroupsMenuViewModel
+    @ObservedObject private var coordinator: GroupsMenuCoordinator
     
-    init(viewModel: GroupsMenuViewModel) {
+    init(viewModel: GroupsMenuViewModel, coordinator: GroupsMenuCoordinator) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.coordinator = coordinator
     }
     
     var body: some View {
@@ -135,18 +137,18 @@ struct GroupsMenuView: View {
             .task {
                 await viewModel.fetchUserGroups()
             }
-            .sheet(isPresented: $viewModel.showCreateGroup) {
-                CreateGroupCoordinator().start()
+            .sheet(isPresented: $coordinator.showCreateGroup) {
+                coordinator.makeCreateGroupView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
-            .sheet(isPresented: $viewModel.showSuggestedGroups) {
-                SuggestedGroupsCoordinator().start()
+            .sheet(isPresented: $coordinator.showSuggestedGroups) {
+                coordinator.makeSuggestedGroupsView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
-            .sheet(item: $viewModel.selectedGroup) { group in
-                GroupCoordinator(group: group).start()
+            .sheet(item: $coordinator.selectedGroup) { group in
+                coordinator.makeGroupView(for: group)
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
@@ -155,5 +157,10 @@ struct GroupsMenuView: View {
 }
 
 #Preview {
-    GroupsMenuView(viewModel: GroupsMenuViewModel())
+    let coordinator = GroupsMenuCoordinator(
+        authenticationManager: AuthService.shared,
+        tokenProvider: AuthService.shared
+    )
+    let viewModel = GroupsMenuViewModel(coordinator: coordinator)
+    return GroupsMenuView(viewModel: viewModel, coordinator: coordinator)
 }

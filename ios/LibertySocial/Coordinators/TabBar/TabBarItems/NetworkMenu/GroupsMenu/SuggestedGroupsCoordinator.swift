@@ -21,9 +21,18 @@ final class SuggestedGroupsCoordinator {
     
     // MARK: - Start
     /// Builds the SuggestedGroupsView with its ViewModel
-    func start() -> some View {
+    func start(onDismiss: @escaping () -> Void, onSelect: @escaping (UserGroup) -> Void) -> some View {
         let model = SuggestedGroupsModel(TokenProvider: TokenProvider, AuthManager: AuthManager)
         let viewModel = SuggestedGroupsViewModel(model: model)
+        
+        // Set up callbacks
+        viewModel.onDismiss = {
+            onDismiss()
+        }
+        viewModel.onGroupSelected = { group in
+            onSelect(group)
+        }
+        
         return SuggestedGroupsView(viewModel: viewModel)
     }
 }

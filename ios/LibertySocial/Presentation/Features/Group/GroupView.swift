@@ -24,6 +24,13 @@ struct GroupView: View {
                     .font(.title)
             }
             .navigationTitle(group.name)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        viewModel.close()
+                    }
+                }
+            }
         }
     }
 }

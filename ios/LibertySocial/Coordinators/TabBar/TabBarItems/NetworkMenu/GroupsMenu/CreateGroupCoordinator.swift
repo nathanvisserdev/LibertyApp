@@ -23,9 +23,17 @@ final class CreateGroupCoordinator {
     
     // MARK: - Start
     /// Builds the CreateGroupView with its ViewModel and sets up navigation observation
-    func start() -> some View {
+    func start(onDismiss: @escaping () -> Void) -> some View {
         let model = CreateGroupModel(TokenProvider: TokenProvider, AuthManager: AuthManager)
         let viewModel = CreateGroupViewModel(model: model)
+        
+        // Set up callbacks
+        viewModel.onFinished = {
+            onDismiss()
+        }
+        viewModel.onCancelled = {
+            onDismiss()
+        }
         
         return CreateGroupViewWrapper(viewModel: viewModel, coordinator: self)
     }

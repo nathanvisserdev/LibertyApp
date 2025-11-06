@@ -47,6 +47,10 @@ final class CreateGroupViewModel: ObservableObject {
     // MARK: - Navigation Signals (Output for Coordinator)
     let didFinishSuccessfully = PassthroughSubject<Void, Never>()
     
+    // MARK: - Callbacks
+    var onFinished: (() -> Void)?
+    var onCancelled: (() -> Void)?
+    
     // MARK: - Round Table specific fields
     @Published var selectedAdmins: [RoundTableAdmin] = []
     @Published var viceChairId: String?
@@ -86,6 +90,7 @@ final class CreateGroupViewModel: ObservableObject {
                 case .invitesSentSuccessfully:
                     // When invites are sent successfully, dismiss the entire create group flow
                     self.didFinishSuccessfully.send()
+                    self.onFinished?()
                     
                 case .invitesFailed:
                     // Invite failed, but we stay on the create group view
@@ -253,5 +258,11 @@ final class CreateGroupViewModel: ObservableObject {
             isSubmitting = false
             return false
         }
+    }
+    
+    // MARK: - Actions
+    
+    func cancel() {
+        onCancelled?()
     }
 }

@@ -72,7 +72,7 @@ struct SuggestedGroupsView: View {
                     List {
                         ForEach(viewModel.joinableGroups) { group in
                             Button {
-                                selectedGroup = group
+                                viewModel.selectGroup(group)
                             } label: {
                                 GroupRow(group: group)
                             }
@@ -87,7 +87,7 @@ struct SuggestedGroupsView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
-                        dismiss()
+                        viewModel.dismiss()
                     }
                 }
             }

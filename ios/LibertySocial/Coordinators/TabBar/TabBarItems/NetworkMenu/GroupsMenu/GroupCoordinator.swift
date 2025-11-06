@@ -23,9 +23,15 @@ final class GroupCoordinator {
     
     // MARK: - Start
     /// Builds the GroupView with its ViewModel
-    func start() -> some View {
+    func start(onClose: @escaping () -> Void) -> some View {
         let model = GroupModel(TokenProvider: TokenProvider, AuthManager: AuthManager)
         let viewModel = GroupViewModel(group: group, model: model)
+        
+        // Set up callback
+        viewModel.onClose = {
+            onClose()
+        }
+        
         return GroupView(group: group, viewModel: viewModel)
     }
 }

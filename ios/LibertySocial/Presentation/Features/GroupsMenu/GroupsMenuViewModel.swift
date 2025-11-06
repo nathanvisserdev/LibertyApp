@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import Combine
 
 @MainActor
@@ -15,6 +16,7 @@ final class GroupsMenuViewModel: ObservableObject {
     private let model: GroupsMenuModel
     private let AuthManager: AuthManaging
     private let groupService: GroupSession
+    private weak var coordinator: GroupsMenuCoordinator?
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Published (Output State)
@@ -22,13 +24,9 @@ final class GroupsMenuViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
-    // MARK: - Published (UI State for Navigation)
-    @Published var showCreateGroup: Bool = false
-    @Published var showSuggestedGroups: Bool = false
-    @Published var selectedGroup: UserGroup?
-    
     // MARK: - Init
-    init(model: GroupsMenuModel = GroupsMenuModel(), AuthManager: AuthManaging = AuthService.shared, groupService: GroupSession = GroupService.shared) {
+    init(coordinator: GroupsMenuCoordinator? = nil, model: GroupsMenuModel = GroupsMenuModel(), AuthManager: AuthManaging = AuthService.shared, groupService: GroupSession = GroupService.shared) {
+        self.coordinator = coordinator
         self.model = model
         self.AuthManager = AuthManager
         self.groupService = groupService
@@ -63,26 +61,14 @@ final class GroupsMenuViewModel: ObservableObject {
     }
     
     func showCreateGroupView() {
-        showCreateGroup = true
-    }
-    
-    func hideCreateGroupView() {
-        showCreateGroup = false
+        coordinator?.presentCreateGroup()
     }
     
     func showSuggestedGroupsView() {
-        showSuggestedGroups = true
-    }
-    
-    func hideSuggestedGroupsView() {
-        showSuggestedGroups = false
+        coordinator?.presentSuggestedGroups()
     }
     
     func showGroup(_ group: UserGroup) {
-        selectedGroup = group
-    }
-    
-    func hideGroup() {
-        selectedGroup = nil
+        coordinator?.presentGroup(group)
     }
 }
