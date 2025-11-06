@@ -9,20 +9,15 @@ import SwiftUI
 
 struct ProfileMenuView: View {
     @StateObject private var viewModel: ProfileMenuViewModel
+    @ObservedObject private var coordinator: ProfileMenuCoordinator
     @Environment(\.dismiss) var dismiss
-    let userId: String?
-
-    // Injected factory
-    private let makeProfileCoordinator: (String) -> ProfileCoordinator
 
     init(
         viewModel: ProfileMenuViewModel,
-        userId: String?,
-        makeProfileCoordinator: @escaping (String) -> ProfileCoordinator
+        coordinator: ProfileMenuCoordinator
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.userId = userId
-        self.makeProfileCoordinator = makeProfileCoordinator
+        self.coordinator = coordinator
     }
     
     var body: some View {
@@ -61,12 +56,10 @@ struct ProfileMenuView: View {
                     Button("Done") { dismiss() }
                 }
             }
-            .sheet(isPresented: $viewModel.showProfile) {
-                if let uid = userId {
-                    makeProfileCoordinator(uid).start()
-                        .presentationDetents([.large])
-                        .presentationDragIndicator(.visible)
-                }
+            .sheet(isPresented: $coordinator.isShowingChildProfile) {
+                coordinator.makeProfileView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
         }
     }
