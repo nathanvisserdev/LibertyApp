@@ -14,6 +14,11 @@ final class ProfileViewModel: ObservableObject {
     private let model: ProfileModel
     private let makeMediaVM: (String) -> MediaViewModel
     private let authenticationManager: AuthManaging
+    
+    // MARK: - Callbacks
+    private let onShowFollowers: (String) -> Void
+    private let onShowFollowing: (String) -> Void
+    private let onConnectTapped: (String, String, Bool) -> Void
 
     // MARK: - Published
     @Published var profile: UserProfile?
@@ -25,11 +30,17 @@ final class ProfileViewModel: ObservableObject {
     init(
         model: ProfileModel,
         makeMediaVM: @escaping (String) -> MediaViewModel,
-        authenticationManager: AuthManaging
+        authenticationManager: AuthManaging,
+        onShowFollowers: @escaping (String) -> Void,
+        onShowFollowing: @escaping (String) -> Void,
+        onConnectTapped: @escaping (String, String, Bool) -> Void
     ) {
         self.model = model
         self.makeMediaVM = makeMediaVM
         self.authenticationManager = authenticationManager
+        self.onShowFollowers = onShowFollowers
+        self.onShowFollowing = onShowFollowing
+        self.onConnectTapped = onConnectTapped
     }
 
     // MARK: - Media VM Factory
@@ -38,6 +49,19 @@ final class ProfileViewModel: ObservableObject {
     }
 
     // MARK: - Intents
+    
+    func showFollowers(userId: String) {
+        onShowFollowers(userId)
+    }
+    
+    func showFollowing(userId: String) {
+        onShowFollowing(userId)
+    }
+    
+    func connect(userId: String, firstName: String, isPrivate: Bool) {
+        onConnectTapped(userId, firstName, isPrivate)
+    }
+    
     func loadProfile(userId: String) async {
         isLoading = true
         errorMessage = nil

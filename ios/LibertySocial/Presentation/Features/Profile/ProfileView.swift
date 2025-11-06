@@ -10,23 +10,17 @@ import Combine
 
 struct ProfileView: View {
     @StateObject var viewModel: ProfileViewModel
+    @ObservedObject private var coordinator: ProfileCoordinator
     let userId: String
-    @State private var showConnectionTypeSelection = false
-
-    // Coordinators
-    private let makeFollowersCoordinator: (String) -> FollowersListCoordinator
-    private let makeFollowingCoordinator: (String) -> FollowingListCoordinator
 
     init(
         viewModel: ProfileViewModel,
         userId: String,
-        makeFollowersCoordinator: @escaping (String) -> FollowersListCoordinator,
-        makeFollowingCoordinator: @escaping (String) -> FollowingListCoordinator
+        coordinator: ProfileCoordinator
     ) {
         self._viewModel = StateObject(wrappedValue: viewModel)
         self.userId = userId
-        self.makeFollowersCoordinator = makeFollowersCoordinator
-        self.makeFollowingCoordinator = makeFollowingCoordinator
+        self.coordinator = coordinator
     }
     
     var body: some View {
@@ -73,8 +67,8 @@ struct ProfileView: View {
                            let followingCount = profile.followingCount {
                             HStack(spacing: 20) {
                                 if !profile.isPrivate {
-                                    NavigationLink {
-                                        makeFollowersCoordinator(userId).start()
+                                    Button {
+                                        viewModel.showFollowers(userId: userId)
                                     } label: {
                                         VStack(spacing: 2) {
                                             Text("\(followerCount)").font(.headline).fontWeight(.bold).foregroundColor(.primary)
@@ -89,8 +83,8 @@ struct ProfileView: View {
                                 }
 
                                 if !profile.isPrivate {
-                                    NavigationLink {
-                                        makeFollowingCoordinator(userId).start()
+                                    Button {
+                                        viewModel.showFollowing(userId: userId)
                                     } label: {
                                         VStack(spacing: 2) {
                                             Text("\(followingCount)").font(.headline).fontWeight(.bold).foregroundColor(.primary)
@@ -147,7 +141,7 @@ struct ProfileView: View {
                     // Connect button
                     if !viewModel.isOwnProfile {
                         Button {
-                            showConnectionTypeSelection = true
+                            viewModel.connect(userId: userId, firstName: profile.firstName, isPrivate: profile.isPrivate)
                         } label: {
                             Text("Connect with \(profile.firstName)")
                                 .fontWeight(.semibold)
@@ -158,10 +152,6 @@ struct ProfileView: View {
                                 .cornerRadius(10)
                         }
                         .padding(.horizontal, 20)
-                        .sheet(isPresented: $showConnectionTypeSelection) {
-                            let coordinator = ConnectCoordinator(firstName: profile.firstName, userId: userId, isPrivate: profile.isPrivate)
-                            coordinator.start()
-                        }
                     }
 
                     Divider().padding(.horizontal)
@@ -228,6 +218,21 @@ struct ProfileView: View {
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.loadProfile(userId: userId) }
+        .sheet(isPresented: $coordinator.isShowingFollowers) {
+            coordinator.makeFollowersView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $coordinator.isShowingFollowing) {
+            coordinator.makeFollowingView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $coordinator.isShowingConnect) {
+            coordinator.makeConnectView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
     }
     
     private func connectionIcon(for status: String) -> String {
