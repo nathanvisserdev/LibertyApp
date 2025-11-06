@@ -9,12 +9,9 @@ import SwiftUI
 
 struct FollowersListView: View {
     @StateObject private var viewModel: FollowersListViewModel
-    private let makeProfileCoordinator: (String) -> ProfileCoordinator
 
-    init(viewModel: FollowersListViewModel,
-         makeProfileCoordinator: @escaping (String) -> ProfileCoordinator) {
+    init(viewModel: FollowersListViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.makeProfileCoordinator = makeProfileCoordinator
     }
     
     var body: some View {
@@ -37,11 +34,12 @@ struct FollowersListView: View {
     // MARK: - Subviews
     private var followersList: some View {
         List(viewModel.followers) { follower in
-            NavigationLink {
-                makeProfileCoordinator(follower.id).start()
+            Button {
+                viewModel.selectUser(follower.id)
             } label: {
                 FollowerRow(follower: follower)
             }
+            .buttonStyle(.plain)
         }
         .listStyle(.plain)
     }

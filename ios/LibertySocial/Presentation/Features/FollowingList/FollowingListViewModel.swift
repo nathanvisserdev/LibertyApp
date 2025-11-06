@@ -14,6 +14,7 @@ final class FollowingListViewModel: ObservableObject {
     // MARK: - Dependencies
     private let model: FollowingListModel
     private let userId: String
+    private let onUserSelected: (String) -> Void
     
     // MARK: - Published State
     @Published var following: [FollowingUser] = []
@@ -21,12 +22,19 @@ final class FollowingListViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     // MARK: - Init
-    init(model: FollowingListModel = FollowingListModel(), userId: String) {
+    init(model: FollowingListModel = FollowingListModel(),
+         userId: String,
+         onUserSelected: @escaping (String) -> Void) {
         self.model = model
         self.userId = userId
+        self.onUserSelected = onUserSelected
     }
     
     // MARK: - Intents
+    func selectUser(_ userId: String) {
+        onUserSelected(userId)
+    }
+    
     func fetchFollowing() async {
         isLoading = true
         errorMessage = nil

@@ -29,6 +29,9 @@ struct RootView: View {
                 loginCoordinator.start()
             }
         }
+        .onChange(of: session.isAuthenticated) { _, newValue in
+            viewModel.notifyAuthenticationChanged(isAuthenticated: newValue)
+        }
     }
 }
 

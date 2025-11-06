@@ -25,6 +25,7 @@ final class FeedViewModel: ObservableObject {
     private let makeMediaVM: (String) -> MediaViewModel
     private let auth: AuthManaging
     private let commentService: CommentService
+    private let onShowProfile: (String) -> Void
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Published
@@ -38,12 +39,14 @@ final class FeedViewModel: ObservableObject {
          feedService: FeedSession,
          makeMediaVM: @escaping (String) -> MediaViewModel,
          auth: AuthManaging,
-         commentService: CommentService) {
+         commentService: CommentService,
+         onShowProfile: @escaping (String) -> Void) {
         self.model = model
         self.feedService = feedService
         self.makeMediaVM = makeMediaVM
         self.auth = auth
         self.commentService = commentService
+        self.onShowProfile = onShowProfile
 
         feedService.feedDidChange
             .sink { [weak self] in
@@ -144,5 +147,10 @@ final class FeedViewModel: ObservableObject {
         } catch {
             print("Failed to submit comment: \(error)")
         }
+    }
+    
+    // MARK: - Navigation
+    func showProfile(userId: String) {
+        onShowProfile(userId)
     }
 }

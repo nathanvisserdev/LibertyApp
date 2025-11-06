@@ -11,6 +11,7 @@ import UserNotifications
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     // Injected from LibertySocialApp
     @MainActor var notificationManager: NotificationManaging!
+    @MainActor var appCoordinator: AppCoordinator?
 
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
@@ -51,6 +52,8 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         let userInfo = response.notification.request.content.userInfo
         Task { @MainActor in
             notificationManager.didReceiveRemoteNotification(userInfo: userInfo)
+            // Handle notification tap for routing
+            appCoordinator?.handleNotification(userInfo: userInfo)
         }
         completionHandler()
     }

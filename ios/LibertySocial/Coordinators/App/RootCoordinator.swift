@@ -11,17 +11,21 @@ import SwiftUI
 final class RootCoordinator {
     private let tabBarCoordinator: TabBarCoordinator
     private let loginCoordinator: LoginCoordinator
+    private let onAuthenticationChanged: (Bool) -> Void
 
     init(tabBarCoordinator: TabBarCoordinator,
-         loginCoordinator: LoginCoordinator) {
+         loginCoordinator: LoginCoordinator,
+         onAuthenticationChanged: @escaping (Bool) -> Void = { _ in }) {
         self.tabBarCoordinator = tabBarCoordinator
         self.loginCoordinator = loginCoordinator
+        self.onAuthenticationChanged = onAuthenticationChanged
     }
 
     /// Container for the authenticated app
     func start() -> some View {
         let rootViewModel = RootViewModel(
-            model: RootModel()
+            model: RootModel(),
+            onAuthenticationChanged: onAuthenticationChanged
         )
         return RootView(
             viewModel: rootViewModel,
@@ -30,4 +34,3 @@ final class RootCoordinator {
         )
     }
 }
-

@@ -68,6 +68,23 @@ final class TabBarCoordinator {
     private func showProfile(userId: String) {
         profileMenuCoordinator.showProfile(userId: userId)
     }
+    
+    // MARK: - Public Routing Helpers
+    
+    /// Routes to a profile from the Feed tab
+    func openProfileFromFeed(_ userId: String) {
+        feedCoordinator.openProfile(userId)
+    }
+    
+    /// Routes to a user's followers list from the Profile tab
+    func openFollowersFromProfile(_ userId: String) {
+        profileMenuCoordinator.openFollowers(for: userId)
+    }
+    
+    /// Routes to a user's following list from the Profile tab
+    func openFollowingFromProfile(_ userId: String) {
+        profileMenuCoordinator.openFollowing(for: userId)
+    }
 
     func start() -> some View {
         feedCoordinator.start()

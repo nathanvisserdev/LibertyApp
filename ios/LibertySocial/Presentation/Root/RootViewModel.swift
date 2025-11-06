@@ -11,5 +11,15 @@ import Combine
 @MainActor
 final class RootViewModel: ObservableObject {
     private let model: RootModel
-    init(model: RootModel) { self.model = model }
+    private let onAuthenticationChanged: (Bool) -> Void
+    
+    init(model: RootModel,
+         onAuthenticationChanged: @escaping (Bool) -> Void = { _ in }) {
+        self.model = model
+        self.onAuthenticationChanged = onAuthenticationChanged
+    }
+    
+    func notifyAuthenticationChanged(isAuthenticated: Bool) {
+        onAuthenticationChanged(isAuthenticated)
+    }
 }

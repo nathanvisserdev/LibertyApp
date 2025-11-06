@@ -8,18 +8,73 @@
 import SwiftUI
 import Combine
 
+// MARK: - Navigation Path Store
+final class ProfileNavPathStore: ObservableObject {
+    @Published var path = NavigationPath()
+}
+
+// MARK: - Route Enum
+enum ProfileRoute: Hashable {
+    case followers(String)
+    case following(String)
+}
+
+// MARK: - Profile Stack View
+struct ProfileStackView: View {
+    @ObservedObject var nav: ProfileNavPathStore
+    @StateObject var viewModel: ProfileViewModel
+    let userId: String
+    @ObservedObject var coordinator: ProfileCoordinator
+    
+    var body: some View {
+        NavigationStack(path: Binding(
+            get: { nav.path },
+            set: { nav.path = $0 }
+        )) {
+            ProfileView(
+                viewModel: viewModel,
+                userId: userId,
+                coordinator: coordinator
+            )
+            .navigationDestination(for: ProfileRoute.self) { route in
+                switch route {
+                case .followers(let id):
+                    coordinator.makeFollowersCoordinator(for: id)
+                        .makeView(onUserSelected: { userId in
+                            coordinator.showChildProfile(for: userId)
+                        })
+                case .following(let id):
+                    coordinator.makeFollowingCoordinator(for: id)
+                        .makeView(onUserSelected: { userId in
+                            coordinator.showChildProfile(for: userId)
+                        })
+                }
+            }
+            .sheet(isPresented: $coordinator.isShowingChildProfile) {
+                coordinator.makeChildProfileView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
+            }
+        }
+    }
+}
+
 @MainActor
 final class ProfileCoordinator: ObservableObject {
     
+    // MARK: - Navigation
+    private let nav = ProfileNavPathStore()
+    
     // MARK: - Published State
-    @Published var isShowingFollowers: Bool = false
-    @Published var isShowingFollowing: Bool = false
     @Published var isShowingConnect: Bool = false
+    @Published var isShowingChildProfile: Bool = false
     
     // MARK: - Child Coordinators
-    private var followersCoordinator: FollowersListCoordinator?
-    private var followingCoordinator: FollowingListCoordinator?
     private var connectCoordinator: ConnectCoordinator?
+    private var childProfileCoordinator: ProfileCoordinator?
+    
+    // MARK: - Private State
+    private var selectedUserId: String?
     
     // MARK: - Dependencies
     private let userId: String
@@ -36,24 +91,25 @@ final class ProfileCoordinator: ObservableObject {
     
     // MARK: - Public Methods
     
-    /// Presents the followers list for the specified user
-    func showFollowers(for userId: String) {
-        followersCoordinator = FollowersListCoordinator(
-            userId: userId,
-            authenticationManager: authenticationManager,
-            tokenProvider: tokenProvider
-        )
-        isShowingFollowers = true
+    /// Opens the followers list for the specified user
+    func openFollowers(of userId: String) {
+        nav.path.append(ProfileRoute.followers(userId))
     }
     
-    /// Presents the following list for the specified user
-    func showFollowing(for userId: String) {
-        followingCoordinator = FollowingListCoordinator(
+    /// Opens the following list for the specified user
+    func openFollowing(of userId: String) {
+        nav.path.append(ProfileRoute.following(userId))
+    }
+    
+    /// Presents a child profile for the specified user (via sheet)
+    func showChildProfile(for userId: String) {
+        selectedUserId = userId
+        childProfileCoordinator = ProfileCoordinator(
             userId: userId,
             authenticationManager: authenticationManager,
             tokenProvider: tokenProvider
         )
-        isShowingFollowing = true
+        isShowingChildProfile = true
     }
     
     /// Presents the connect view for the specified user
@@ -78,36 +134,45 @@ final class ProfileCoordinator: ObservableObject {
             },
             authenticationManager: authenticationManager,
             onShowFollowers: { [weak self] userId in
-                self?.showFollowers(for: userId)
+                self?.openFollowers(of: userId)
             },
             onShowFollowing: { [weak self] userId in
-                self?.showFollowing(for: userId)
+                self?.openFollowing(of: userId)
             },
             onConnectTapped: { [weak self] userId, firstName, isPrivate in
                 self?.showConnect(userId: userId, firstName: firstName, isPrivate: isPrivate)
             }
         )
 
-        return NavigationStack {
-            ProfileView(
-                viewModel: viewModel,
-                userId: userId,
-                coordinator: self
-            )
-        }
+        return ProfileStackView(
+            nav: nav,
+            viewModel: viewModel,
+            userId: userId,
+            coordinator: self
+        )
     }
     
-    /// Builds the FollowersListView
-    func makeFollowersView() -> some View {
-        guard let coordinator = followersCoordinator else {
-            return AnyView(EmptyView())
-        }
-        return AnyView(coordinator.start())
+    /// Creates a FollowersListCoordinator for the given user
+    func makeFollowersCoordinator(for userId: String) -> FollowersListCoordinator {
+        return FollowersListCoordinator(
+            userId: userId,
+            authenticationManager: authenticationManager,
+            tokenProvider: tokenProvider
+        )
     }
     
-    /// Builds the FollowingListView
-    func makeFollowingView() -> some View {
-        guard let coordinator = followingCoordinator else {
+    /// Creates a FollowingListCoordinator for the given user
+    func makeFollowingCoordinator(for userId: String) -> FollowingListCoordinator {
+        return FollowingListCoordinator(
+            userId: userId,
+            authenticationManager: authenticationManager,
+            tokenProvider: tokenProvider
+        )
+    }
+    
+    /// Builds the child ProfileView for the selected user
+    func makeChildProfileView() -> some View {
+        guard let coordinator = childProfileCoordinator else {
             return AnyView(EmptyView())
         }
         return AnyView(coordinator.start())

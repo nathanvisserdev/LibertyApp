@@ -53,6 +53,50 @@ final class ProfileMenuCoordinator: ObservableObject {
         isShowingChildProfile = true
     }
     
+    /// Opens the followers list for a specific user (deeplink/notification entry)
+    /// Creates or retrieves the ProfileCoordinator and delegates to it
+    func openFollowers(for userId: String) {
+        // First, ensure we have a profile coordinator for this user
+        if profileCoordinator == nil || selectedUserId != userId {
+            selectedUserId = userId
+            profileCoordinator = ProfileCoordinator(
+                userId: userId,
+                authenticationManager: authenticationManager,
+                tokenProvider: tokenProvider
+            )
+        }
+        
+        // Show the profile if not already showing
+        if !isShowingChildProfile {
+            isShowingChildProfile = true
+        }
+        
+        // Delegate to the profile coordinator to open followers
+        profileCoordinator?.openFollowers(of: userId)
+    }
+    
+    /// Opens the following list for a specific user (deeplink/notification entry)
+    /// Creates or retrieves the ProfileCoordinator and delegates to it
+    func openFollowing(for userId: String) {
+        // First, ensure we have a profile coordinator for this user
+        if profileCoordinator == nil || selectedUserId != userId {
+            selectedUserId = userId
+            profileCoordinator = ProfileCoordinator(
+                userId: userId,
+                authenticationManager: authenticationManager,
+                tokenProvider: tokenProvider
+            )
+        }
+        
+        // Show the profile if not already showing
+        if !isShowingChildProfile {
+            isShowingChildProfile = true
+        }
+        
+        // Delegate to the profile coordinator to open following
+        profileCoordinator?.openFollowing(of: userId)
+    }
+    
     /// Builds the ProfileMenuView with its ViewModel
     func makeView() -> some View {
         guard let userId = currentUserId else {

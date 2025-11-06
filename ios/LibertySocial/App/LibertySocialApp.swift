@@ -46,24 +46,28 @@ struct LibertySocialApp: App {
         self.subnetService = subnetService
         self.commentService = commentService
 
-        _session = StateObject(
-            wrappedValue: SessionStore(
-                authManager: authManager,
-                tokenProvider: tokenProvider,
-                notificationManager: notificationManager
-            )
-        )
-
         let loginCoordinator = LoginCoordinator()
         self.loginCoordinator = loginCoordinator
+        
+        let session = SessionStore(
+            authManager: authManager,
+            tokenProvider: tokenProvider,
+            notificationManager: notificationManager
+        )
+        _session = StateObject(wrappedValue: session)
+        
         self.appCoordinator = AppCoordinator(
             loginCoordinator: loginCoordinator,
+            sessionStore: session,
             authManager: authManager,
             tokenProvider: tokenProvider,
             feedService: feedService,
             commentService: commentService
         )
-        defer { appDelegate.notificationManager = notificationManager }
+        defer {
+            appDelegate.notificationManager = notificationManager
+            appDelegate.appCoordinator = self.appCoordinator
+        }
     }
 
     var body: some Scene {
@@ -71,6 +75,9 @@ struct LibertySocialApp: App {
             appCoordinator.start()
                 .environmentObject(session)
                 .onAppear { Task { await session.refresh() } }
+                .onOpenURL { url in
+                    appCoordinator.handleDeeplink(url)
+                }
         }
     }
 }

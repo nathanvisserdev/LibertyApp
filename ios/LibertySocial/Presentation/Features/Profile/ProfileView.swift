@@ -218,16 +218,6 @@ struct ProfileView: View {
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.loadProfile(userId: userId) }
-        .sheet(isPresented: $coordinator.isShowingFollowers) {
-            coordinator.makeFollowersView()
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $coordinator.isShowingFollowing) {
-            coordinator.makeFollowingView()
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
-        }
         .sheet(isPresented: $coordinator.isShowingConnect) {
             coordinator.makeConnectView()
                 .presentationDetents([.medium, .large])
