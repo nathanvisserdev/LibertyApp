@@ -14,6 +14,7 @@ final class TabBarViewModel: ObservableObject {
     private let model: TabBarModel
     private let onNotificationsTapped: () -> Void
     private let onNetworkMenuTapped: () -> Void
+    private let onComposeTapped: () -> Void
     private let onSearchTapped: () -> Void
     private let onProfileTapped: (String) -> Void
     
@@ -23,14 +24,12 @@ final class TabBarViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
-    // MARK: - Published (UI State for Navigation)
-    @Published var isShowingCompose: Bool = false
-    
     // MARK: - Init
-    init(model: TabBarModel, onNotificationsTapped: @escaping () -> Void, onNetworkMenuTapped: @escaping () -> Void, onSearchTapped: @escaping () -> Void, onProfileTapped: @escaping (String) -> Void) {
+    init(model: TabBarModel, onNotificationsTapped: @escaping () -> Void, onNetworkMenuTapped: @escaping () -> Void, onComposeTapped: @escaping () -> Void, onSearchTapped: @escaping () -> Void, onProfileTapped: @escaping (String) -> Void) {
         self.model = model
         self.onNotificationsTapped = onNotificationsTapped
         self.onNetworkMenuTapped = onNetworkMenuTapped
+        self.onComposeTapped = onComposeTapped
         self.onSearchTapped = onSearchTapped
         self.onProfileTapped = onProfileTapped
     }
@@ -56,11 +55,7 @@ final class TabBarViewModel: ObservableObject {
     // MARK: - Intents (Navigation Actions)
     
     func tapCompose() {
-        isShowingCompose = true
-    }
-    
-    func hideCompose() {
-        isShowingCompose = false
+        onComposeTapped()
     }
     
     func tapSearch() {

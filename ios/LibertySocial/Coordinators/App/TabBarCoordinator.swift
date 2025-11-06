@@ -6,9 +6,10 @@
 //
 
 import SwiftUI
+import Combine
 
 @MainActor
-final class TabBarCoordinator {
+final class TabBarCoordinator: ObservableObject {
     private let feedCoordinator: FeedCoordinator
     private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
@@ -16,6 +17,10 @@ final class TabBarCoordinator {
     private let networkMenuCoordinator: NetworkMenuCoordinator
     private let searchCoordinator: SearchCoordinator
     private let profileMenuCoordinator: ProfileMenuCoordinator
+    private var createPostCoordinator: CreatePostCoordinator?
+    
+    // MARK: - Published State
+    @Published var isShowingCreatePost: Bool = false
 
     init(feedCoordinator: FeedCoordinator,
          authManager: AuthManaging,
@@ -69,6 +74,11 @@ final class TabBarCoordinator {
         profileMenuCoordinator.showProfile(userId: userId)
     }
     
+    private func showCreatePost() {
+        createPostCoordinator = CreatePostCoordinator()
+        isShowingCreatePost = true
+    }
+    
     // MARK: - Public Routing Helpers
     
     /// Routes to a profile from the Feed tab
@@ -85,6 +95,14 @@ final class TabBarCoordinator {
     func openFollowingFromProfile(_ userId: String) {
         profileMenuCoordinator.openFollowing(for: userId)
     }
+    
+    /// Builds the CreatePostView
+    func makeCreatePostView() -> some View {
+        guard let coordinator = createPostCoordinator else {
+            return AnyView(EmptyView())
+        }
+        return AnyView(coordinator.start())
+    }
 
     func start() -> some View {
         feedCoordinator.start()
@@ -97,6 +115,9 @@ final class TabBarCoordinator {
                     onNetworkMenuTapped: { [weak self] in
                         self?.showNetworkMenuCoordinator()
                     },
+                    onComposeTapped: { [weak self] in
+                        self?.showCreatePost()
+                    },
                     onSearchTapped: { [weak self] in
                         self?.showSearchCoordinator()
                     },
@@ -106,6 +127,7 @@ final class TabBarCoordinator {
                 )
                 TabBarView(
                     viewModel: vm,
+                    tabBarCoordinator: self,
                     notificationsMenuCoordinator: notificationsMenuCoordinator,
                     networkMenuCoordinator: networkMenuCoordinator,
                     searchCoordinator: searchCoordinator,

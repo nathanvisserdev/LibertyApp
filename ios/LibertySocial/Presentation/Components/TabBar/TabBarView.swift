@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TabBarView: View {
     @StateObject private var viewModel: TabBarViewModel
+    @ObservedObject private var tabBarCoordinator: TabBarCoordinator
     @ObservedObject private var notificationsMenuCoordinator: NotificationsMenuCoordinator
     @ObservedObject private var networkMenuCoordinator: NetworkMenuCoordinator
     @ObservedObject private var searchCoordinator: SearchCoordinator
@@ -16,12 +17,14 @@ struct TabBarView: View {
 
     init(
         viewModel: TabBarViewModel,
+        tabBarCoordinator: TabBarCoordinator,
         notificationsMenuCoordinator: NotificationsMenuCoordinator,
         networkMenuCoordinator: NetworkMenuCoordinator,
         searchCoordinator: SearchCoordinator,
         profileMenuCoordinator: ProfileMenuCoordinator
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.tabBarCoordinator = tabBarCoordinator
         self.notificationsMenuCoordinator = notificationsMenuCoordinator
         self.networkMenuCoordinator = networkMenuCoordinator
         self.searchCoordinator = searchCoordinator
@@ -78,8 +81,8 @@ struct TabBarView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
-        .sheet(isPresented: $viewModel.isShowingCompose) {
-            CreatePostView(viewModel: CreatePostViewModel())
+        .sheet(isPresented: $tabBarCoordinator.isShowingCreatePost) {
+            tabBarCoordinator.makeCreatePostView()
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
