@@ -55,7 +55,7 @@ struct AddSubnetMembersView: View {
                     }
                     .padding()
                 } else {
-                    connectionsList
+                    connectionsListContent
                 }
             }
             .navigationTitle("Add Members")
@@ -105,7 +105,7 @@ struct AddSubnetMembersView: View {
         }
     }
     
-    private var connectionsList: some View {
+    private var connectionsListContent: some View {
         List {
             ForEach(viewModel.eligibleConnections) { connection in
                 Button {

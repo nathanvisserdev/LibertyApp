@@ -1,5 +1,5 @@
 //
-//  ConnectionsView.swift
+//  ConnectionsListView.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-26.
@@ -7,12 +7,12 @@
 
 import SwiftUI
 
-struct ConnectionsView: View {
-    @StateObject private var viewModel: ConnectionsViewModel
-    @ObservedObject private var coordinator: ConnectionsCoordinator
+struct ConnectionsListView: View {
+    @StateObject private var viewModel: ConnectionsListViewModel
+    @ObservedObject private var coordinator: ConnectionsListCoordinator
 
-    init(viewModel: ConnectionsViewModel,
-         coordinator: ConnectionsCoordinator) {
+    init(viewModel: ConnectionsListViewModel,
+         coordinator: ConnectionsListCoordinator) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.coordinator = coordinator
     }

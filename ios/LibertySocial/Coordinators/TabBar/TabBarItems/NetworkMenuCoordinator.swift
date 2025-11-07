@@ -20,7 +20,7 @@ final class NetworkMenuCoordinator: ObservableObject {
     private let tokenProvider: TokenProviding
     
     // MARK: - Child Coordinators
-    private let connectionsCoordinator: ConnectionsCoordinator
+    private let connectionsListCoordinator: ConnectionsListCoordinator
     private let groupsMenuCoordinator: GroupsMenuCoordinator
     private let subnetMenuCoordinator: SubnetMenuCoordinator
 
@@ -28,7 +28,7 @@ final class NetworkMenuCoordinator: ObservableObject {
          tokenProvider: TokenProviding) {
         self.authenticationManager = authenticationManager
         self.tokenProvider = tokenProvider
-        self.connectionsCoordinator = ConnectionsCoordinator(
+        self.connectionsListCoordinator = ConnectionsListCoordinator(
             authenticationManager: authenticationManager,
             tokenProvider: tokenProvider
         )
@@ -49,9 +49,9 @@ final class NetworkMenuCoordinator: ObservableObject {
         isShowingNetworkMenu = true
     }
     
-    /// Presents the ConnectionsView
+    /// Presents the ConnectionsListView
     private func showConnections() {
-        connectionsCoordinator.showConnections()
+        connectionsListCoordinator.showConnections()
     }
     
     /// Presents the GroupsMenuView
@@ -79,7 +79,7 @@ final class NetworkMenuCoordinator: ObservableObject {
         )
         return NetworkMenuView(
             viewModel: viewModel,
-            connectionsCoordinator: connectionsCoordinator,
+            connectionsListCoordinator: connectionsListCoordinator,
             groupsMenuCoordinator: groupsMenuCoordinator,
             subnetMenuCoordinator: subnetMenuCoordinator
         )

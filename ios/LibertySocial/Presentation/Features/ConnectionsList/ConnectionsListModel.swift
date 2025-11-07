@@ -1,5 +1,5 @@
 //
-//  ConnectionsModel.swift
+//  ConnectionsListModel.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-26.
@@ -18,7 +18,7 @@ struct Connection: Decodable, Identifiable {
     let createdAt: String
 }
 
-struct ConnectionsModel {
+struct ConnectionsListModel {
     private let AuthManager: AuthManaging
     
     init(AuthManager: AuthManaging = AuthService.shared) {

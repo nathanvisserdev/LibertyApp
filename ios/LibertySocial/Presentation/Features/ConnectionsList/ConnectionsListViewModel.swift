@@ -1,5 +1,5 @@
 //
-//  ConnectionsViewModel.swift
+//  ConnectionsListViewModel.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-26.
@@ -9,9 +9,9 @@ import Foundation
 import Combine
 
 @MainActor
-final class ConnectionsViewModel: ObservableObject {
+final class ConnectionsListViewModel: ObservableObject {
     // MARK: - Dependencies
-    private let model: ConnectionsModel
+    private let model: ConnectionsListModel
     
     // MARK: - Callbacks
     private let onUserSelected: (String) -> Void
@@ -22,7 +22,7 @@ final class ConnectionsViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     // MARK: - Init
-    init(model: ConnectionsModel = ConnectionsModel(),
+    init(model: ConnectionsListModel = ConnectionsListModel(),
          onUserSelected: @escaping (String) -> Void) {
         self.model = model
         self.onUserSelected = onUserSelected

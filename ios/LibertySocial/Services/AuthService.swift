@@ -316,7 +316,7 @@ final class AuthService: AuthManaging, TokenProviding {
             throw APIError.server("Failed to load connections")
         }
         
-        // Server returns { connectionsList: [...] }
+        // Server returns { connectionsListContent: [...] }
         struct Response: Decodable {
             let connectionsList: [Connection]
         }

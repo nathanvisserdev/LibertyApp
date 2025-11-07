@@ -1,5 +1,5 @@
 //
-//  ConnectionsCoordinator.swift
+//  ConnectionsListCoordinator.swift
 //  LibertySocial
 //
 //  Created by Nathan Visser on 2025-10-31.
@@ -10,7 +10,7 @@ import Combine
 
 /// Coordinator for Connections flow
 @MainActor
-final class ConnectionsCoordinator: ObservableObject {
+final class ConnectionsListCoordinator: ObservableObject {
     
     // MARK: - Published State
     @Published var isShowingConnections: Bool = false
@@ -35,7 +35,7 @@ final class ConnectionsCoordinator: ObservableObject {
     
     // MARK: - Public Methods
     
-    /// Presents the ConnectionsView
+    /// Presents the ConnectionsListView
     func showConnections() {
         isShowingConnections = true
     }
@@ -51,14 +51,14 @@ final class ConnectionsCoordinator: ObservableObject {
         isShowingProfile = true
     }
 
-    /// Builds the ConnectionsView with its ViewModel
+    /// Builds the ConnectionsListView with its ViewModel
     func makeView() -> some View {
-        let viewModel = ConnectionsViewModel(
+        let viewModel = ConnectionsListViewModel(
             onUserSelected: { [weak self] userId in
                 self?.showProfile(for: userId)
             }
         )
-        return ConnectionsView(
+        return ConnectionsListView(
             viewModel: viewModel,
             coordinator: self
         )

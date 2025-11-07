@@ -10,18 +10,18 @@ import SwiftUI
 struct NetworkMenuView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel: NetworkMenuViewModel
-    @ObservedObject private var connectionsCoordinator: ConnectionsCoordinator
+    @ObservedObject private var connectionsListCoordinator: ConnectionsListCoordinator
     @ObservedObject private var groupsMenuCoordinator: GroupsMenuCoordinator
     @ObservedObject private var subnetMenuCoordinator: SubnetMenuCoordinator
 
     init(
         viewModel: NetworkMenuViewModel,
-        connectionsCoordinator: ConnectionsCoordinator,
+        connectionsListCoordinator: ConnectionsListCoordinator,
         groupsMenuCoordinator: GroupsMenuCoordinator,
         subnetMenuCoordinator: SubnetMenuCoordinator
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.connectionsCoordinator = connectionsCoordinator
+        self.connectionsListCoordinator = connectionsListCoordinator
         self.groupsMenuCoordinator = groupsMenuCoordinator
         self.subnetMenuCoordinator = subnetMenuCoordinator
     }
@@ -60,8 +60,8 @@ struct NetworkMenuView: View {
                     Button("Done") { dismiss() }
                 }
             }
-            .sheet(isPresented: $connectionsCoordinator.isShowingConnections) {
-                connectionsCoordinator.makeView()
+            .sheet(isPresented: $connectionsListCoordinator.isShowingConnections) {
+                connectionsListCoordinator.makeView()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
