@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import Combine
 
 @MainActor
@@ -15,6 +16,7 @@ final class CreateGroupViewModel: ObservableObject {
     private let model: CreateGroupModel
     private let groupService: GroupSession
     private let inviteService: GroupInviteSession
+    private weak var coordinator: CreateGroupCoordinator?
     
     // MARK: - Cancellables
     private var cancellables = Set<AnyCancellable>()
@@ -43,13 +45,12 @@ final class CreateGroupViewModel: ObservableObject {
     // MARK: - Navigation State
     @Published var showGroupInvite: Bool = false
     @Published var createdGroupId: String?
-    
-    // MARK: - Navigation Signals (Output for Coordinator)
-    let didFinishSuccessfully = PassthroughSubject<Void, Never>()
+    @Published var showAdminSelection: Bool = false
     
     // MARK: - Callbacks
     var onFinished: (() -> Void)?
     var onCancelled: (() -> Void)?
+    var onRequestAdminSelection: (() -> Void)?
     
     // MARK: - Round Table specific fields
     @Published var selectedAdmins: [RoundTableAdmin] = []
@@ -69,11 +70,13 @@ final class CreateGroupViewModel: ObservableObject {
     init(
         model: CreateGroupModel = CreateGroupModel(),
         groupService: GroupSession = GroupService.shared,
-        inviteService: GroupInviteSession = GroupInviteService.shared
+        inviteService: GroupInviteSession = GroupInviteService.shared,
+        coordinator: CreateGroupCoordinator? = nil
     ) {
         self.model = model
         self.groupService = groupService
         self.inviteService = inviteService
+        self.coordinator = coordinator
         
         // Subscribe to invite service events
         subscribeToInviteEvents()
@@ -83,13 +86,13 @@ final class CreateGroupViewModel: ObservableObject {
     
     private func subscribeToInviteEvents() {
         inviteService.inviteEvents
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] event in
                 guard let self = self else { return }
                 
                 switch event {
                 case .invitesSentSuccessfully:
                     // When invites are sent successfully, dismiss the entire create group flow
-                    self.didFinishSuccessfully.send()
                     self.onFinished?()
                     
                 case .invitesFailed:
@@ -264,5 +267,18 @@ final class CreateGroupViewModel: ObservableObject {
     
     func cancel() {
         onCancelled?()
+    }
+    
+    // MARK: - Coordinator View Builders
+    
+    /// Gets the GroupInviteView from the coordinator
+    @ViewBuilder
+    func getGroupInviteView(for groupId: String) -> some View {
+        if let coordinator = coordinator {
+            coordinator.makeGroupInviteView(for: groupId)
+        } else {
+            // Fallback for previews/testing without coordinator
+            GroupInviteCoordinator(groupId: groupId).start()
+        }
     }
 }

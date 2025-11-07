@@ -25,8 +25,8 @@ final class GroupsMenuCoordinator: ObservableObject {
     // MARK: - Child Coordinators
     private lazy var createGroupCoordinator: CreateGroupCoordinator = {
         CreateGroupCoordinator(
-            TokenProvider: tokenProvider,
-            AuthManager: authenticationManager
+            tokenProvider: tokenProvider,
+            authManager: authenticationManager
         )
     }()
     

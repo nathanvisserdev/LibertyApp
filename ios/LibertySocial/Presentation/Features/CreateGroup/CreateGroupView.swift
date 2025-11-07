@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CreateGroupView: View {
     @ObservedObject var viewModel: CreateGroupViewModel
-    @State private var showAdminSelection = false
+    let coordinator: CreateGroupCoordinator
     @State private var showPersonalGroupAlert = false
     @State private var showPrivateGroupJoinPolicyAlert = false
     
@@ -113,7 +113,7 @@ struct CreateGroupView: View {
                 Section {
                     Button(action: {
                         if viewModel.selectedGroupType == .roundTable {
-                            showAdminSelection = true
+                            viewModel.onRequestAdminSelection?()
                         } else {
                             Task {
                                 await viewModel.submit()
@@ -154,12 +154,9 @@ struct CreateGroupView: View {
                 }
             }
             .disabled(viewModel.isSubmitting)
-            .sheet(isPresented: $showAdminSelection) {
-                SelectRoundTableAdminsView(viewModel: viewModel)
-            }
             .sheet(isPresented: $viewModel.showGroupInvite) {
                 if let groupId = viewModel.createdGroupId {
-                    GroupInviteCoordinator(groupId: groupId).start()
+                    viewModel.getGroupInviteView(for: groupId)
                         .presentationDetents([.large])
                         .presentationDragIndicator(.visible)
                 }
@@ -175,6 +172,9 @@ struct CreateGroupView: View {
 }
 
 #Preview {
-    CreateGroupView(viewModel: CreateGroupViewModel())
+    let coordinator = CreateGroupCoordinator()
+    let model = CreateGroupModel()
+    let viewModel = CreateGroupViewModel(model: model, coordinator: coordinator)
+    return CreateGroupView(viewModel: viewModel, coordinator: coordinator)
 }
 

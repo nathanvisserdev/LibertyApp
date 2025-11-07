@@ -6,73 +6,84 @@
 //
 
 import SwiftUI
-import Combine
 
-/// Coordinator for CreateGroup flow - manages ViewModel lifecycle and navigation
+/// Coordinator for CreateGroup flow - manages ViewModel lifecycle and navigation for both CreateGroupView and SelectRoundTableAdminsView
+@MainActor
 final class CreateGroupCoordinator {
     
-    private let TokenProvider: TokenProviding
-    private let AuthManager: AuthManaging
-    private var cancellables = Set<AnyCancellable>()
+    private let tokenProvider: TokenProviding
+    private let authManager: AuthManaging
+    
+    // MARK: - Child Coordinators
+    private var groupInviteCoordinator: GroupInviteCoordinator?
+    
+    // MARK: - Shared ViewModel
+    private var viewModel: CreateGroupViewModel?
     
     // MARK: - Init
-    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
-        self.TokenProvider = TokenProvider
-        self.AuthManager = AuthManager
+    init(tokenProvider: TokenProviding = AuthService.shared, authManager: AuthManaging = AuthService.shared) {
+        self.tokenProvider = tokenProvider
+        self.authManager = authManager
     }
     
     // MARK: - Start
-    /// Builds the CreateGroupView with its ViewModel and sets up navigation observation
+    /// Builds the CreateGroupView with its ViewModel
     func start(onDismiss: @escaping () -> Void) -> some View {
-        let model = CreateGroupModel(TokenProvider: TokenProvider, AuthManager: AuthManager)
-        let viewModel = CreateGroupViewModel(model: model)
+        let model = CreateGroupModel(TokenProvider: tokenProvider, AuthManager: authManager)
+        let viewModel = CreateGroupViewModel(model: model, coordinator: self)
+        self.viewModel = viewModel
         
         // Set up callbacks
-        viewModel.onFinished = {
-            onDismiss()
-        }
-        viewModel.onCancelled = {
-            onDismiss()
+        viewModel.onFinished = onDismiss
+        viewModel.onCancelled = onDismiss
+        viewModel.onRequestAdminSelection = { [weak self] in
+            self?.presentAdminSelection()
         }
         
         return CreateGroupViewWrapper(viewModel: viewModel, coordinator: self)
     }
     
-    // MARK: - Observation Setup
+    // MARK: - Navigation Methods
     
-    /// Called by the wrapper to set up observation of ViewModel navigation signals
-    @MainActor
-    func observeViewModel(_ viewModel: CreateGroupViewModel, dismiss: @escaping () -> Void) {
-        viewModel.didFinishSuccessfully
-            .sink { _ in
-                // Coordinator executes the dismissal when invites are sent successfully
-                dismiss()
-            }
-            .store(in: &cancellables)
+    /// Presents the admin selection view
+    func presentAdminSelection() {
+        viewModel?.showAdminSelection = true
+    }
+    
+    /// Dismisses the admin selection view
+    func dismissAdminSelection() {
+        viewModel?.showAdminSelection = false
+    }
+    
+    // MARK: - Child Coordinator Methods
+    
+    /// Creates and returns the SelectRoundTableAdminsView with the shared ViewModel
+    func makeAdminSelectionView() -> some View {
+        guard let viewModel = viewModel else {
+            return AnyView(EmptyView())
+        }
+        return AnyView(SelectRoundTableAdminsView(viewModel: viewModel))
+    }
+    
+    /// Creates and returns the GroupInviteView via its coordinator
+    func makeGroupInviteView(for groupId: String) -> some View {
+        let coordinator = GroupInviteCoordinator(groupId: groupId)
+        self.groupInviteCoordinator = coordinator
+        return coordinator.start()
     }
 }
 
 // MARK: - View Wrapper
 
-/// Wrapper view that connects the Coordinator to the View's dismiss environment
+/// Wrapper view that holds the coordinator and manages the admin selection sheet
 private struct CreateGroupViewWrapper: View {
-    @StateObject private var viewModel: CreateGroupViewModel
-    @Environment(\.dismiss) private var dismiss
-    
+    @ObservedObject var viewModel: CreateGroupViewModel
     let coordinator: CreateGroupCoordinator
     
-    init(viewModel: CreateGroupViewModel, coordinator: CreateGroupCoordinator) {
-        _viewModel = StateObject(wrappedValue: viewModel)
-        self.coordinator = coordinator
-    }
-    
     var body: some View {
-        CreateGroupView(viewModel: viewModel)
-            .onAppear {
-                // Set up coordinator observation when view appears
-                coordinator.observeViewModel(viewModel) {
-                    dismiss()
-                }
+        CreateGroupView(viewModel: viewModel, coordinator: coordinator)
+            .sheet(isPresented: $viewModel.showAdminSelection) {
+                coordinator.makeAdminSelectionView()
             }
     }
 }
