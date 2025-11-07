@@ -10,20 +10,15 @@ import Combine
 
 @MainActor
 final class NotificationsMenuViewModel: ObservableObject {
-    // MARK: - Dependencies
     private let model: NotificationsMenuModel
     
-    // MARK: - Published (State)
     @Published var notifications: [NotificationItem] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    // MARK: - Init
     init(model: NotificationsMenuModel = NotificationsMenuModel()) {
         self.model = model
     }
-    
-    // MARK: - Intents (User Actions)
     
     func loadNotifications() async {
         isLoading = true
@@ -43,7 +38,6 @@ final class NotificationsMenuViewModel: ObservableObject {
     }
     
     func acceptConnectionRequest(requestId: String) async {
-        // Find the notification to determine its type
         guard let notification = notifications.first(where: { $0.id == requestId }) else {
             return
         }
@@ -54,7 +48,6 @@ final class NotificationsMenuViewModel: ObservableObject {
             } else if notification.type == .groupJoinRequest {
                 try await model.acceptGroupJoinRequest(requestId: requestId)
             }
-            // Remove the accepted request from the list
             notifications.removeAll { $0.id == requestId }
         } catch {
             errorMessage = "Failed to accept request: \(error.localizedDescription)"
@@ -62,7 +55,6 @@ final class NotificationsMenuViewModel: ObservableObject {
     }
     
     func declineConnectionRequest(requestId: String) async {
-        // Find the notification to determine its type
         guard let notification = notifications.first(where: { $0.id == requestId }) else {
             return
         }
@@ -73,7 +65,6 @@ final class NotificationsMenuViewModel: ObservableObject {
             } else if notification.type == .groupJoinRequest {
                 try await model.declineGroupJoinRequest(requestId: requestId)
             }
-            // Remove the declined request from the list
             notifications.removeAll { $0.id == requestId }
         } catch {
             errorMessage = "Failed to decline request: \(error.localizedDescription)"

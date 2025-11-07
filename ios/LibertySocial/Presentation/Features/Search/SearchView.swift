@@ -9,16 +9,11 @@ import SwiftUI
 
 struct SearchView: View {
     @StateObject private var viewModel: SearchViewModel
-    @ObservedObject private var coordinator: SearchCoordinator
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isTextFieldFocused: Bool
 
-    init(
-        viewModel: SearchViewModel,
-        coordinator: SearchCoordinator
-    ) {
+    init(viewModel: SearchViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.coordinator = coordinator
     }
 
     var body: some View {
@@ -31,15 +26,13 @@ struct SearchView: View {
             }
             .navigationTitle("Search")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } } }
-            .sheet(isPresented: $coordinator.isShowingProfile) {
-                coordinator.makeProfileView()
+            .sheet(isPresented: $viewModel.isShowingProfile) {
+                viewModel.onShowProfile()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
         }
     }
-
-    // MARK: - Pieces
 
     private var queryField: some View {
         TextField("User or Group", text: $viewModel.query)
@@ -127,8 +120,6 @@ struct SearchView: View {
         }
     }
 }
-
-// MARK: - Rows
 
 private struct UserRow: View {
     let fullName: String

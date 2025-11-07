@@ -18,9 +18,6 @@ final class TabBarCoordinator: ObservableObject {
     private let searchCoordinator: SearchCoordinator
     private let profileMenuCoordinator: ProfileMenuCoordinator
     private var createPostCoordinator: CreatePostCoordinator?
-    
-    // MARK: - Published State
-    @Published var isShowingCreatePost: Bool = false
 
     init(feedCoordinator: FeedCoordinator,
          authManager: AuthManaging,
@@ -48,8 +45,8 @@ final class TabBarCoordinator: ObservableObject {
                      feedService: FeedSession,
                      commentService: CommentService) {
         let feed = FeedCoordinator(
-            TokenProvider: tokenProvider,
-            AuthManager: authManager,
+            tokenProvider: tokenProvider,
+            authManager: authManager,
             feedService: feedService,
             commentService: commentService
         )
@@ -76,64 +73,71 @@ final class TabBarCoordinator: ObservableObject {
     
     private func showCreatePost() {
         createPostCoordinator = CreatePostCoordinator()
-        isShowingCreatePost = true
     }
     
-    // MARK: - Public Routing Helpers
-    
-    /// Routes to a profile from the Feed tab
     func openProfileFromFeed(_ userId: String) {
         feedCoordinator.openProfile(userId)
     }
     
-    /// Routes to a user's followers list from the Profile tab
     func openFollowersFromProfile(_ userId: String) {
         profileMenuCoordinator.openFollowers(for: userId)
     }
     
-    /// Routes to a user's following list from the Profile tab
     func openFollowingFromProfile(_ userId: String) {
         profileMenuCoordinator.openFollowing(for: userId)
     }
-    
-    /// Builds the CreatePostView
-    func makeCreatePostView() -> some View {
-        guard let coordinator = createPostCoordinator else {
-            return AnyView(EmptyView())
-        }
-        return AnyView(coordinator.start())
-    }
 
     func start() -> some View {
-        feedCoordinator.start()
+        let vm = TabBarViewModel(
+            model: TabBarModel(AuthManager: authManager),
+            onNotificationsTapped: { [weak self] in
+                self?.showNotificationsMenuCoordinator()
+            },
+            onNetworkMenuTapped: { [weak self] in
+                self?.showNetworkMenuCoordinator()
+            },
+            onComposeTapped: { [weak self] in
+                self?.showCreatePost()
+            },
+            onSearchTapped: { [weak self] in
+                self?.showSearchCoordinator()
+            },
+            onProfileTapped: { [weak self] id in
+                self?.showProfile(userId: id)
+            }
+        )
+        
+        vm.onShowNotificationsMenu = { [weak self] in
+            guard let self = self else { return AnyView(EmptyView()) }
+            return AnyView(self.notificationsMenuCoordinator.makeView())
+        }
+        
+        vm.onShowNetworkMenu = { [weak self] in
+            guard let self = self else { return AnyView(EmptyView()) }
+            return AnyView(self.networkMenuCoordinator.makeView())
+        }
+        
+        vm.onShowSearch = { [weak self] in
+            guard let self = self else { return AnyView(EmptyView()) }
+            return AnyView(self.searchCoordinator.makeView())
+        }
+        
+        vm.onShowProfile = { [weak self] in
+            guard let self = self else { return AnyView(EmptyView()) }
+            return AnyView(self.profileMenuCoordinator.makeView())
+        }
+        
+        vm.onShowCreatePost = { [weak self] in
+            guard let self = self, let coordinator = self.createPostCoordinator else {
+                return AnyView(EmptyView())
+            }
+            return AnyView(coordinator.start())
+        }
+        
+        return feedCoordinator.start()
             .safeAreaInset(edge: .bottom) {
-                let vm = TabBarViewModel(
-                    model: TabBarModel(AuthManager: authManager),
-                    onNotificationsTapped: { [weak self] in
-                        self?.showNotificationsMenuCoordinator()
-                    },
-                    onNetworkMenuTapped: { [weak self] in
-                        self?.showNetworkMenuCoordinator()
-                    },
-                    onComposeTapped: { [weak self] in
-                        self?.showCreatePost()
-                    },
-                    onSearchTapped: { [weak self] in
-                        self?.showSearchCoordinator()
-                    },
-                    onProfileTapped: { [weak self] id in
-                        self?.showProfile(userId: id)
-                    }
-                )
-                TabBarView(
-                    viewModel: vm,
-                    tabBarCoordinator: self,
-                    notificationsMenuCoordinator: notificationsMenuCoordinator,
-                    networkMenuCoordinator: networkMenuCoordinator,
-                    searchCoordinator: searchCoordinator,
-                    profileMenuCoordinator: profileMenuCoordinator
-                )
-                .ignoresSafeArea(edges: .bottom)
+                TabBarView(viewModel: vm)
+                    .ignoresSafeArea(edges: .bottom)
             }
     }
 }

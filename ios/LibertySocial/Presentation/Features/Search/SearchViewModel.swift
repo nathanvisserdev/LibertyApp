@@ -7,35 +7,30 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 @MainActor
 final class SearchViewModel: ObservableObject {
-    
-    // MARK: - Dependencies
     private let model: SearchModel
-    
-    // MARK: - Callbacks
     private let onUserSelected: (String) -> Void
     
-    // MARK: - Published (Input State)
+    var onShowProfile: () -> AnyView = { AnyView(EmptyView()) }
+    
     @Published var query: String = ""
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-    
-    // MARK: - Published (UI State)
     @Published var users: [SearchUser] = []
     @Published var groups: [SearchGroup] = []
+    @Published var isShowingProfile: Bool = false
     
-    // MARK: - Init
-    init(model: SearchModel = SearchModel(),
+    init(model: SearchModel,
          onUserSelected: @escaping (String) -> Void) {
         self.model = model
         self.onUserSelected = onUserSelected
     }
 
-    // MARK: - Intents (User Actions)
-    
     func selectUser(userId: String) {
+        isShowingProfile = true
         onUserSelected(userId)
     }
     

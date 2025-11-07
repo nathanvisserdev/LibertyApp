@@ -62,12 +62,10 @@ final class FeedViewModel: ObservableObject {
 
     func isUsersPost(_ item: FeedItem) -> Bool { item.relation == "SELF" }
 
-    // MARK: - Media VM Factory
     func makeMediaViewModel(for mediaKey: String) -> MediaViewModel {
         makeMediaVM(mediaKey)
     }
 
-    // MARK: - Feed actions
     func logoutTapped() {
         print("🔵 FeedViewModel.logoutTapped() - calling AuthManager.logout()")
         auth.logout()
@@ -93,7 +91,6 @@ final class FeedViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Comment handling
     func toggleComments(for postId: String) {
         print("🔵 toggleComments called for postId: \(postId)")
         if threads[postId] == nil { threads[postId] = CommentThreadState() }
@@ -149,7 +146,6 @@ final class FeedViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Navigation
     func showProfile(userId: String) {
         onShowProfile(userId)
     }

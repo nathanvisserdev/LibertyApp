@@ -7,10 +7,10 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 @MainActor
 final class TabBarViewModel: ObservableObject {
-    // MARK: - Dependencies
     private let model: TabBarModel
     private let onNotificationsTapped: () -> Void
     private let onNetworkMenuTapped: () -> Void
@@ -18,13 +18,22 @@ final class TabBarViewModel: ObservableObject {
     private let onSearchTapped: () -> Void
     private let onProfileTapped: (String) -> Void
     
-    // MARK: - Published (State)
+    var onShowNotificationsMenu: (() -> AnyView)?
+    var onShowNetworkMenu: (() -> AnyView)?
+    var onShowSearch: (() -> AnyView)?
+    var onShowProfile: (() -> AnyView)?
+    var onShowCreatePost: (() -> AnyView)?
+    
     @Published var currentUserPhotoKey: String?
     @Published var currentUserId: String?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var isShowingNotifications: Bool = false
+    @Published var isShowingNetworkMenu: Bool = false
+    @Published var isShowingSearch: Bool = false
+    @Published var isShowingProfile: Bool = false
+    @Published var isShowingCreatePost: Bool = false
     
-    // MARK: - Init
     init(model: TabBarModel, onNotificationsTapped: @escaping () -> Void, onNetworkMenuTapped: @escaping () -> Void, onComposeTapped: @escaping () -> Void, onSearchTapped: @escaping () -> Void, onProfileTapped: @escaping (String) -> Void) {
         self.model = model
         self.onNotificationsTapped = onNotificationsTapped
@@ -34,9 +43,6 @@ final class TabBarViewModel: ObservableObject {
         self.onProfileTapped = onProfileTapped
     }
     
-    // MARK: - Intents (Data Actions)
-    
-    /// Fetch current user's photo and ID from /user/me
     func fetchCurrentUserInfo() async {
         isLoading = true
         errorMessage = nil
@@ -52,25 +58,28 @@ final class TabBarViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Intents (Navigation Actions)
-    
     func tapCompose() {
+        isShowingCreatePost = true
         onComposeTapped()
     }
     
     func tapSearch() {
+        isShowingSearch = true
         onSearchTapped()
     }
     
     func tapNotifications() {
+        isShowingNotifications = true
         onNotificationsTapped()
     }
     
     func tapNetworkMenu() {
+        isShowingNetworkMenu = true
         onNetworkMenuTapped()
     }
     
     func tapProfile(userId: String) {
+        isShowingProfile = true
         onProfileTapped(userId)
     }
     
@@ -79,7 +88,6 @@ final class TabBarViewModel: ObservableObject {
             if let userId = currentUserId {
                 tapProfile(userId: userId)
             } else {
-                // Fetch current user ID if not already loaded
                 await fetchCurrentUserInfo()
                 if let userId = currentUserId {
                     tapProfile(userId: userId)

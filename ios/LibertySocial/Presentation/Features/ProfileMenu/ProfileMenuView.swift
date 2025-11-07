@@ -9,21 +9,15 @@ import SwiftUI
 
 struct ProfileMenuView: View {
     @StateObject private var viewModel: ProfileMenuViewModel
-    @ObservedObject private var coordinator: ProfileMenuCoordinator
     @Environment(\.dismiss) var dismiss
 
-    init(
-        viewModel: ProfileMenuViewModel,
-        coordinator: ProfileMenuCoordinator
-    ) {
+    init(viewModel: ProfileMenuViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.coordinator = coordinator
     }
     
     var body: some View {
         NavigationStack {
             List {
-                // Profile
                 Button { viewModel.tapProfile() } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "person").font(.title2).foregroundColor(.blue)
@@ -38,7 +32,6 @@ struct ProfileMenuView: View {
                 }
                 .buttonStyle(.plain)
 
-                // Settings
                 Button { viewModel.tapSettings() } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "gearshape").font(.title2).foregroundColor(.gray)
@@ -56,8 +49,8 @@ struct ProfileMenuView: View {
                     Button("Done") { dismiss() }
                 }
             }
-            .sheet(isPresented: $coordinator.isShowingChildProfile) {
-                coordinator.makeProfileView()
+            .sheet(isPresented: $viewModel.isShowingProfile) {
+                viewModel.onShowProfile()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }

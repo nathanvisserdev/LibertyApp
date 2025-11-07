@@ -8,18 +8,12 @@
 import SwiftUI
 import Combine
 
-/// Coordinator for NetworkMenu flow
 @MainActor
 final class NetworkMenuCoordinator: ObservableObject {
-    
-    // MARK: - Published State
     @Published var isShowingNetworkMenu: Bool = false
     
-    // MARK: - Dependencies
     private let authenticationManager: AuthManaging
     private let tokenProvider: TokenProviding
-    
-    // MARK: - Child Coordinators
     private let connectionsListCoordinator: ConnectionsListCoordinator
     private let groupsMenuCoordinator: GroupsMenuCoordinator
     private let subnetMenuCoordinator: SubnetMenuCoordinator
@@ -42,29 +36,22 @@ final class NetworkMenuCoordinator: ObservableObject {
         )
     }
     
-    // MARK: - Public Methods
-    
-    /// Presents the NetworkMenuView
     func showNetworkMenu() {
         isShowingNetworkMenu = true
     }
     
-    /// Presents the ConnectionsListView
     private func showConnections() {
         connectionsListCoordinator.showConnections()
     }
     
-    /// Presents the GroupsMenuView
     private func showGroupsMenu() {
         groupsMenuCoordinator.showGroupsMenu()
     }
     
-    /// Presents the SubnetMenuView
     private func showSubnetMenu() {
         subnetMenuCoordinator.showSubnetMenu()
     }
     
-    /// Builds the NetworkMenuView with its ViewModel
     func makeView() -> some View {
         let viewModel = NetworkMenuViewModel(
             onConnectionsTapped: { [weak self] in
@@ -77,11 +64,22 @@ final class NetworkMenuCoordinator: ObservableObject {
                 self?.showSubnetMenu()
             }
         )
-        return NetworkMenuView(
-            viewModel: viewModel,
-            connectionsListCoordinator: connectionsListCoordinator,
-            groupsMenuCoordinator: groupsMenuCoordinator,
-            subnetMenuCoordinator: subnetMenuCoordinator
-        )
+        
+        viewModel.onShowConnections = { [weak self] in
+            guard let self = self else { return AnyView(EmptyView()) }
+            return AnyView(self.connectionsListCoordinator.makeView())
+        }
+        
+        viewModel.onShowGroupsMenu = { [weak self] in
+            guard let self = self else { return AnyView(EmptyView()) }
+            return AnyView(self.groupsMenuCoordinator.makeView())
+        }
+        
+        viewModel.onShowSubnetMenu = { [weak self] in
+            guard let self = self else { return AnyView(EmptyView()) }
+            return AnyView(self.subnetMenuCoordinator.makeView())
+        }
+        
+        return NetworkMenuView(viewModel: viewModel)
     }
 }

@@ -10,26 +10,14 @@ import SwiftUI
 struct NetworkMenuView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel: NetworkMenuViewModel
-    @ObservedObject private var connectionsListCoordinator: ConnectionsListCoordinator
-    @ObservedObject private var groupsMenuCoordinator: GroupsMenuCoordinator
-    @ObservedObject private var subnetMenuCoordinator: SubnetMenuCoordinator
 
-    init(
-        viewModel: NetworkMenuViewModel,
-        connectionsListCoordinator: ConnectionsListCoordinator,
-        groupsMenuCoordinator: GroupsMenuCoordinator,
-        subnetMenuCoordinator: SubnetMenuCoordinator
-    ) {
+    init(viewModel: NetworkMenuViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.connectionsListCoordinator = connectionsListCoordinator
-        self.groupsMenuCoordinator = groupsMenuCoordinator
-        self.subnetMenuCoordinator = subnetMenuCoordinator
     }
 
     var body: some View {
         NavigationStack {
             List {
-                // Connections
                 Button {
                     viewModel.showConnectionsView()
                 } label: {
@@ -37,7 +25,6 @@ struct NetworkMenuView: View {
                 }
                 .buttonStyle(.plain)
 
-                // Groups
                 Button {
                     viewModel.showGroupsMenuView()
                 } label: {
@@ -45,7 +32,6 @@ struct NetworkMenuView: View {
                 }
                 .buttonStyle(.plain)
 
-                // Subnets
                 Button {
                     viewModel.showSubnetMenuView()
                 } label: {
@@ -60,25 +46,24 @@ struct NetworkMenuView: View {
                     Button("Done") { dismiss() }
                 }
             }
-            .sheet(isPresented: $connectionsListCoordinator.isShowingConnections) {
-                connectionsListCoordinator.makeView()
+            .sheet(isPresented: $viewModel.isShowingConnections) {
+                viewModel.onShowConnections()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
-            .sheet(isPresented: $groupsMenuCoordinator.isShowingGroupsMenu) {
-                groupsMenuCoordinator.makeView()
+            .sheet(isPresented: $viewModel.isShowingGroupsMenu) {
+                viewModel.onShowGroupsMenu()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
-            .sheet(isPresented: $subnetMenuCoordinator.isShowingSubnetMenu) {
-                subnetMenuCoordinator.makeView()
+            .sheet(isPresented: $viewModel.isShowingSubnetMenu) {
+                viewModel.onShowSubnetMenu()
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
         }
     }
 
-    // MARK: - Row builder
     private func row(icon: String, title: String, subtitle: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)

@@ -7,26 +7,29 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 @MainActor
 final class RootViewModel: ObservableObject {
-    // MARK: - Dependencies
     private let model: RootModel
     
-    /// Callback triggered when authentication transitions from true to false
-    /// Set by the coordinator after initialization to avoid premature `self` capture
     var onAuthenticationInvalidated: (() -> Void)?
+    var onShowAuthenticatedContent: (() -> AnyView)?
+    var onShowLoginContent: (() -> AnyView)?
     
-    // MARK: - Published State
-    /// Authentication state injected and updated by the coordinator
-    /// Never set this directly from the view - coordinator owns this state
     @Published var isAuthenticated: Bool {
         didSet {
-            // Only trigger callback when authentication transitions from true to false
-            // This ensures we don't fire on initialization or redundant updates
             if !isAuthenticated && oldValue {
                 onAuthenticationInvalidated?()
             }
+        }
+    }
+    
+    var contentView: AnyView {
+        if isAuthenticated {
+            return onShowAuthenticatedContent?() ?? AnyView(EmptyView())
+        } else {
+            return onShowLoginContent?() ?? AnyView(EmptyView())
         }
     }
     
