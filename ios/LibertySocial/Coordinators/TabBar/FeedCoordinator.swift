@@ -8,21 +8,15 @@
 import SwiftUI
 import Combine
 
-enum FeedRoute: Hashable {
-    case profile(String)
-}
-
-final class FeedNavPathStore: ObservableObject {
-    @Published var path = NavigationPath()
-}
-
 @MainActor
 final class FeedCoordinator: ObservableObject {
-    private let nav = FeedNavPathStore()
     private let tokenProvider: TokenProviding
     private let authManager: AuthManaging
     private let feedService: FeedSession
     private let commentService: CommentService
+    
+    // Callback for when a user is selected (to be wired by parent coordinator)
+    var onUserSelected: ((String) -> Void)?
 
     init(tokenProvider: TokenProviding,
          authManager: AuthManaging,
@@ -35,22 +29,7 @@ final class FeedCoordinator: ObservableObject {
     }
 
     func start() -> some View {
-        NavigationStack(path: Binding(
-            get: { self.nav.path },
-            set: { self.nav.path = $0 }
-        )) {
-            makeFeedView()
-                .navigationDestination(for: FeedRoute.self) { route in
-                    switch route {
-                    case .profile(let id):
-                        self.makeProfileView(userId: id)
-                    }
-                }
-        }
-    }
-    
-    func openProfile(_ id: String) {
-        nav.path.append(FeedRoute.profile(id))
+        makeFeedView()
     }
 
     private func makeFeedView() -> some View {
@@ -65,18 +44,11 @@ final class FeedCoordinator: ObservableObject {
             auth: authManager,
             commentService: commentService,
             onShowProfile: { [weak self] userId in
-                self?.openProfile(userId)
+                // Signal to parent coordinator for centralized navigation
+                self?.onUserSelected?(userId)
             }
         )
         return FeedView(viewModel: vm)
-    }
-    
-    private func makeProfileView(userId: String) -> some View {
-        ProfileCoordinator(
-            userId: userId,
-            authenticationManager: authManager,
-            tokenProvider: tokenProvider
-        ).start()
     }
 }
 

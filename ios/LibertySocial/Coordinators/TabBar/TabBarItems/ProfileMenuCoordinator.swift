@@ -17,6 +17,10 @@ final class ProfileMenuCoordinator: ObservableObject {
     private var profileCoordinator: ProfileCoordinator?
     private let authenticationManager: AuthManaging
     private let tokenProvider: TokenProviding
+    
+    // Callbacks for parent coordinator to wire
+    var onLogout: (() -> Void)?
+    var onUserSelected: ((String) -> Void)?
 
     init(authenticationManager: AuthManaging,
          tokenProvider: TokenProviding) {

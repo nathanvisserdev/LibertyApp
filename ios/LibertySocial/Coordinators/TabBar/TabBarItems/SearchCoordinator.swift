@@ -46,7 +46,8 @@ final class SearchCoordinator: ObservableObject {
         )
         
         viewModel.onShowProfile = { [weak self] in
-            guard let self = self, let coordinator = self.profileCoordinator else {
+            guard let self = self,
+                  let coordinator = self.profileCoordinator else {
                 return AnyView(EmptyView())
             }
             return AnyView(coordinator.start())

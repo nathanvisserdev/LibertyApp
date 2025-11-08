@@ -12,6 +12,7 @@ import SwiftUI
 @MainActor
 final class TabBarViewModel: ObservableObject {
     private let model: TabBarModel
+    private let onTabSelected: ((TabBarTab) -> Void)?
     private let onNotificationsTapped: () -> Void
     private let onNetworkMenuTapped: () -> Void
     private let onComposeTapped: () -> Void
@@ -34,8 +35,15 @@ final class TabBarViewModel: ObservableObject {
     @Published var isShowingProfile: Bool = false
     @Published var isShowingCreatePost: Bool = false
     
-    init(model: TabBarModel, onNotificationsTapped: @escaping () -> Void, onNetworkMenuTapped: @escaping () -> Void, onComposeTapped: @escaping () -> Void, onSearchTapped: @escaping () -> Void, onProfileTapped: @escaping (String) -> Void) {
+    init(model: TabBarModel,
+         onTabSelected: ((TabBarTab) -> Void)? = nil,
+         onNotificationsTapped: @escaping () -> Void,
+         onNetworkMenuTapped: @escaping () -> Void,
+         onComposeTapped: @escaping () -> Void,
+         onSearchTapped: @escaping () -> Void,
+         onProfileTapped: @escaping (String) -> Void) {
         self.model = model
+        self.onTabSelected = onTabSelected
         self.onNotificationsTapped = onNotificationsTapped
         self.onNetworkMenuTapped = onNetworkMenuTapped
         self.onComposeTapped = onComposeTapped
@@ -64,21 +72,25 @@ final class TabBarViewModel: ObservableObject {
     }
     
     func tapSearch() {
+        onTabSelected?(.search)
         isShowingSearch = true
         onSearchTapped()
     }
     
     func tapNotifications() {
+        onTabSelected?(.notifications)
         isShowingNotifications = true
         onNotificationsTapped()
     }
     
     func tapNetworkMenu() {
+        onTabSelected?(.networkMenu)
         isShowingNetworkMenu = true
         onNetworkMenuTapped()
     }
     
     func tapProfile(userId: String) {
+        onTabSelected?(.profile)
         isShowingProfile = true
         onProfileTapped(userId)
     }
