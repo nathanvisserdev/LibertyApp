@@ -150,7 +150,7 @@ struct GroupsMenuView: View {
 
 #Preview {
     let coordinator = GroupsMenuCoordinator(
-        authenticationManager: AuthManager.shared,
+        authManager: AuthManager.shared,
         tokenProvider: AuthManager.shared
     )
     let viewModel = GroupsMenuViewModel(coordinator: coordinator)

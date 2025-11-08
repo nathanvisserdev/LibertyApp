@@ -12,12 +12,12 @@ final class ConnectionsListCoordinator: ObservableObject {
     
     private var profileCoordinator: ProfileCoordinator?
     
-    private let authenticationManager: AuthManaging
+    private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
 
-    init(authenticationManager: AuthManaging,
+    init(authManager: AuthManaging,
          tokenProvider: TokenProviding) {
-        self.authenticationManager = authenticationManager
+        self.authManager = authManager
         self.tokenProvider = tokenProvider
     }
     
@@ -30,7 +30,7 @@ final class ConnectionsListCoordinator: ObservableObject {
         selectedUserId = userId
         profileCoordinator = ProfileCoordinator(
             userId: userId,
-            authenticationManager: authenticationManager,
+            authManager: authManager,
             tokenProvider: tokenProvider
         )
         isShowingProfile = true

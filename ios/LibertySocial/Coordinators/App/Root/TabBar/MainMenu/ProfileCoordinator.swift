@@ -64,14 +64,14 @@ final class ProfileCoordinator: ObservableObject {
     private var selectedUserId: String?
     
     private let userId: String
-    private let authenticationManager: AuthManaging
+    private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
 
     init(userId: String,
-         authenticationManager: AuthManaging,
+         authManager: AuthManaging,
          tokenProvider: TokenProviding) {
         self.userId = userId
-        self.authenticationManager = authenticationManager
+        self.authManager = authManager
         self.tokenProvider = tokenProvider
     }
     
@@ -88,7 +88,7 @@ final class ProfileCoordinator: ObservableObject {
         selectedUserId = userId
         childProfileCoordinator = ProfileCoordinator(
             userId: userId,
-            authenticationManager: authenticationManager,
+            authManager: authManager,
             tokenProvider: tokenProvider
         )
         isShowingChildProfile = true
@@ -100,7 +100,7 @@ final class ProfileCoordinator: ObservableObject {
             userId: userId,
             isPrivate: isPrivate,
             TokenProvider: tokenProvider,
-            AuthManagerBadName: authenticationManager
+            AuthManagerBadName: authManager
         )
         isShowingConnect = true
     }
@@ -113,7 +113,7 @@ final class ProfileCoordinator: ObservableObject {
                 let mediaModel = MediaModel(TokenProvider: self.tokenProvider)
                 return MediaViewModel(mediaKey: key, model: mediaModel)
             },
-            authenticationManager: authenticationManager,
+            authManager: authManager,
             onShowFollowers: { [weak self] userId in
                 self?.openFollowers(of: userId)
             },
@@ -136,7 +136,7 @@ final class ProfileCoordinator: ObservableObject {
     func makeFollowersCoordinator(for userId: String) -> FollowersListCoordinator {
         return FollowersListCoordinator(
             userId: userId,
-            authenticationManager: authenticationManager,
+            authManager: authManager,
             tokenProvider: tokenProvider
         )
     }
@@ -144,7 +144,7 @@ final class ProfileCoordinator: ObservableObject {
     func makeFollowingCoordinator(for userId: String) -> FollowingListCoordinator {
         return FollowingListCoordinator(
             userId: userId,
-            authenticationManager: authenticationManager,
+            authManager: authManager,
             tokenProvider: tokenProvider
         )
     }

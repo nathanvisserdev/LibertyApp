@@ -5,27 +5,26 @@ import Combine
 @MainActor
 final class NetworkMenuCoordinator: ObservableObject {
     @Published var isShowingNetworkMenu: Bool = false
-    
-    private let authenticationManager: AuthManaging
+    private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
     private let connectionsListCoordinator: ConnectionsListCoordinator
     private let groupsMenuCoordinator: GroupsMenuCoordinator
-    private let subnetMenuCoordinator: SubnetMenuCoordinator
+    private let subnetMenuCoordinator: SubnetListCoordinator
 
-    init(authenticationManager: AuthManaging,
+    init(authManager: AuthManaging,
          tokenProvider: TokenProviding) {
-        self.authenticationManager = authenticationManager
+        self.authManager = authManager
         self.tokenProvider = tokenProvider
         self.connectionsListCoordinator = ConnectionsListCoordinator(
-            authenticationManager: authenticationManager,
+            authManager: authManager,
             tokenProvider: tokenProvider
         )
         self.groupsMenuCoordinator = GroupsMenuCoordinator(
-            authenticationManager: authenticationManager,
+            authManager: authManager,
             tokenProvider: tokenProvider
         )
-        self.subnetMenuCoordinator = SubnetMenuCoordinator(
-            authenticationManager: authenticationManager,
+        self.subnetMenuCoordinator = SubnetListCoordinator(
+            authManager: authManager,
             tokenProvider: tokenProvider
         )
     }

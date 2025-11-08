@@ -1,11 +1,13 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 @MainActor
 final class LoginViewModel: ObservableObject {
-
     private let model: LoginModel
+    private let onSignupTapped: () -> Void
+    private let onTap: ((LoginItem) -> Void)?
     
     @Published var email: String = ""
     @Published var password: String = ""
@@ -13,13 +15,15 @@ final class LoginViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var me: [String: Any]?
-    
-    @Published var showSignup: Bool = false
     @Published var showTestUsersAlert: Bool = false
     @Published var testUsersMessage: String?
     
-    init(model: LoginModel = LoginModel()) {
+    init(model: LoginModel,
+         onTap: ((LoginItem) -> Void)? = nil,
+         onSignupTapped: @escaping () -> Void) {
         self.model = model
+        self.onTap = onTap
+        self.onSignupTapped = onSignupTapped
     }
 
     var canSubmit: Bool {
@@ -48,8 +52,8 @@ final class LoginViewModel: ObservableObject {
         isSecure.toggle()
     }
     
-    func tapCreateAccount() {
-        showSignup = true
+    func onTapSignup() {
+        onSignupTapped()
     }
     
     func showTestUsers(message: String) {
@@ -71,4 +75,8 @@ final class LoginViewModel: ObservableObject {
 
 private extension String {
     var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
+}
+
+enum LoginItem {
+    case signup
 }

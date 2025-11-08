@@ -1,4 +1,3 @@
-
 import SwiftUI
 import Combine
 
@@ -6,16 +5,13 @@ import Combine
 final class TabBarCoordinator: ObservableObject {
     private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
-    
     private let feedCoordinator: FeedCoordinator
     private let searchCoordinator: SearchCoordinator
     private let networkMenuCoordinator: NetworkMenuCoordinator
     private let notificationsMenuCoordinator: NotificationsMenuCoordinator
-    private let profileMenuCoordinator: ProfileMenuCoordinator
-    
+    private let mainMenuCoordinator: MainMenuCoordinator
     private var activeProfileCoordinator: ProfileCoordinator?
     private var createPostCoordinator: CreatePostCoordinator?
-    
     @Published var isShowingProfile: Bool = false
     @Published var isShowingCreatePost: Bool = false
     
@@ -25,21 +21,19 @@ final class TabBarCoordinator: ObservableObject {
         self.feedCoordinator = feedCoordinator
         self.authManager = authManager
         self.tokenProvider = tokenProvider
-        
         self.notificationsMenuCoordinator = NotificationsMenuCoordinator()
         self.networkMenuCoordinator = NetworkMenuCoordinator(
-            authenticationManager: authManager,
+            authManager: authManager,
             tokenProvider: tokenProvider
         )
         self.searchCoordinator = SearchCoordinator(
-            authenticationManager: authManager,
+            authManager: authManager,
             tokenProvider: tokenProvider
         )
-        self.profileMenuCoordinator = ProfileMenuCoordinator(
-            authenticationManager: authManager,
+        self.mainMenuCoordinator = MainMenuCoordinator(
+            authManager: authManager,
             tokenProvider: tokenProvider
         )
-        
         wireCallbacks()
     }
 
@@ -62,8 +56,7 @@ final class TabBarCoordinator: ObservableObject {
         feedCoordinator.onUserSelected = { [weak self] userId in
             self?.showProfile(userId: userId)
         }
-        
-        profileMenuCoordinator.onLogout = { [weak self] in
+        mainMenuCoordinator.onLogout = { [weak self] in
             self?.authManager.logout()
         }
     }
@@ -71,7 +64,7 @@ final class TabBarCoordinator: ObservableObject {
     func showProfile(userId: String) {
         activeProfileCoordinator = ProfileCoordinator(
             userId: userId,
-            authenticationManager: authManager,
+            authManager: authManager,
             tokenProvider: tokenProvider
         )
         isShowingProfile = true
@@ -82,7 +75,7 @@ final class TabBarCoordinator: ObservableObject {
         isShowingCreatePost = true
     }
     
-    func switchTo(_ tab: TabBarTab) {
+    func switchTo(_ tab: TabBarItem) {
         isShowingProfile = false
         isShowingCreatePost = false
     }
@@ -92,7 +85,6 @@ final class TabBarCoordinator: ObservableObject {
         let notificationsView = notificationsMenuCoordinator.makeView()
         let networkMenuView = networkMenuCoordinator.makeView()
         let searchView = searchCoordinator.makeView()
-        
         let viewModel = TabBarViewModel(
             model: TabBarModel(AuthManagerBadName: authManager),
             onTabSelected: { [weak self] tab in
@@ -111,10 +103,9 @@ final class TabBarCoordinator: ObservableObject {
                 self?.searchCoordinator.showSearch()
             },
             onProfileTapped: { [weak self] id in
-                self?.profileMenuCoordinator.showProfile(userId: id)
+                self?.mainMenuCoordinator.showProfile(userId: id)
             }
         )
-        
         viewModel.onShowNotificationsMenu = {
             AnyView(notificationsView)
         }
@@ -126,7 +117,7 @@ final class TabBarCoordinator: ObservableObject {
         }
         viewModel.onShowProfile = { [weak self] in
             guard let self = self else { return AnyView(EmptyView()) }
-            return AnyView(self.profileMenuCoordinator.makeView())
+            return AnyView(self.mainMenuCoordinator.makeView())
         }
         viewModel.onShowCreatePost = { [weak self] in
             guard let coordinator = self?.createPostCoordinator else {
@@ -134,7 +125,6 @@ final class TabBarCoordinator: ObservableObject {
             }
             return AnyView(coordinator.start())
         }
-        
         return feedView
             .safeAreaInset(edge: .bottom) {
                 TabBarView(viewModel: viewModel)
@@ -160,8 +150,7 @@ final class TabBarCoordinator: ObservableObject {
     }
 }
 
-enum TabBarTab {
-    case feed
+enum TabBarItem {
     case notifications
     case networkMenu
     case search

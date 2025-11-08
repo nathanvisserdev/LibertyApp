@@ -5,11 +5,8 @@ import SwiftUI
 
 @MainActor
 final class RootViewModel: ObservableObject {
-    private let model: RootModel
     
     var onAuthenticationInvalidated: (() -> Void)?
-    var onShowAuthenticatedContent: (() -> AnyView)?
-    var onShowLoginContent: (() -> AnyView)?
     
     @Published var isAuthenticated: Bool {
         didSet {
@@ -19,19 +16,8 @@ final class RootViewModel: ObservableObject {
         }
     }
     
-    var contentView: AnyView {
-        if isAuthenticated {
-            return onShowAuthenticatedContent?() ?? AnyView(EmptyView())
-        } else {
-            return onShowLoginContent?() ?? AnyView(EmptyView())
-        }
+    init(isAuthenticated: Bool) {
+        self.isAuthenticated = isAuthenticated
     }
     
-    init(model: RootModel,
-         isAuthenticated: Bool,
-         onAuthenticationInvalidated: (() -> Void)? = nil) {
-        self.model = model
-        self.isAuthenticated = isAuthenticated
-        self.onAuthenticationInvalidated = onAuthenticationInvalidated
-    }
 }

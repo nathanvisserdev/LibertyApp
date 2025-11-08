@@ -3,12 +3,18 @@ import SwiftUI
 
 struct RootView: View {
     @StateObject private var viewModel: RootViewModel
+    private let makeContent: (Bool) -> AnyView
 
-    init(viewModel: RootViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
-    }
+    init(
+            viewModel: RootViewModel,
+            makeContent: @escaping (Bool) -> AnyView
+        ) {
+            _viewModel = StateObject(wrappedValue: viewModel)
+            self.makeContent = makeContent
+        }
 
     var body: some View {
-        viewModel.contentView
+        makeContent(viewModel.isAuthenticated)
     }
 }
+

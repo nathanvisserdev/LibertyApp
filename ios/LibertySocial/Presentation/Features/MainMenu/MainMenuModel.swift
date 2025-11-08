@@ -1,7 +1,7 @@
 
 import Foundation
 
-struct ProfileMenuModel {
+struct MainMenuModel {
     
     init() {
     }

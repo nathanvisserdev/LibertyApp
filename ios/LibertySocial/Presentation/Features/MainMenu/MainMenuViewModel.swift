@@ -4,8 +4,8 @@ import Combine
 import SwiftUI
 
 @MainActor
-final class ProfileMenuViewModel: ObservableObject {
-    private let model: ProfileMenuModel
+final class MainMenuViewModel: ObservableObject {
+    private let model: MainMenuModel
     private let onProfileTapped: (String) -> Void
     private let userId: String
     
@@ -14,7 +14,7 @@ final class ProfileMenuViewModel: ObservableObject {
     @Published var showSettings: Bool = false
     @Published var isShowingProfile: Bool = false
     
-    init(model: ProfileMenuModel,
+    init(model: MainMenuModel,
          userId: String,
          onProfileTapped: @escaping (String) -> Void) {
         self.model = model

@@ -10,20 +10,20 @@ final class GroupsMenuCoordinator: ObservableObject {
     @Published var showSuggestedGroups: Bool = false
     @Published var selectedGroup: UserGroup? = nil
     
-    private let authenticationManager: AuthManaging
+    private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
     
     private lazy var createGroupCoordinator: CreateGroupCoordinator = {
         CreateGroupCoordinator(
             tokenProvider: tokenProvider,
-            authManager: authenticationManager
+            authManager: authManager
         )
     }()
     
     private lazy var suggestedGroupsCoordinator: SuggestedGroupsCoordinator = {
         SuggestedGroupsCoordinator(
             TokenProvider: tokenProvider,
-            AuthManagerBadName: authenticationManager
+            AuthManagerBadName: authManager
         )
     }()
     
@@ -31,13 +31,13 @@ final class GroupsMenuCoordinator: ObservableObject {
         GroupCoordinator(
             group: group,
             TokenProvider: self.tokenProvider,
-            AuthManagerBadName: self.authenticationManager
+            AuthManagerBadName: self.authManager
         )
     }
 
-    init(authenticationManager: AuthManaging,
+    init(authManager: AuthManaging,
          tokenProvider: TokenProviding) {
-        self.authenticationManager = authenticationManager
+        self.authManager = authManager
         self.tokenProvider = tokenProvider
     }
     

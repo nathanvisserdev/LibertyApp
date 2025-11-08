@@ -4,21 +4,21 @@ import Foundation
 struct LoginResponse: Decodable { let accessToken: String }
 
 struct LoginModel {
-    private let AuthManagerBadName: AuthManaging
+    private let authManager: AuthManaging
     
-    init(AuthManagerBadName: AuthManaging = AuthManager.shared) {
-        self.AuthManagerBadName = AuthManagerBadName
+    init(authManager: AuthManaging) {
+        self.authManager = authManager
     }
     
     func login(email: String, password: String) async throws {
-        _ = try await AuthManagerBadName.login(email: email, password: password)
+        _ = try await authManager.login(email: email, password: password)
     }
     
     func fetchCurrentUser() async throws -> [String: Any] {
-        return try await AuthManagerBadName.fetchCurrentUser()
+        return try await authManager.fetchCurrentUser()
     }
     
     func deleteToken() {
-        AuthManager.shared.deleteToken()
+        authManager.deleteToken()
     }
 }

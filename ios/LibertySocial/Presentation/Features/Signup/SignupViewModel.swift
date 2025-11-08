@@ -18,6 +18,8 @@ final class SignupViewModel: ObservableObject {
     
     private let model: SignupModel
     
+    var onSignupComplete: (() -> Void)?
+    
     @Published var currentStep: SignupStep = .credentials
     
     @Published var firstName: String = ""
@@ -143,6 +145,9 @@ final class SignupViewModel: ObservableObject {
                     photoUploadMessage = "Photo upload failed, but your account was created. You can upload a photo later."
                 }
             }
+            
+            // Signup completed successfully, notify coordinator
+            onSignupComplete?()
             
         } catch {
             errorMessage = error.localizedDescription

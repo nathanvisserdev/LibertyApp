@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct LoginView: View {
@@ -12,128 +11,125 @@ struct LoginView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
-                HStack(spacing: 1) {
-                    Image("liberty_bell")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 70, height: 70)
-                    Text("Liberty Social")
-                        .font(.largeTitle.bold())
-                    Spacer()
-                }
+            HStack(spacing: 1) {
+                Image("liberty_bell")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 70, height: 70)
+                Text("Liberty Social")
+                    .font(.largeTitle.bold())
+                Spacer()
+            }
 
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Welcome back")
-                        .font(.largeTitle.bold())
-                    Text("Sign in with your email")
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Welcome back")
+                    .font(.largeTitle.bold())
+                Text("Sign in with your email")
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-                VStack(spacing: 14) {
-                    TextField("you@example.com", text: $viewModel.email)
-                        .textContentType(.username)
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.emailAddress)
-                        .autocorrectionDisabled()
-                        .submitLabel(.next)
-                        .padding(14)
-                        .background(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
-
-                    HStack {
-                        Group {
-                            if viewModel.isSecure {
-                                SecureField("Password", text: $viewModel.password)
-                                    .textContentType(.password)
-                            } else {
-                                TextField("Password", text: $viewModel.password)
-                                    .textContentType(.password)
-                            }
-                        }
-                        Button { withAnimation(.snappy) { viewModel.toggleSecure() } } label: {
-                            Image(systemName: viewModel.isSecure ? "eye" : "eye.slash")
-                                .imageScale(.medium)
-                        }
-                    }
+            VStack(spacing: 14) {
+                TextField("you@example.com", text: $viewModel.email)
+                    .textContentType(.username)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.emailAddress)
+                    .autocorrectionDisabled()
+                    .submitLabel(.next)
                     .padding(14)
                     .background(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
 
-                    HStack {
-                        Spacer()
-                        Button("Forgot password?") {}
-                    }
-                    .font(.callout)
-                }
-
-                Button {
-                    Task {
-                        await viewModel.login()
-                        if viewModel.me != nil {
-                            await session.refresh()
+                HStack {
+                    Group {
+                        if viewModel.isSecure {
+                            SecureField("Password", text: $viewModel.password)
+                                .textContentType(.password)
+                        } else {
+                            TextField("Password", text: $viewModel.password)
+                                .textContentType(.password)
                         }
                     }
-                } label: {
-                    if viewModel.isLoading { ProgressView().controlSize(.small) }
-                    else { Text("Sign in").font(.headline) }
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(!viewModel.canSubmit)
-                .frame(maxWidth: .infinity)
-
-                Text("or")
-                    .foregroundStyle(.secondary)
-                    .font(.callout)
-
-                Button {
-                    viewModel.tapCreateAccount()
-                } label: {
-                    Text("Create account").font(.headline)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .frame(maxWidth: .infinity)
-
-                Spacer(minLength: 0)
-                
-                Button {
-                    Task {
-                        let result = await CreateTestUsers.createAllUsers()
-                        viewModel.showTestUsers(message: result.message)
+                    Button { withAnimation(.snappy) { viewModel.toggleSecure() } } label: {
+                        Image(systemName: viewModel.isSecure ? "eye" : "eye.slash")
+                            .imageScale(.medium)
                     }
-                } label: {
-                    Text("Create Test Users").font(.caption)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-            }
-            .padding(24)
-            .alert(isPresented: .constant(viewModel.errorMessage != nil)) {
-                Alert(
-                    title: Text("Sign-in"),
-                    message: Text(viewModel.errorMessage ?? ""),
-                    dismissButton: .default(Text("OK")) { viewModel.errorMessage = nil }
-                )
-            }
-            .alert(
-                "Test Users",
-                isPresented: $viewModel.showTestUsersAlert
-            ) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(viewModel.testUsersMessage ?? "")
-            }
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
+                .padding(14)
+                .background(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
+
+                HStack {
                     Spacer()
-                    Button("Done") { hideKeyboard() }
+                    Button("Forgot password?") {}
                 }
+                .font(.callout)
             }
-            .sheet(isPresented: $viewModel.showSignup) {
-                SignupCoordinator().start()
+
+            Button {
+                Task {
+                    await viewModel.login()
+                    if viewModel.me != nil {
+                        await session.refresh()
+                    }
+                }
+            } label: {
+                if viewModel.isLoading { ProgressView().controlSize(.small) }
+                else { Text("Sign in").font(.headline) }
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(!viewModel.canSubmit)
+            .frame(maxWidth: .infinity)
+
+            Text("or")
+                .foregroundStyle(.secondary)
+                .font(.callout)
+
+            Button {
+                viewModel.onTapSignup()
+            } label: {
+                Text("Create account").font(.headline)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .frame(maxWidth: .infinity)
+
+            Spacer(minLength: 0)
+            
+            Button {
+                Task {
+                    let result = await CreateTestUsers.createAllUsers()
+                    viewModel.showTestUsers(message: result.message)
+                }
+            } label: {
+                Text("Create Test Users").font(.caption)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+        }
+        .padding(24)
+        .alert(isPresented: .constant(viewModel.errorMessage != nil)) {
+            Alert(
+                title: Text("Sign-in"),
+                message: Text(viewModel.errorMessage ?? ""),
+                dismissButton: .default(Text("OK")) { viewModel.errorMessage = nil }
+            )
+        }
+        .alert(
+            "Test Users",
+            isPresented: $viewModel.showTestUsersAlert
+        ) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.testUsersMessage ?? "")
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") { hideKeyboard() }
             }
         }
     }
+}
 }
 
 #if canImport(UIKit)
@@ -148,8 +144,4 @@ extension View {
     }
 }
 #endif
-
-#Preview {
-    LoginView(viewModel: LoginViewModel()).tint(.blue)
-}
 

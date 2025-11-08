@@ -6,7 +6,7 @@ import Combine
 final class ProfileViewModel: ObservableObject {
     private let model: ProfileModel
     private let makeMediaVM: (String) -> MediaViewModel
-    private let authenticationManager: AuthManaging
+    private let authManager: AuthManaging
     
     private let onShowFollowers: (String) -> Void
     private let onShowFollowing: (String) -> Void
@@ -20,14 +20,14 @@ final class ProfileViewModel: ObservableObject {
     init(
         model: ProfileModel,
         makeMediaVM: @escaping (String) -> MediaViewModel,
-        authenticationManager: AuthManaging,
+        authManager: AuthManaging,
         onShowFollowers: @escaping (String) -> Void,
         onShowFollowing: @escaping (String) -> Void,
         onConnectTapped: @escaping (String, String, Bool) -> Void
     ) {
         self.model = model
         self.makeMediaVM = makeMediaVM
-        self.authenticationManager = authenticationManager
+        self.authManager = authManager
         self.onShowFollowers = onShowFollowers
         self.onShowFollowing = onShowFollowing
         self.onConnectTapped = onConnectTapped
@@ -64,7 +64,7 @@ final class ProfileViewModel: ObservableObject {
 
     private func checkIfOwnProfile(userId: String) async -> Bool {
         do {
-            let currentUser = try await authenticationManager.fetchCurrentUserTyped()
+            let currentUser = try await authManager.fetchCurrentUserTyped()
             return currentUser.id == userId
         } catch {
             print("❌ Failed to check if own profile: \(error)")

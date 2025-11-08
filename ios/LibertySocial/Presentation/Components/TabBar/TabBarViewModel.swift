@@ -6,7 +6,7 @@ import SwiftUI
 @MainActor
 final class TabBarViewModel: ObservableObject {
     private let model: TabBarModel
-    private let onTabSelected: ((TabBarTab) -> Void)?
+    private let onTabSelected: ((TabBarItem) -> Void)?
     private let onNotificationsTapped: () -> Void
     private let onNetworkMenuTapped: () -> Void
     private let onComposeTapped: () -> Void
@@ -30,7 +30,7 @@ final class TabBarViewModel: ObservableObject {
     @Published var isShowingCreatePost: Bool = false
     
     init(model: TabBarModel,
-         onTabSelected: ((TabBarTab) -> Void)? = nil,
+         onTabSelected: ((TabBarItem) -> Void)? = nil,
          onNotificationsTapped: @escaping () -> Void,
          onNetworkMenuTapped: @escaping () -> Void,
          onComposeTapped: @escaping () -> Void,
@@ -87,7 +87,7 @@ final class TabBarViewModel: ObservableObject {
         onTabSelected?(.profile)
         isShowingProfile = true
         onProfileTapped(userId)
-    }
+   }
     
     func tapCurrentUserProfile() {
         Task {

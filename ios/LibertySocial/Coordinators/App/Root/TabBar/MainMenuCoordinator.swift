@@ -3,21 +3,21 @@ import SwiftUI
 import Combine
 
 @MainActor
-final class ProfileMenuCoordinator: ObservableObject {
+final class MainMenuCoordinator: ObservableObject {
     @Published var isShowingProfile: Bool = false
     
     private var currentUserId: String?
     private var selectedUserId: String?
     private var profileCoordinator: ProfileCoordinator?
-    private let authenticationManager: AuthManaging
+    private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
     
     var onLogout: (() -> Void)?
     var onUserSelected: ((String) -> Void)?
 
-    init(authenticationManager: AuthManaging,
+    init(authManager: AuthManaging,
          tokenProvider: TokenProviding) {
-        self.authenticationManager = authenticationManager
+        self.authManager = authManager
         self.tokenProvider = tokenProvider
     }
     
@@ -30,7 +30,7 @@ final class ProfileMenuCoordinator: ObservableObject {
         selectedUserId = userId
         profileCoordinator = ProfileCoordinator(
             userId: userId,
-            authenticationManager: authenticationManager,
+            authManager: authManager,
             tokenProvider: tokenProvider
         )
     }
@@ -40,7 +40,7 @@ final class ProfileMenuCoordinator: ObservableObject {
             selectedUserId = userId
             profileCoordinator = ProfileCoordinator(
                 userId: userId,
-                authenticationManager: authenticationManager,
+                authManager: authManager,
                 tokenProvider: tokenProvider
             )
         }
@@ -53,7 +53,7 @@ final class ProfileMenuCoordinator: ObservableObject {
             selectedUserId = userId
             profileCoordinator = ProfileCoordinator(
                 userId: userId,
-                authenticationManager: authenticationManager,
+                authManager: authManager,
                 tokenProvider: tokenProvider
             )
         }
@@ -66,8 +66,8 @@ final class ProfileMenuCoordinator: ObservableObject {
             return AnyView(EmptyView())
         }
         
-        let model = ProfileMenuModel()
-        let viewModel = ProfileMenuViewModel(
+        let model = MainMenuModel()
+        let viewModel = MainMenuViewModel(
             model: model,
             userId: userId,
             onProfileTapped: { [weak self] id in
@@ -82,6 +82,6 @@ final class ProfileMenuCoordinator: ObservableObject {
             return AnyView(coordinator.start())
         }
         
-        return AnyView(ProfileMenuView(viewModel: viewModel))
+        return AnyView(MainMenuView(viewModel: viewModel))
     }
 }

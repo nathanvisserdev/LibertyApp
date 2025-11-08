@@ -1,11 +1,11 @@
 
 import SwiftUI
 
-struct ProfileMenuView: View {
-    @StateObject private var viewModel: ProfileMenuViewModel
+struct MainMenuView: View {
+    @StateObject private var viewModel: MainMenuViewModel
     @Environment(\.dismiss) var dismiss
 
-    init(viewModel: ProfileMenuViewModel) {
+    init(viewModel: MainMenuViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     

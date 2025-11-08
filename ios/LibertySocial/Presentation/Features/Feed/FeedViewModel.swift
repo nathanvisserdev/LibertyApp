@@ -57,7 +57,6 @@ final class FeedViewModel: ObservableObject {
     }
 
     func logoutTapped() {
-        print("🔵 FeedViewModel.logoutTapped() - calling AuthManagerBadName.logout()")
         auth.logout()
     }
 

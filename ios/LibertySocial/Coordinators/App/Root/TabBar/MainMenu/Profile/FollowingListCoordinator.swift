@@ -2,35 +2,35 @@
 import SwiftUI
 import Combine
 
-enum FollowersListRoute: Hashable {
+enum FollowingListRoute: Hashable {
     case profile(String)
 }
 
-final class FollowersNavPathStore: ObservableObject {
+final class FollowingNavPathStore: ObservableObject {
     @Published var path = NavigationPath()
 }
 
 @MainActor
-final class FollowersListCoordinator: ObservableObject {
-    private let nav = FollowersNavPathStore()
+final class FollowingListCoordinator: ObservableObject {
+    private let nav = FollowingNavPathStore()
     
     private let userId: String
-    private let authenticationManager: AuthManaging
+    private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
 
     init(userId: String,
-         authenticationManager: AuthManaging,
+         authManager: AuthManaging,
          tokenProvider: TokenProviding) {
         self.userId = userId
-        self.authenticationManager = authenticationManager
+        self.authManager = authManager
         self.tokenProvider = tokenProvider
     }
-
+    
     func start() -> some View {
-        FollowersStackView(
+        FollowingStackView(
             nav: nav,
             userId: userId,
-            authenticationManager: authenticationManager,
+            authManager: authManager,
             tokenProvider: tokenProvider,
             onUserSelected: { [weak self] id in
                 self?.openProfile(id)
@@ -39,24 +39,24 @@ final class FollowersListCoordinator: ObservableObject {
     }
     
     func makeView(onUserSelected: @escaping (String) -> Void) -> some View {
-        let model = FollowersListModel()
-        let viewModel = FollowersListViewModel(
+        let model = FollowingListModel()
+        let viewModel = FollowingListViewModel(
             model: model,
             userId: userId,
             onUserSelected: onUserSelected
         )
-        return FollowersListView(viewModel: viewModel)
+        return FollowingListView(viewModel: viewModel)
     }
     
     func openProfile(_ id: String) {
-        nav.path.append(FollowersListRoute.profile(id))
+        nav.path.append(FollowingListRoute.profile(id))
     }
 }
 
-struct FollowersStackView: View {
-    @ObservedObject var nav: FollowersNavPathStore
+struct FollowingStackView: View {
+    @ObservedObject var nav: FollowingNavPathStore
     let userId: String
-    let authenticationManager: AuthManaging
+    let authManager: AuthManaging
     let tokenProvider: TokenProviding
     let onUserSelected: (String) -> Void
     
@@ -67,13 +67,13 @@ struct FollowersStackView: View {
                 set: { nav.path = $0 }
             )
         ) {
-            makeFollowersListView()
-                .navigationDestination(for: FollowersListRoute.self) { route in
+            makeFollowingListView()
+                .navigationDestination(for: FollowingListRoute.self) { route in
                     switch route {
                     case .profile(let id):
                         ProfileCoordinator(
                             userId: id,
-                            authenticationManager: authenticationManager,
+                            authManager: authManager,
                             tokenProvider: tokenProvider
                         ).start()
                     }
@@ -81,13 +81,13 @@ struct FollowersStackView: View {
         }
     }
     
-    private func makeFollowersListView() -> some View {
-        let model = FollowersListModel()
-        let viewModel = FollowersListViewModel(
+    private func makeFollowingListView() -> some View {
+        let model = FollowingListModel()
+        let viewModel = FollowingListViewModel(
             model: model,
             userId: userId,
             onUserSelected: onUserSelected
         )
-        return FollowersListView(viewModel: viewModel)
+        return FollowingListView(viewModel: viewModel)
     }
 }

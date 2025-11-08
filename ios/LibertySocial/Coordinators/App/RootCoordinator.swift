@@ -4,10 +4,8 @@ import Combine
 
 @MainActor
 final class RootCoordinator: ObservableObject {
-    private let signupCoordinator: SignupCoordinator
     private let loginCoordinator: LoginCoordinator
     private let tabBarCoordinator: TabBarCoordinator
-    
     @Published private var rootViewModel: RootViewModel
 
     init(
@@ -23,38 +21,30 @@ final class RootCoordinator: ObservableObject {
             feedService: feedService,
             commentService: commentService
         )
-        self.loginCoordinator = LoginCoordinator()
-        self.signupCoordinator = SignupCoordinator()
+        self.loginCoordinator = LoginCoordinator(
+            authManager: authManager
+        )
         self.rootViewModel = RootViewModel(
-            model: RootModel(),
             isAuthenticated: initialAuthenticationState
         )
-        
-        self.rootViewModel.onAuthenticationInvalidated = { [weak self] in
-            self?.handleAuthenticationInvalidated()
-        }
-        
-        self.rootViewModel.onShowAuthenticatedContent = { [weak self] in
-            guard let self = self else { return AnyView(EmptyView()) }
-            return AnyView(self.tabBarCoordinator.start())
-        }
-        
-        self.rootViewModel.onShowLoginContent = { [weak self] in
-            guard let self = self else { return AnyView(EmptyView()) }
-            return AnyView(self.loginCoordinator.start())
-        }
     }
 
     func start() -> some View {
-        return RootView(viewModel: rootViewModel)
+        RootView(
+            viewModel: rootViewModel,
+            makeContent: { [weak self] isAuthenticated in
+                guard let self = self else { return AnyView(EmptyView()) }
+                if isAuthenticated {
+                    return AnyView(self.tabBarCoordinator.start())
+                } else {
+                    return AnyView(self.loginCoordinator.start())
+                }
+            }
+        )
     }
-    
+
     func updateAuthenticationState(_ isAuthenticated: Bool) {
         rootViewModel.isAuthenticated = isAuthenticated
-    }
-    
-    private func handleAuthenticationInvalidated() {
-        print("🔓 Authentication invalidated - routing to login flow")
     }
     
     func handleDeeplink(_ url: URL) {

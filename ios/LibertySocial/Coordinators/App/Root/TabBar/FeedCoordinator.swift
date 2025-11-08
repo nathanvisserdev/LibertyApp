@@ -8,7 +8,6 @@ final class FeedCoordinator: ObservableObject {
     private let authManager: AuthManaging
     private let feedService: FeedSession
     private let commentService: CommentService
-    
     var onUserSelected: ((String) -> Void)?
 
     init(tokenProvider: TokenProviding,
@@ -22,12 +21,14 @@ final class FeedCoordinator: ObservableObject {
     }
 
     func start() -> some View {
-        makeFeedView()
+        return NavigationStack {
+            makeFeedView()
+        }
     }
 
-    private func makeFeedView() -> some View {
+    private func makeFeedView() -> FeedView {
         let model = FeedModel(AuthManagerBadName: authManager)
-        let vm = FeedViewModel(
+        let viewModel = FeedViewModel(
             model: model,
             feedService: feedService,
             makeMediaVM: { key in
@@ -40,7 +41,7 @@ final class FeedCoordinator: ObservableObject {
                 self?.onUserSelected?(userId)
             }
         )
-        return FeedView(viewModel: vm)
+        return FeedView(viewModel: viewModel)
     }
 }
 

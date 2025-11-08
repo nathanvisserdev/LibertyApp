@@ -1,14 +1,49 @@
-
 import SwiftUI
+import Combine
 
+@MainActor
 final class LoginCoordinator {
-
-    init() {
-        
+    private let authManager: AuthManaging
+    private let signupCoordinator: SignupCoordinator
+    
+    init(authManager: AuthManaging) {
+        self.authManager = authManager
+        self.signupCoordinator = SignupCoordinator()
     }
     
     func start() -> some View {
-        let viewModel = LoginViewModel()
+        LoginCoordinatorHostView(coordinator: self)
+    }
+    
+    fileprivate func makeLoginView(onSignupTapped: @escaping () -> Void) -> some View {
+        let loginModel = LoginModel(authManager: authManager)
+        let viewModel = LoginViewModel(
+            model: loginModel,
+            onTap: nil,
+            onSignupTapped: onSignupTapped
+        )
         return LoginView(viewModel: viewModel)
+    }
+    
+    fileprivate func makeSignupView(onDismiss: @escaping () -> Void) -> some View {
+        signupCoordinator.onFinished = onDismiss
+        return signupCoordinator.start()
+    }
+}
+
+private struct LoginCoordinatorHostView: View {
+    let coordinator: LoginCoordinator
+    
+    @State private var isShowingSignup = false
+    
+    var body: some View {
+        coordinator.makeLoginView(onSignupTapped: {
+            isShowingSignup = true
+        })
+        .fullScreenCover(isPresented: $isShowingSignup) {
+            coordinator.makeSignupView(onDismiss: {
+                isShowingSignup = false
+            })
+        }
     }
 }
