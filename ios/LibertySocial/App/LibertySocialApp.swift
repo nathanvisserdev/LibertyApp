@@ -17,7 +17,6 @@ struct LibertySocialApp: App {
 
     @StateObject private var session: SessionStore
     private let appCoordinator: AppCoordinator
-    private let loginCoordinator: LoginCoordinator
 
     @MainActor
     init() {
@@ -38,9 +37,6 @@ struct LibertySocialApp: App {
         self.groupService = groupService
         self.subnetService = subnetService
         self.commentService = commentService
-
-        let loginCoordinator = LoginCoordinator()
-        self.loginCoordinator = loginCoordinator
         
         let session = SessionStore(
             authManager: authManager,
@@ -50,7 +46,6 @@ struct LibertySocialApp: App {
         _session = StateObject(wrappedValue: session)
         
         self.appCoordinator = AppCoordinator(
-            loginCoordinator: loginCoordinator,
             sessionStore: session,
             authManager: authManager,
             tokenProvider: tokenProvider,

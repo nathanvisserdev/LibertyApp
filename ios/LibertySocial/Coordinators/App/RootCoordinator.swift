@@ -4,17 +4,27 @@ import Combine
 
 @MainActor
 final class RootCoordinator: ObservableObject {
-    private let tabBarCoordinator: TabBarCoordinator
+    private let signupCoordinator: SignupCoordinator
     private let loginCoordinator: LoginCoordinator
+    private let tabBarCoordinator: TabBarCoordinator
     
     @Published private var rootViewModel: RootViewModel
 
-    init(tabBarCoordinator: TabBarCoordinator,
-         loginCoordinator: LoginCoordinator,
-         initialAuthenticationState: Bool) {
-        self.tabBarCoordinator = tabBarCoordinator
-        self.loginCoordinator = loginCoordinator
-
+    init(
+        initialAuthenticationState: Bool,
+        authManager: AuthManaging,
+        tokenProvider: TokenProviding,
+        feedService: FeedSession,
+        commentService: CommentService
+    ) {
+        self.tabBarCoordinator = TabBarCoordinator(
+            authManager: authManager,
+            tokenProvider: tokenProvider,
+            feedService: feedService,
+            commentService: commentService
+        )
+        self.loginCoordinator = LoginCoordinator()
+        self.signupCoordinator = SignupCoordinator()
         self.rootViewModel = RootViewModel(
             model: RootModel(),
             isAuthenticated: initialAuthenticationState

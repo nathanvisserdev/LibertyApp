@@ -12,8 +12,7 @@ final class AppCoordinator: ObservableObject {
         rootCoordinator
     }
     
-    init(loginCoordinator: LoginCoordinator,
-         sessionStore: SessionStore,
+    init(sessionStore: SessionStore,
          authManager: AuthManaging,
          tokenProvider: TokenProviding,
          feedService: FeedSession,
@@ -21,18 +20,14 @@ final class AppCoordinator: ObservableObject {
         
         self.sessionStore = sessionStore
         
-        let tabBarCoordinator = TabBarCoordinator(
+        self.rootCoordinator = RootCoordinator(
+            initialAuthenticationState: sessionStore.isAuthenticated,
             authManager: authManager,
             tokenProvider: tokenProvider,
             feedService: feedService,
             commentService: commentService
         )
         
-        self.rootCoordinator = RootCoordinator(
-            tabBarCoordinator: tabBarCoordinator,
-            loginCoordinator: loginCoordinator,
-            initialAuthenticationState: sessionStore.isAuthenticated
-        )
         sessionStore.$isAuthenticated
             .receive(on: DispatchQueue.main)
             .sink { [weak self] newValue in
