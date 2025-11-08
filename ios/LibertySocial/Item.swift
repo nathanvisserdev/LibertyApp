@@ -1,9 +1,3 @@
-//
-//  Item.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-02.
-//
 
 import Foundation
 import SwiftData

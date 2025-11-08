@@ -1,9 +1,3 @@
-//
-//  KeychainHelper.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-07.
-//
 
 import Foundation
 import Security
@@ -16,7 +10,6 @@ struct KeychainHelper {
 
     static func save(token: String) throws {
         let data = Data(token.utf8)
-        // remove old value (ignore result)
         SecItemDelete([kSecClass: kSecClassGenericPassword,
                        kSecAttrService: service,
                        kSecAttrAccount: account] as CFDictionary)

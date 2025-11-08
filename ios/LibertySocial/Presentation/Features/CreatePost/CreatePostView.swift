@@ -1,9 +1,3 @@
-//
-//  CreatePostView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-12.
-//
 
 import SwiftUI
 import PhotosUI
@@ -19,7 +13,6 @@ struct CreatePostView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 12) {
-                // MARK: - Audience Selector
                 HStack(spacing: 6) {
                     Text("Post to")
                         .font(.subheadline)
@@ -44,7 +37,6 @@ struct CreatePostView: View {
                 .padding(.vertical, 8)
                 .background(Color(.systemGray6))
                 
-                // MARK: - Text Editor with Photo Preview
                 ZStack(alignment: .topLeading) {
                     TextEditor(text: $viewModel.text)
                         .frame(minHeight: 160)
@@ -56,7 +48,6 @@ struct CreatePostView: View {
                         )
                     
                     VStack(alignment: .leading, spacing: 0) {
-                        // Display selected photo if available
                         if let photoURL = viewModel.localMediaURL {
                             AsyncImage(url: photoURL) { image in
                                 image
@@ -70,7 +61,6 @@ struct CreatePostView: View {
                             .padding(8)
                         }
                         
-                        // Placeholder text
                         if viewModel.text.isEmpty {
                             Text(viewModel.localMediaURL == nil ? "What's on your mind?" : "Add a caption...")
                                 .foregroundStyle(.secondary)
@@ -81,7 +71,6 @@ struct CreatePostView: View {
                     }
                 }
 
-                // MARK: - Character Count
                 HStack {
                     Spacer()
                     Text("\(viewModel.remainingCharacters)")
@@ -89,7 +78,6 @@ struct CreatePostView: View {
                         .foregroundStyle(viewModel.remainingCharacters < 0 ? .red : .secondary)
                 }
 
-                // MARK: - Error Message
                 if let msg = viewModel.errorMessage {
                     Text(msg)
                         .font(.footnote)
@@ -97,7 +85,6 @@ struct CreatePostView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                // MARK: - Photo Picker Button
                 Button(action: {
                     Task {
                         await viewModel.requestPresignedUpload()

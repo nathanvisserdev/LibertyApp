@@ -1,13 +1,6 @@
-//
-//  NotificationsMenuModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-25.
-//
 
 import Foundation
 
-// Unified notification item for all notification types
 struct NotificationItem: Identifiable {
     let id: String
     let type: NotificationType
@@ -64,18 +57,16 @@ struct GroupJoinRequester: Decodable {
 
 struct NotificationsMenuModel {
     private let TokenProvider: TokenProviding
-    private let AuthManager: AuthManaging
+    private let AuthManagerBadName: AuthManaging
     
-    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared, AuthManagerBadName: AuthManaging = AuthManager.shared) {
         self.TokenProvider = TokenProvider
-        self.AuthManager = AuthManager
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Fetch all notifications (connection requests, group invites, group join requests)
     func fetchNotifications() async throws -> [NotificationItem] {
         var notifications: [NotificationItem] = []
         
-        // Fetch connection requests
         let connectionRequests = try await fetchIncomingConnectionRequests()
         notifications.append(contentsOf: connectionRequests.map { req in
             NotificationItem(
@@ -89,19 +80,16 @@ struct NotificationsMenuModel {
             )
         })
         
-        // Fetch group join requests
         let groupJoinRequests = try await fetchGroupJoinRequests()
         notifications.append(contentsOf: groupJoinRequests)
         
-        // Sort by date (newest first)
         notifications.sort { $0.createdAt > $1.createdAt }
         
         return notifications
     }
     
-    /// Fetch incoming connection requests - AuthService handles token
     private func fetchIncomingConnectionRequests() async throws -> [IncomingConnectionRequest] {
-        let requests = try await AuthManager.fetchIncomingConnectionRequests()
+        let requests = try await AuthManagerBadName.fetchIncomingConnectionRequests()
         return requests.compactMap { req in
             guard let requester = req.requester else { return nil }
             return IncomingConnectionRequest(
@@ -122,16 +110,13 @@ struct NotificationsMenuModel {
         }
     }
     
-    /// Fetch group join requests for all groups where user is a moderator
     private func fetchGroupJoinRequests() async throws -> [NotificationItem] {
         var notifications: [NotificationItem] = []
         
-        // First, get all groups where the current user is a member
-        guard let currentUser = try? await AuthManager.fetchCurrentUserTyped() else {
+        guard let currentUser = try? await AuthManagerBadName.fetchCurrentUserTyped() else {
             return []
         }
         
-        // Fetch user's groups
         guard let url = URL(string: "\(AppConfig.baseURL)/users/\(currentUser.id)/groups") else {
             throw URLError(.badURL)
         }
@@ -166,13 +151,10 @@ struct NotificationsMenuModel {
         
         print("📦 Found \(groupsResponse.groups.count) total groups")
         
-        // For each group where user is admin or moderator, try to fetch pending join requests
         for group in groupsResponse.groups {
             print("🔍 Checking group: \(group.name) (id: \(group.id), adminId: \(group.adminId))")
             print("   User is admin: \(group.adminId == currentUser.id)")
             
-            // The endpoint will return 403 if user is not a moderator, so we just try for all groups
-            // Groups where user is admin will automatically be included since they have moderator access
             if let groupRequests = try? await fetchPendingJoinRequestsForGroup(groupId: group.id, groupName: group.name) {
                 print("   ✅ Found \(groupRequests.count) pending join requests for \(group.name)")
                 notifications.append(contentsOf: groupRequests)
@@ -186,7 +168,6 @@ struct NotificationsMenuModel {
         return notifications
     }
     
-    /// Fetch pending join requests for a specific group
     private func fetchPendingJoinRequestsForGroup(groupId: String, groupName: String) async throws -> [NotificationItem] {
         guard let url = URL(string: "\(AppConfig.baseURL)/groups/\(groupId)/join-requests/pending") else {
             throw URLError(.badURL)
@@ -208,7 +189,6 @@ struct NotificationsMenuModel {
         
         print("   📡 Response status: \(httpResponse.statusCode)")
         
-        // If 403 or 404, user is not a moderator for this group, skip it
         guard (200...299).contains(httpResponse.statusCode) else {
             if httpResponse.statusCode == 403 {
                 print("   🚫 403 Forbidden - User is not a moderator for this group")
@@ -244,17 +224,14 @@ struct NotificationsMenuModel {
         }
     }
     
-    /// Accept a connection request
     func acceptConnectionRequest(requestId: String) async throws {
-        try await AuthManager.acceptConnectionRequest(requestId: requestId)
+        try await AuthManagerBadName.acceptConnectionRequest(requestId: requestId)
     }
     
-    /// Decline a connection request
     func declineConnectionRequest(requestId: String) async throws {
-        try await AuthManager.declineConnectionRequest(requestId: requestId)
+        try await AuthManagerBadName.declineConnectionRequest(requestId: requestId)
     }
     
-    /// Accept a group join request
     func acceptGroupJoinRequest(requestId: String) async throws {
         guard let url = URL(string: "\(AppConfig.baseURL)/groups/requests/\(requestId)/accept") else {
             throw URLError(.badURL)
@@ -279,7 +256,6 @@ struct NotificationsMenuModel {
         }
     }
     
-    /// Decline a group join request
     func declineGroupJoinRequest(requestId: String) async throws {
         guard let url = URL(string: "\(AppConfig.baseURL)/groups/requests/\(requestId)/decline") else {
             throw URLError(.badURL)

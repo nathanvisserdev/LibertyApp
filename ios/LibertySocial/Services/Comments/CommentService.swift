@@ -1,9 +1,3 @@
-//
-//  CommentService.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-11-03.
-//
 
 import Foundation
 
@@ -42,12 +36,10 @@ final class DefaultCommentService: CommentService {
     }
 
     func fetch(postId: String, cursor: String?) async throws -> ([CommentItem], String?) {
-        // TODO: implement network request
         return ([], nil)
     }
 
     func create(postId: String, content: String) async throws -> CommentItem {
-        // TODO: implement network request
         return CommentItem(
             commentId: UUID().uuidString,
             content: content,
@@ -61,6 +53,5 @@ final class DefaultCommentService: CommentService {
     }
 
     func delete(commentId: String) async throws {
-        // TODO: implement deletion call
     }
 }

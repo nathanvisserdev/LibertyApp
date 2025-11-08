@@ -1,13 +1,6 @@
-//
-//  SubnetModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-30.
-//
 
 import Foundation
 
-// MARK: - Subnet Member Models
 struct SubnetMember: Codable, Identifiable {
     let id: String
     let role: String
@@ -36,17 +29,15 @@ struct SubnetMemberUser: Codable {
     let profilePhoto: String?
 }
 
-// MARK: - API
 struct SubnetModel {
     private let TokenProvider: TokenProviding
-    private let AuthManager: AuthManaging
+    private let AuthManagerBadName: AuthManaging
     
-    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared, AuthManagerBadName: AuthManaging = AuthManager.shared) {
         self.TokenProvider = TokenProvider
-        self.AuthManager = AuthManager
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Fetch subnet members
     func fetchMembers(subnetId: String) async throws -> [SubnetMember] {
         guard let url = URL(string: "\(AppConfig.baseURL)/me/subnets/\(subnetId)/members") else {
             throw URLError(.badURL)
@@ -84,7 +75,6 @@ struct SubnetModel {
         }
     }
     
-    /// Delete subnet member
     func deleteMember(subnetId: String, userId: String) async throws {
         guard let url = URL(string: "\(AppConfig.baseURL)/subnets/\(subnetId)/members/\(userId)") else {
             throw URLError(.badURL)
@@ -103,7 +93,6 @@ struct SubnetModel {
         }
         
         if !(200...299).contains(httpResponse.statusCode) {
-            // Try to decode error message from server
             if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
                let errorMsg = errorResponse["error"] {
                 throw NSError(domain: "SubnetModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])

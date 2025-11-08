@@ -1,9 +1,3 @@
-//
-//  SignupPhotoView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-23.
-//
 
 import SwiftUI
 import PhotosUI
@@ -27,7 +21,6 @@ struct SignupPhotoView: View {
             Spacer()
             
             VStack(spacing: 20) {
-                // Photo preview
                 if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
                     Image(uiImage: uiImage)
                         .resizable()
@@ -46,7 +39,6 @@ struct SignupPhotoView: View {
                         )
                 }
                 
-                // Photo picker
                 PhotosPicker(selection: $selectedItem, matching: .images) {
                     HStack {
                         Image(systemName: "photo.on.rectangle.angled")
@@ -73,7 +65,6 @@ struct SignupPhotoView: View {
             
             VStack(spacing: 12) {
                 Button(action: {
-                    // Store the photo data in the viewModel for upload after signup
                     viewModel.photoData = selectedImageData
                     viewModel.nextStep()
                 }) {

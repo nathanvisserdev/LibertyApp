@@ -1,9 +1,3 @@
-//
-//  FollowingListView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import SwiftUI
 
@@ -31,7 +25,6 @@ struct FollowingListView: View {
         .task { await viewModel.fetchFollowing() }
     }
     
-    // MARK: - Subviews
     private var followingList: some View {
         List(viewModel.following) { user in
             Button {
@@ -75,7 +68,6 @@ struct FollowingListView: View {
     }
 }
 
-// MARK: - Following Row Component
 struct FollowingRow: View {
     let user: FollowingUser
     

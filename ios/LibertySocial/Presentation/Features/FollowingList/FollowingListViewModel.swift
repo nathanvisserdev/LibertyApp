@@ -1,9 +1,3 @@
-//
-//  FollowingListViewModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import Foundation
 import Combine
@@ -11,17 +5,14 @@ import Combine
 @MainActor
 final class FollowingListViewModel: ObservableObject {
     
-    // MARK: - Dependencies
     private let model: FollowingListModel
     private let userId: String
     private let onUserSelected: (String) -> Void
     
-    // MARK: - Published State
     @Published var following: [FollowingUser] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
-    // MARK: - Init
     init(model: FollowingListModel = FollowingListModel(),
          userId: String,
          onUserSelected: @escaping (String) -> Void) {
@@ -30,7 +21,6 @@ final class FollowingListViewModel: ObservableObject {
         self.onUserSelected = onUserSelected
     }
     
-    // MARK: - Intents
     func selectUser(_ userId: String) {
         onUserSelected(userId)
     }

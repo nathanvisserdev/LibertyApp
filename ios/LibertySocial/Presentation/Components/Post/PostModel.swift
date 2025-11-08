@@ -1,13 +1,6 @@
-//
-//  PostModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-11-03.
-//
 
 import Foundation
 
-/// Represents a post that can be displayed in various contexts (feed, profile, etc.)
 struct PostItem: Decodable, Identifiable {
     let postId: String
     let userId: String
@@ -28,9 +21,7 @@ struct PostItem: Decodable, Identifiable {
     }
 }
 
-/// Extensions to convert from existing types to PostItem
 extension PostItem {
-    /// Create from FeedItem
     init(from feedItem: FeedItem) {
         self.postId = feedItem.postId
         self.userId = feedItem.userId

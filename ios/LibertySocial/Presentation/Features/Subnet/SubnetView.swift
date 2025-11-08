@@ -1,9 +1,3 @@
-//
-//  SubnetView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-30.
-//
 
 import SwiftUI
 
@@ -61,7 +55,6 @@ struct SubnetView: View {
         VStack(spacing: 24) {
             Spacer()
             
-            // Subnet info
             VStack(spacing: 8) {
                 Text(subnet.name)
                     .font(.title)
@@ -74,7 +67,6 @@ struct SubnetView: View {
             
             Spacer()
             
-            // Add members prompt
             VStack(spacing: 16) {
                 Image(systemName: "plus.circle.fill")
                     .font(.system(size: 60))
@@ -95,7 +87,6 @@ struct SubnetView: View {
     
     private func membersListView(subnet: Subnet) -> some View {
         List {
-            // Subnet Info Section
             Section {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(subnet.name)
@@ -123,11 +114,9 @@ struct SubnetView: View {
                 .padding(.vertical, 4)
             }
             
-            // Members Section
             Section(header: Text("Members (\(viewModel.members.count))")) {
                 ForEach(viewModel.members) { member in
                     HStack(spacing: 12) {
-                        // Profile Photo
                         if let photoKey = member.user.profilePhoto, !photoKey.isEmpty {
                             ProfilePhotoView(photoKey: photoKey)
                                 .frame(width: 40, height: 40)
@@ -187,7 +176,6 @@ struct SubnetView: View {
         }
     }
     
-    // Helper functions
     private func visibilityIcon(for visibility: String) -> String {
         switch visibility {
         case "PUBLIC": return "globe"

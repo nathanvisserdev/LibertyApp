@@ -1,19 +1,12 @@
-//
-//  SubnetMenuModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import Foundation
 
-// MARK: - API
 struct SubnetMenuModel {
     
     private let subnetSession: SubnetSession
     private let TokenProvider: TokenProviding
     
-    init(subnetSession: SubnetSession = SubnetService.shared, TokenProvider: TokenProviding = AuthService.shared) {
+    init(subnetSession: SubnetSession = SubnetService.shared, TokenProvider: TokenProviding = AuthManager.shared) {
         self.subnetSession = subnetSession
         self.TokenProvider = TokenProvider
     }
@@ -39,9 +32,7 @@ struct SubnetMenuModel {
             throw URLError(.badServerResponse)
         }
         
-        // 204 is success for DELETE
         guard httpResponse.statusCode == 204 else {
-            // Try to decode error message from response
             let errorMsg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"] ?? "Failed to delete subnet"
             throw NSError(domain: "SubnetMenuModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
         }

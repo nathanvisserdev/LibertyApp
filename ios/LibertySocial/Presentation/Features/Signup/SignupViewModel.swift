@@ -1,9 +1,3 @@
-//
-//  SignupViewModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-23.
-//
 
 import Foundation
 import Combine
@@ -22,13 +16,10 @@ enum SignupStep: Int, CaseIterable {
 @MainActor
 final class SignupViewModel: ObservableObject {
     
-    // MARK: - Dependencies
     private let model: SignupModel
     
-    // MARK: - Flow State
     @Published var currentStep: SignupStep = .credentials
     
-    // MARK: - Form Fields
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     @Published var email: String = ""
@@ -42,10 +33,8 @@ final class SignupViewModel: ObservableObject {
     @Published var photo: String = ""
     @Published var about: String = ""
     
-    // Store photo data temporarily until after signup
     @Published var photoData: Data?
     
-    // MARK: - UI State
     @Published var isSecure: Bool = true
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
@@ -56,12 +45,10 @@ final class SignupViewModel: ObservableObject {
     @Published var photoUploadSuccess: Bool = false
     @Published var photoUploadMessage: String?
     
-    // MARK: - Init
     init(model: SignupModel = SignupModel()) {
         self.model = model
     }
     
-    // MARK: - Computed
     var canSubmit: Bool {
         !firstName.isEmpty &&
         !lastName.isEmpty &&
@@ -82,7 +69,6 @@ final class SignupViewModel: ObservableObject {
         return formatter.string(from: dateOfBirth)
     }
     
-    // MARK: - Navigation
     func nextStep() {
         if let next = SignupStep(rawValue: currentStep.rawValue + 1) {
             currentStep = next
@@ -94,9 +80,7 @@ final class SignupViewModel: ObservableObject {
         showWelcome = true
     }
     
-    // MARK: - Actions
     
-    /// Complete the multi-step signup flow
     func completeSignup() async {
         print("🚀 completeSignup: Starting signup process...")
         print("🚀 completeSignup: Has photo data? \(photoData != nil)")
@@ -108,14 +92,12 @@ final class SignupViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            // Check if we have photo data - it's now required
             guard photoData != nil else {
                 errorMessage = "Profile photo is required. Please select a photo."
                 isLoading = false
                 return
             }
             
-            // Use a placeholder URL for now - we'll upload the real photo after signup
             let placeholderPhotoURL = "https://placeholder.com/profile-photo-pending"
             
             let request = SignupRequest(
@@ -136,10 +118,8 @@ final class SignupViewModel: ObservableObject {
             try await model.signup(request)
             print("✅ completeSignup: Signup successful!")
             
-            // Auto-login is now handled by SignupModel (token is saved)
             print("✅ completeSignup: User is now logged in!")
             
-            // Now upload the actual photo since we have a token
             if let photoData = photoData {
                 do {
                     print("📸 completeSignup: Starting photo upload with \(photoData.count) bytes...")
@@ -161,11 +141,9 @@ final class SignupViewModel: ObservableObject {
                     
                     photoUploadSuccess = false
                     photoUploadMessage = "Photo upload failed, but your account was created. You can upload a photo later."
-                    // Don't fail signup if photo upload fails
                 }
             }
             
-            // Successfully signed up - no error
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -173,7 +151,6 @@ final class SignupViewModel: ObservableObject {
         isLoading = false
     }
     
-    /// Single-step signup (for standalone SignupView)
     func signup() async {
         guard canSubmit else { return }
         isLoading = true
@@ -181,7 +158,6 @@ final class SignupViewModel: ObservableObject {
         successMessage = nil
         
         do {
-            // First, check if email is available
             let emailAvailable = try await model.checkAvailability(email: email.trimmed)
             
             if !emailAvailable {
@@ -190,7 +166,6 @@ final class SignupViewModel: ObservableObject {
                 return
             }
             
-            // Check if username is available
             let usernameAvailable = try await model.checkAvailability(username: username.trimmed.lowercased())
             
             if !usernameAvailable {
@@ -199,7 +174,6 @@ final class SignupViewModel: ObservableObject {
                 return
             }
             
-            // If both are available, proceed with signup
             let request = SignupRequest(
                 firstName: firstName.trimmed,
                 lastName: lastName.trimmed,
@@ -278,7 +252,6 @@ final class SignupViewModel: ObservableObject {
         currentStep = .credentials
     }
     
-    // MARK: - Validation
     private func isValidEmail(_ s: String) -> Bool {
         let s = s.trimmingCharacters(in: .whitespacesAndNewlines)
         let regex = #"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$"#

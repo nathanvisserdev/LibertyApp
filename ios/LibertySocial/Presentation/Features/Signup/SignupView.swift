@@ -1,9 +1,3 @@
-//
-//  SignupView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-23.
-//
 
 import SwiftUI
 
@@ -15,7 +9,6 @@ struct SignupView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    // MARK: - Header
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Create Account")
                             .font(.largeTitle.bold())
@@ -24,23 +17,19 @@ struct SignupView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     
-                    // MARK: - Input Fields
                     VStack(spacing: 14) {
-                        // First Name
                         TextField("First Name", text: $vm.firstName)
                             .textContentType(.givenName)
                             .autocorrectionDisabled()
                             .padding(14)
                             .background(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
                         
-                        // Last Name
                         TextField("Last Name", text: $vm.lastName)
                             .textContentType(.familyName)
                             .autocorrectionDisabled()
                             .padding(14)
                             .background(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
                         
-                        // Email
                         VStack(alignment: .leading, spacing: 4) {
                             TextField("Email", text: $vm.email)
                                 .textContentType(.emailAddress)
@@ -64,7 +53,6 @@ struct SignupView: View {
                             }
                         }
                         
-                        // Username
                         VStack(alignment: .leading, spacing: 4) {
                             TextField("Username", text: $vm.username)
                                 .textContentType(.username)
@@ -87,7 +75,6 @@ struct SignupView: View {
                             }
                         }
                         
-                        // Password
                         HStack {
                             Group {
                                 if vm.isSecure {
@@ -108,7 +95,6 @@ struct SignupView: View {
                         .padding(14)
                         .background(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
                         
-                        // Confirm Password
                         HStack {
                             Group {
                                 if vm.isSecure {
@@ -131,7 +117,6 @@ struct SignupView: View {
                             vm.passwordsMatch ? Color.gray.opacity(0.3) : Color.red
                         ))
                         
-                        // Date of Birth
                         DatePicker(
                             "Date of Birth",
                             selection: $vm.dateOfBirth,
@@ -141,7 +126,6 @@ struct SignupView: View {
                         .padding(14)
                         .background(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
                         
-                        // Gender
                         Picker("Gender", selection: $vm.gender) {
                             Text("Male").tag("MALE")
                             Text("Female").tag("FEMALE")
@@ -151,20 +135,17 @@ struct SignupView: View {
                         .padding(14)
                         .background(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
                         
-                        // MARK: - Optional Fields Section
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Optional Information")
                                 .font(.headline)
                                 .foregroundStyle(.secondary)
                             
-                            // Phone Number
                             TextField("Phone Number (optional)", text: $vm.phoneNumber)
                                 .textContentType(.telephoneNumber)
                                 .keyboardType(.phonePad)
                                 .padding(14)
                                 .background(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
                             
-                            // About
                             TextField("About (optional)", text: $vm.about, axis: .vertical)
                                 .lineLimit(3...5)
                                 .padding(14)
@@ -172,12 +153,10 @@ struct SignupView: View {
                         }
                     }
                     
-                    // MARK: - Create Account Button
                     Button {
                         Task {
                             await vm.signup()
                             if vm.successMessage != nil {
-                                // Wait a moment to show success message, then dismiss
                                 try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
                                 dismiss()
                             }
@@ -194,7 +173,6 @@ struct SignupView: View {
                     .disabled(!vm.canSubmit)
                     .frame(maxWidth: .infinity)
                     
-                    // Already have account
                     Button("Already have an account? Sign in") {
                         dismiss()
                     }

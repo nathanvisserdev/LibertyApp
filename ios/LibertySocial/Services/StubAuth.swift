@@ -1,14 +1,7 @@
-//
-//  StubAuth.swift
-//  LibertySocial
-//
-//  Created for SwiftUI Previews
-//
 /*
 #if DEBUG
 import Foundation
 
-/// Stub implementation of AuthManaging for SwiftUI previews and tests
 final class StubAuth: AuthManaging {
     var currentUserId: String? = "stub-user-id"
     var currentUser: APIUser? = APIUser(
@@ -39,11 +32,9 @@ final class StubAuth: AuthManaging {
     }
     
     func logout() {
-        // No-op for stub
     }
     
     func deleteToken() {
-        // No-op for stub
     }
     
     func fetchCurrentUser() async throws -> APICurrentUser {
@@ -76,19 +67,15 @@ final class StubAuth: AuthManaging {
     }
     
     func updateProfile(fullname: String, username: String, bio: String?) async throws {
-        // No-op for stub
     }
     
     func updateProfilePhoto(mediaKey: String?) async throws {
-        // No-op for stub
     }
     
     func followUser(userId: String) async throws {
-        // No-op for stub
     }
     
     func unfollowUser(userId: String) async throws {
-        // No-op for stub
     }
     
     func searchUsers(query: String) async throws -> SearchResponse {
@@ -104,11 +91,9 @@ final class StubAuth: AuthManaging {
     }
     
     func acceptConnectionRequest(requestId: String) async throws {
-        // No-op for stub
     }
     
     func rejectConnectionRequest(requestId: String) async throws {
-        // No-op for stub
     }
 }
 #endif

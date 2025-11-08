@@ -1,9 +1,3 @@
-//
-//  SubnetViewModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-30.
-//
 
 import Foundation
 import Combine
@@ -25,7 +19,6 @@ final class SubnetViewModel: ObservableObject {
         self.subnet = subnet
         self.subnetService = subnetService
         
-        // Subscribe to subnet changes
         subnetService.subnetsDidChange
             .sink { [weak self] in
                 Task { @MainActor [weak self] in
@@ -74,10 +67,8 @@ final class SubnetViewModel: ObservableObject {
         do {
             try await model.deleteMember(subnetId: subnet.id, userId: member.userId)
             
-            // Remove from local array
             members.removeAll { $0.id == member.id }
             
-            // Invalidate subnet cache to update memberCount in SubnetMenu
             subnetService.invalidateCache()
             
             let memberName = "\(member.user.firstName ?? "") \(member.user.lastName ?? "")".trimmingCharacters(in: .whitespaces)

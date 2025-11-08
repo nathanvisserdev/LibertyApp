@@ -1,9 +1,3 @@
-//
-//  AddSubnetMembersView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-30.
-//
 
 import SwiftUI
 
@@ -112,7 +106,6 @@ struct AddSubnetMembersView: View {
                     viewModel.toggleSelection(userId: connection.userId)
                 } label: {
                     HStack(spacing: 12) {
-                        // Profile Photo
                         if let photoKey = connection.profilePhoto, !photoKey.isEmpty {
                             ProfilePhotoView(photoKey: photoKey)
                                 .frame(width: 50, height: 50)

@@ -1,13 +1,6 @@
-//
-//  SubnetListModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-30.
-//
 
 import Foundation
 
-// MARK: - API
 struct SubnetListModel {
     
     private let subnetSession: SubnetSession

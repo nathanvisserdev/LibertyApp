@@ -1,9 +1,3 @@
-//
-//  GroupsMenuView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import SwiftUI
 
@@ -19,7 +13,6 @@ struct GroupsMenuView: View {
     var body: some View {
         NavigationStack {
             List {
-                // Create Group option
                 Button {
                     viewModel.showCreateGroupView()
                 } label: {
@@ -43,7 +36,6 @@ struct GroupsMenuView: View {
                 }
                 .buttonStyle(.plain)
                 
-                // Suggested groups option
                 Button {
                     viewModel.showSuggestedGroupsView()
                 } label: {
@@ -158,8 +150,8 @@ struct GroupsMenuView: View {
 
 #Preview {
     let coordinator = GroupsMenuCoordinator(
-        authenticationManager: AuthService.shared,
-        tokenProvider: AuthService.shared
+        authenticationManager: AuthManager.shared,
+        tokenProvider: AuthManager.shared
     )
     let viewModel = GroupsMenuViewModel(coordinator: coordinator)
     return GroupsMenuView(viewModel: viewModel, coordinator: coordinator)

@@ -1,9 +1,3 @@
-//
-//  LoginViewModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-06.
-//
 
 import Foundation
 import Combine
@@ -11,10 +5,8 @@ import Combine
 @MainActor
 final class LoginViewModel: ObservableObject {
 
-    // MARK: - Dependencies
     private let model: LoginModel
     
-    // MARK: - Published (Input State)
     @Published var email: String = ""
     @Published var password: String = ""
     @Published var isSecure: Bool = true
@@ -22,29 +14,24 @@ final class LoginViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var me: [String: Any]?
     
-    // MARK: - Published (UI State for Alerts and Navigation)
     @Published var showSignup: Bool = false
     @Published var showTestUsersAlert: Bool = false
     @Published var testUsersMessage: String?
     
-    // MARK: - Init
     init(model: LoginModel = LoginModel()) {
         self.model = model
     }
 
-    // MARK: - Computed
     var canSubmit: Bool {
         isValidEmail(email) && password.count >= 6 && !isLoading
     }
 
-    // MARK: - Intents (User Actions)
     func login() async {
         guard canSubmit else { return }
         isLoading = true
         errorMessage = nil
         do {
             try await model.login(email: email.trimmed, password: password)
-            // Fetch current user after login
             me = try await model.fetchCurrentUser()
         } catch {
             errorMessage = error.localizedDescription
@@ -75,7 +62,6 @@ final class LoginViewModel: ObservableObject {
         testUsersMessage = nil
     }
 
-    // MARK: - Validation
     private func isValidEmail(_ s: String) -> Bool {
         let s = s.trimmingCharacters(in: .whitespacesAndNewlines)
         let regex = #"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$"#

@@ -1,9 +1,3 @@
-//
-//  ProfileModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-25.
-//
 
 import Foundation
 
@@ -38,14 +32,13 @@ struct UserProfile: Decodable {
 }
 
 struct ProfileModel {
-    private let AuthManager: AuthManaging
+    private let AuthManagerBadName: AuthManaging
     
-    init(AuthManager: AuthManaging = AuthService.shared) {
-        self.AuthManager = AuthManager
+    init(AuthManagerBadName: AuthManaging = AuthManager.shared) {
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Fetch a specific user's profile - AuthService handles token
     func fetchUserProfile(userId: String) async throws -> UserProfile {
-        return try await AuthManager.fetchUserProfile(userId: userId)
+        return try await AuthManagerBadName.fetchUserProfile(userId: userId)
     }
 }

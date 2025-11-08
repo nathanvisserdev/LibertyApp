@@ -1,9 +1,3 @@
-//
-//  AddSubnetMembersModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-30.
-//
 
 import Foundation
 
@@ -11,7 +5,7 @@ struct AddSubnetMembersModel {
     
     private let TokenProvider: TokenProviding
     
-    init(TokenProvider: TokenProviding = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared) {
         self.TokenProvider = TokenProvider
     }
     
@@ -75,7 +69,6 @@ struct AddSubnetMembersModel {
         }
         
         if !(200...299).contains(httpResponse.statusCode) {
-            // Try to decode error message from server
             if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
                let errorMsg = errorResponse["error"] {
                 throw NSError(domain: "AddSubnetMembersModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])

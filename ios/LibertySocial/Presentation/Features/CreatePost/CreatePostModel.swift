@@ -1,14 +1,7 @@
-//
-//  CreatePostModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-25.
-//
 
 import Foundation
 import UIKit
 
-// MARK: - API Request/Response Types
 struct PresignedUploadRequest: Codable {
     let contentType: String
 }
@@ -37,29 +30,25 @@ struct CreatePostResponse: Codable {
     let userId: String
 }
 
-// MARK: - CreatePostModel
 struct CreatePostModel {
     
     private let TokenProvider: TokenProviding
     private let subnetSession: SubnetSession
     
-    init(TokenProvider: TokenProviding = AuthService.shared,
+    init(TokenProvider: TokenProviding = AuthManager.shared,
          subnetSession: SubnetSession = SubnetService.shared) {
         self.TokenProvider = TokenProvider
         self.subnetSession = subnetSession
     }
     
-    // MARK: - Get Current User's isPrivate status
     func getCurrentUserIsPrivate() async throws -> Bool {
         return try await TokenProvider.getCurrentUserIsPrivate()
     }
     
-    // MARK: - Get Current User's Subnets
     func getUserSubnets() async throws -> [Subnet] {
         return try await subnetSession.getUserSubnets()
     }
     
-    // MARK: - Request presigned upload URL from server
     func requestPresignedUpload(contentType: String = "image/jpeg") async throws -> PresignedUploadResponse {
         let url = URL(string: "/uploads/presign", relativeTo: AppConfig.baseURL)!
         var request = URLRequest(url: url)
@@ -83,7 +72,6 @@ struct CreatePostModel {
         }
     }
     
-    // MARK: - Upload photo to R2 using presigned URL
     func uploadPhoto(data: Data, uploadData: PresignedUploadResponse) async throws {
         guard let url = URL(string: uploadData.url) else {
             throw NSError(domain: "CreatePostModel", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid upload URL"])
@@ -92,7 +80,6 @@ struct CreatePostModel {
         var request = URLRequest(url: url)
         request.httpMethod = uploadData.method
         
-        // Set headers from presigned response
         for (key, value) in uploadData.headersOrFields {
             request.setValue(value, forHTTPHeaderField: key)
         }
@@ -108,7 +95,6 @@ struct CreatePostModel {
         print("📸 CreatePostModel: Successfully uploaded photo to R2")
     }
     
-    // MARK: - Create post
     func createPost(content: String?, media: String? = nil, imageWidth: CGFloat? = nil, imageHeight: CGFloat? = nil, visibility: String, subnetId: String? = nil) async throws -> CreatePostResponse {
         let url = URL(string: "/posts", relativeTo: AppConfig.baseURL)!
         var request = URLRequest(url: url)

@@ -1,9 +1,3 @@
-//
-//  SignupFlowView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-23.
-//
 
 import SwiftUI
 
@@ -18,7 +12,6 @@ struct SignupFlowView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Step views
                 Group {
                     switch viewModel.currentStep {
                     case .credentials:
@@ -56,7 +49,6 @@ struct SignupFlowView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if viewModel.currentStep != .credentials && viewModel.currentStep != .complete {
-                        // Progress indicator
                         Text("\(viewModel.currentStep.rawValue)/7")
                             .font(.caption)
                             .foregroundColor(.gray)

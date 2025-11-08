@@ -1,15 +1,8 @@
-//
-//  AppDelegate.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-23.
-//
 
 import UIKit
 import UserNotifications
 
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    // Injected from LibertySocialApp
     @MainActor var notificationManager: NotificationManaging!
     @MainActor var appCoordinator: AppCoordinator?
 
@@ -52,7 +45,6 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         let userInfo = response.notification.request.content.userInfo
         Task { @MainActor in
             notificationManager.didReceiveRemoteNotification(userInfo: userInfo)
-            // Handle notification tap for routing
             appCoordinator?.root.handleNotification(userInfo)
         }
         completionHandler()

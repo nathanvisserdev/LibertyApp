@@ -1,9 +1,3 @@
-//
-//  RootCoordinator.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-11-04.
-//
 
 import SwiftUI
 import Combine

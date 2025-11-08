@@ -1,9 +1,3 @@
-//
-//  ConnectView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-23.
-//
 
 import SwiftUI
 
@@ -24,7 +18,6 @@ struct ConnectView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // Header
                 Text("Connection Type")
                     .font(.title2)
                     .fontWeight(.bold)
@@ -36,7 +29,6 @@ struct ConnectView: View {
                     .padding(.horizontal)
                     .padding(.top, 50)
                 
-                // Connection Type Options
                 VStack(spacing: 16) {
                     ConnectionTypeButton(
                         title: "Friendly acquaintances",
@@ -50,7 +42,6 @@ struct ConnectView: View {
                         action: { viewModel.selectedType = "STRANGER" }
                     )
                     
-                    // Only show follow option if the user's account is public
                     if !isPrivate {
                         ConnectionTypeButton(
                             title: "Follow",
@@ -61,7 +52,6 @@ struct ConnectView: View {
                 }
                 .padding(.horizontal)
                 
-                // Submit Button
                 if let type = viewModel.selectedType {
                     Button(action: {
                         Task {
@@ -87,7 +77,6 @@ struct ConnectView: View {
                     .disabled(viewModel.isLoading)
                 }
                 
-                // Why we ask section
                 VStack(spacing: 12) {
                     Image("liberty_bell")
                         .resizable()

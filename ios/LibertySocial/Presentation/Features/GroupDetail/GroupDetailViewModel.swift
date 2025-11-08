@@ -1,9 +1,3 @@
-//
-//  GroupDetailViewModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-27.
-//
 
 import Foundation
 import Combine
@@ -48,7 +42,6 @@ final class GroupDetailViewModel: ObservableObject {
             try await model.joinGroup(groupId: groupId)
             joinSuccessMessage = "Join request sent."
             
-            // Refresh group details to update membership status
             await fetchGroupDetail()
         } catch {
             errorMessage = error.localizedDescription

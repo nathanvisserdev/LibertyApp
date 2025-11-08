@@ -1,9 +1,3 @@
-//
-//  GroupService.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import Foundation
 import Combine
@@ -19,51 +13,40 @@ final class GroupService: GroupSession {
     
     static let shared = GroupService()
     
-    // MARK: - Dependencies
     private let TokenProvider: TokenProviding
     
-    // MARK: - Cache Management
     private var cachedGroups: [UserGroup]?
     private var needsRefresh: Bool = true
     
-    // MARK: - Change Signaling
     private let groupsDidChangeSubject = PassthroughSubject<Void, Never>()
     var groupsDidChange: AnyPublisher<Void, Never> {
         groupsDidChangeSubject.eraseToAnyPublisher()
     }
     
-    // MARK: - Init
-    init(TokenProvider: TokenProviding = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared) {
         self.TokenProvider = TokenProvider
     }
     
-    // MARK: - Public API
     
-    /// Invalidate the cache and signal subscribers that groups have changed
     func invalidateCache() {
         needsRefresh = true
         cachedGroups = nil
         groupsDidChangeSubject.send()
     }
     
-    /// Fetch user groups with caching
     func getUserGroups(userId: String) async throws -> [UserGroup] {
-        // Return cached data if available and fresh
         if !needsRefresh, let cachedGroups {
             return cachedGroups
         }
         
-        // Fetch fresh data from server
         let groups = try await fetchFromServer(userId: userId)
         
-        // Update cache
         cachedGroups = groups
         needsRefresh = false
         
         return groups
     }
     
-    // MARK: - Private Helpers
     
     private func fetchFromServer(userId: String) async throws -> [UserGroup] {
         let token = try TokenProvider.getAuthToken()

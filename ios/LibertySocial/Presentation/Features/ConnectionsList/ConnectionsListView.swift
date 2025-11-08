@@ -1,9 +1,3 @@
-//
-//  ConnectionsListView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-26.
-//
 
 import SwiftUI
 
@@ -56,7 +50,6 @@ struct ConnectionsListView: View {
     }
 }
 
-// MARK: - Subviews
 
 private struct ConnectionRow: View {
     let firstName: String

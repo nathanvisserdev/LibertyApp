@@ -1,9 +1,3 @@
-//
-//  SignupWelcomeView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-23.
-//
 
 import SwiftUI
 
@@ -31,7 +25,6 @@ struct SignupWelcomeView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             
-            // Photo upload status message
             if let photoMessage = viewModel.photoUploadMessage {
                 HStack(spacing: 8) {
                     Image(systemName: viewModel.photoUploadSuccess ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")

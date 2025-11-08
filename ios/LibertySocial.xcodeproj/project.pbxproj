@@ -40,7 +40,7 @@
 				Presentation/Features/Login/LoginModel.swift,
 				Presentation/Features/Login/LoginViewModel.swift,
 				Presentation/Root/RootViewModel.swift,
-				Services/AuthService.swift,
+				Services/Auth/AuthService.swift,
 			);
 			target = 15913F732E8EB4B800A015C7 /* LibertySocialTests */;
 		};

@@ -1,9 +1,3 @@
-//
-//  FollowersListView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import SwiftUI
 
@@ -31,7 +25,6 @@ struct FollowersListView: View {
         .task { await viewModel.fetchFollowers() }
     }
     
-    // MARK: - Subviews
     private var followersList: some View {
         List(viewModel.followers) { follower in
             Button {
@@ -75,7 +68,6 @@ struct FollowersListView: View {
     }
 }
 
-// MARK: - Follower Row
 struct FollowerRow: View {
     let follower: FollowerUser
     var body: some View {

@@ -1,51 +1,37 @@
-//
-//  GroupInviteService.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import Foundation
 import Combine
 
-// MARK: - Service Events
 
 enum GroupInviteEvent {
     case invitesSentSuccessfully(count: Int)
     case invitesFailed(error: Error)
 }
 
-// MARK: - Protocol
 
 protocol GroupInviteSession {
     var inviteEvents: AnyPublisher<GroupInviteEvent, Never> { get }
     func sendInvites(groupId: String, userIds: [String]) async throws
 }
 
-// MARK: - Service Implementation
 
 @MainActor
 final class GroupInviteService: GroupInviteSession {
     
     static let shared = GroupInviteService()
     
-    // MARK: - Dependencies
     private let TokenProvider: TokenProviding
     
-    // MARK: - Event Signaling
     private let inviteEventsSubject = PassthroughSubject<GroupInviteEvent, Never>()
     var inviteEvents: AnyPublisher<GroupInviteEvent, Never> {
         inviteEventsSubject.eraseToAnyPublisher()
     }
     
-    // MARK: - Init
-    init(TokenProvider: TokenProviding = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared) {
         self.TokenProvider = TokenProvider
     }
     
-    // MARK: - Public API
     
-    /// Send invites to multiple users for a group
     func sendInvites(groupId: String, userIds: [String]) async throws {
         do {
             let token = try TokenProvider.getAuthToken()
@@ -68,7 +54,6 @@ final class GroupInviteService: GroupInviteSession {
             }
             
             if (200...299).contains(httpResponse.statusCode) {
-                // Success - emit event
                 inviteEventsSubject.send(.invitesSentSuccessfully(count: userIds.count))
             } else {
                 let errorMsg = (try? JSONDecoder().decode([String: String].self, from: data)["error"]) ?? "Failed to send invites"

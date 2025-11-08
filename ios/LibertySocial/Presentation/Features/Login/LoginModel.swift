@@ -1,33 +1,24 @@
-//
-//  LoginModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-25.
-//
 
 import Foundation
 
 struct LoginResponse: Decodable { let accessToken: String }
 
 struct LoginModel {
-    private let AuthManager: AuthManaging
+    private let AuthManagerBadName: AuthManaging
     
-    init(AuthManager: AuthManaging = AuthService.shared) {
-        self.AuthManager = AuthManager
+    init(AuthManagerBadName: AuthManaging = AuthManager.shared) {
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Login user - AuthService handles token storage
     func login(email: String, password: String) async throws {
-        _ = try await AuthManager.login(email: email, password: password)
+        _ = try await AuthManagerBadName.login(email: email, password: password)
     }
     
-    /// Fetch current user data
     func fetchCurrentUser() async throws -> [String: Any] {
-        return try await AuthManager.fetchCurrentUser()
+        return try await AuthManagerBadName.fetchCurrentUser()
     }
     
-    /// Delete stored authentication token
     func deleteToken() {
-        AuthService.shared.deleteToken()
+        AuthManager.shared.deleteToken()
     }
 }

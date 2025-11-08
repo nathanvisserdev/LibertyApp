@@ -1,9 +1,3 @@
-//
-//  NotificationsMenuView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-24.
-//
 
 import SwiftUI
 
@@ -79,7 +73,6 @@ struct NotificationRow: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header with type badge
             HStack {
                 Text(notification.type == .connectionRequest ? "Connection Request" : 
                      notification.type == .groupInvite ? "Group Invite" : 
@@ -99,10 +92,8 @@ struct NotificationRow: View {
                     .foregroundStyle(.secondary)
             }
             
-            // User info and request details
             if let user = notification.user {
                 HStack(spacing: 12) {
-                    // Profile photo placeholder
                     Circle()
                         .fill(Color.gray.opacity(0.3))
                         .frame(width: 40, height: 40)
@@ -127,7 +118,6 @@ struct NotificationRow: View {
                                 .foregroundStyle(.blue)
                         }
                         
-                        // Show group name for group join requests
                         if notification.type == .groupJoinRequest, let groupName = notification.groupName {
                             Text("Wants to join: \(groupName)")
                                 .font(.caption)
@@ -139,10 +129,8 @@ struct NotificationRow: View {
                 }
             }
             
-            // Action buttons
             if notification.type == .connectionRequest || notification.type == .groupJoinRequest {
                 HStack(spacing: 12) {
-                    // Accept Button
                     Button {
                         guard !isProcessing else { return }
                         isProcessing = true
@@ -168,7 +156,6 @@ struct NotificationRow: View {
                     .contentShape(Rectangle())
                     .disabled(isProcessing)
                     
-                    // Decline Button
                     Button {
                         guard !isProcessing else { return }
                         isProcessing = true

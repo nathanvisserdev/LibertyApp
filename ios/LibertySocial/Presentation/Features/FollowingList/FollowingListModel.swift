@@ -1,9 +1,3 @@
-//
-//  FollowingListModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import Foundation
 
@@ -18,11 +12,10 @@ struct FollowingUser: Codable, Identifiable {
 struct FollowingListModel {
     private let TokenProvider: TokenProviding
     
-    init(TokenProvider: TokenProviding = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared) {
         self.TokenProvider = TokenProvider
     }
     
-    /// Fetch the list of users that a specific user is following
     func fetchFollowing(userId: String) async throws -> [FollowingUser] {
         let token = try TokenProvider.getAuthToken()
         

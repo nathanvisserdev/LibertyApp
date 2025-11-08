@@ -1,9 +1,3 @@
-//
-//  ConnectionsListModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-26.
-//
 
 import Foundation
 
@@ -19,14 +13,13 @@ struct Connection: Decodable, Identifiable {
 }
 
 struct ConnectionsListModel {
-    private let AuthManager: AuthManaging
+    private let AuthManagerBadName: AuthManaging
     
-    init(AuthManager: AuthManaging = AuthService.shared) {
-        self.AuthManager = AuthManager
+    init(AuthManagerBadName: AuthManaging = AuthManager.shared) {
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Fetch connections - AuthService handles token
     func fetchConnections() async throws -> [Connection] {
-        return try await AuthManager.fetchConnections()
+        return try await AuthManagerBadName.fetchConnections()
     }
 }

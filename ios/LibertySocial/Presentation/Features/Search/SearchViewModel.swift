@@ -1,9 +1,3 @@
-//
-//  SearchViewModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-13.
-//
 
 import Foundation
 import Combine

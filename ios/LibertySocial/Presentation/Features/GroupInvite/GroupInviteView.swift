@@ -1,9 +1,3 @@
-//
-//  GroupInviteView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import SwiftUI
 
@@ -58,13 +52,10 @@ struct GroupInviteView: View {
         }
     }
     
-    // MARK: - Subviews
     
     private var inviteesList: some View {
         VStack(spacing: 0) {
-            // Header Section with Toggle
             VStack(spacing: 12) {
-                // Additional Filter Toggle (Followers/Strangers)
                 Toggle(isOn: Binding(
                     get: { viewModel.includeAdditional },
                     set: { _ in viewModel.toggleAdditionalFilter() }
@@ -79,7 +70,6 @@ struct GroupInviteView: View {
                 .padding(.horizontal)
                 .padding(.top, 12)
                 
-                // Select All / Deselect All
                 HStack {
                     Button {
                         viewModel.selectAll()
@@ -114,7 +104,6 @@ struct GroupInviteView: View {
             
             Divider()
             
-            // List of invitees
             List {
                 ForEach(viewModel.invitees) { invitee in
                     Button {
@@ -169,14 +158,12 @@ struct GroupInviteView: View {
     }
 }
 
-// MARK: - Invitee Row Component
 struct InviteeRow: View {
     let invitee: InviteeUser
     let isSelected: Bool
     
     var body: some View {
         HStack(spacing: 12) {
-            // Profile Photo
             if let photoKey = invitee.profilePhoto, !photoKey.isEmpty {
                 ProfilePhotoView(photoKey: photoKey)
                     .frame(width: 50, height: 50)

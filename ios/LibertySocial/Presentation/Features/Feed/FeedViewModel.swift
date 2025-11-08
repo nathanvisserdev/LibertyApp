@@ -1,15 +1,8 @@
-//
-//  FeedViewModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-09.
-//
 
 import Foundation
 import Combine
 import SwiftUI
 
-// MARK: - Comment Thread State
 struct CommentThreadState {
     var isOpen: Bool = false
     var isLoading: Bool = false
@@ -19,7 +12,6 @@ struct CommentThreadState {
 
 @MainActor
 final class FeedViewModel: ObservableObject {
-    // MARK: - Dependencies
     private let model: FeedModel
     private let feedService: FeedSession
     private let makeMediaVM: (String) -> MediaViewModel
@@ -28,13 +20,11 @@ final class FeedViewModel: ObservableObject {
     private let onShowProfile: (String) -> Void
     private var cancellables = Set<AnyCancellable>()
 
-    // MARK: - Published
     @Published var items: [FeedItem] = []
     @Published var isLoading = false
     @Published var error: String?
     @Published var threads: [String: CommentThreadState] = [:]   // postId → comment thread
 
-    // MARK: - Init
     init(model: FeedModel,
          feedService: FeedSession,
          makeMediaVM: @escaping (String) -> MediaViewModel,
@@ -67,7 +57,7 @@ final class FeedViewModel: ObservableObject {
     }
 
     func logoutTapped() {
-        print("🔵 FeedViewModel.logoutTapped() - calling AuthManager.logout()")
+        print("🔵 FeedViewModel.logoutTapped() - calling AuthManagerBadName.logout()")
         auth.logout()
     }
 

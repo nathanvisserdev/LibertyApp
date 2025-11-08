@@ -1,9 +1,3 @@
-//
-//  NetworkMenuViewModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-26.
-//
 
 import Foundation
 import Combine
@@ -27,7 +21,7 @@ final class NetworkMenuViewModel: ObservableObject {
     
     init(
         model: NetworkMenuModel = NetworkMenuModel(),
-        authManager: AuthManaging = AuthService.shared,
+        authManager: AuthManaging = AuthManager.shared,
         onConnectionsTapped: @escaping () -> Void,
         onGroupsMenuTapped: @escaping () -> Void,
         onSubnetMenuTapped: @escaping () -> Void

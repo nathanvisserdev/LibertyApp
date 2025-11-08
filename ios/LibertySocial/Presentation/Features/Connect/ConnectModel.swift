@@ -1,9 +1,3 @@
-//
-//  ConnectModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-25.
-//
 
 import Foundation
 
@@ -32,14 +26,13 @@ struct ConnectionRequestRow: Decodable {
 }
 
 struct ConnectModel {
-    private let AuthManager: AuthManaging
+    private let AuthManagerBadName: AuthManaging
     
-    init(AuthManager: AuthManaging = AuthService.shared) {
-        self.AuthManager = AuthManager
+    init(AuthManagerBadName: AuthManaging = AuthManager.shared) {
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Send a connection request - AuthService handles token
     func sendConnectionRequest(userId: String, type: String) async throws -> ConnectionRequestResponse {
-        return try await AuthManager.createConnectionRequest(requestedId: userId, type: type)
+        return try await AuthManagerBadName.createConnectionRequest(requestedId: userId, type: type)
     }
 }

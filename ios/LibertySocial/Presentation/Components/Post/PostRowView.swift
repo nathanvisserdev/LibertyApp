@@ -1,9 +1,3 @@
-//
-//  PostRowView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-11-03.
-//
 
 import SwiftUI
 import Combine
@@ -47,7 +41,6 @@ struct PostRowView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            // Author header
             HStack {
                 Text("\(authorDisplayName) (\(authorUsername))")
                     .font(.footnote)
@@ -60,7 +53,6 @@ struct PostRowView: View {
                 }
             }
 
-            // Media if available
             if let mediaKey = post.media {
                 MediaImageView(
                     viewModel: makeMediaVM(mediaKey),
@@ -69,12 +61,10 @@ struct PostRowView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
 
-            // Content
             if let content = post.content {
                 Text(content).font(.body)
             }
 
-            // Timestamp + action icons
             HStack(spacing: 8) {
                 Text(formattedDate)
                     .font(.caption2)
@@ -110,17 +100,14 @@ struct PostRowView: View {
                 .foregroundStyle(.secondary)
             }
 
-            // Comments section
             if thread.isOpen {
                 Divider()
                 
-                // Loading state
                 if thread.isLoading {
                     ProgressView()
                         .padding(.vertical, 8)
                 }
                 
-                // Display comments
                 ForEach(thread.comments) { c in
                     CommentRowView(
                         comment: c,
@@ -129,7 +116,6 @@ struct PostRowView: View {
                     )
                 }
                 
-                // Comment input
                 HStack {
                     TextField("Add a comment...", text: Binding(
                         get: { thread.inputText },
@@ -153,7 +139,6 @@ struct PostRowView: View {
     }
 }
 
-// MARK: - MediaImageView
 struct MediaImageView: View {
     @ObservedObject var viewModel: MediaViewModel
     let orientation: String?
@@ -210,7 +195,6 @@ struct MediaImageView: View {
     }
 }
 
-// MARK: - MediaViewModel
 @MainActor
 class MediaViewModel: ObservableObject {
     @Published var presignedURL: URL?

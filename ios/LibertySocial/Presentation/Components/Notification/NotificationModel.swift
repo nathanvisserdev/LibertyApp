@@ -1,21 +1,14 @@
-//
-//  NotificationModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-25.
-//
 
 import Foundation
 
 struct NotificationModel {
-    private let AuthManager: AuthManaging
+    private let AuthManagerBadName: AuthManaging
     
-    init(AuthManager: AuthManaging = AuthService.shared) {
-        self.AuthManager = AuthManager
+    init(AuthManagerBadName: AuthManaging = AuthManager.shared) {
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Fetch incoming connection requests - AuthService handles token
     func fetchIncomingConnectionRequests() async throws -> [ConnectionRequestRow] {
-        return try await AuthManager.fetchIncomingConnectionRequests()
+        return try await AuthManagerBadName.fetchIncomingConnectionRequests()
     }
 }

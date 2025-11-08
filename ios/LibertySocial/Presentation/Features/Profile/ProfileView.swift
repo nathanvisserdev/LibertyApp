@@ -1,9 +1,3 @@
-//
-//  ProfileView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-23.
-//
 
 import SwiftUI
 import Combine
@@ -36,7 +30,6 @@ struct ProfileView: View {
                 .padding().padding(.top, 100)
             } else if let profile = viewModel.profile {
                 VStack(spacing: 20) {
-                    // Photo
                     if let photoKey = profile.profilePhoto, !photoKey.isEmpty {
                         ProfilePhotoView(photoKey: photoKey)
                     } else {
@@ -46,7 +39,6 @@ struct ProfileView: View {
                             .overlay(Image(systemName: "person.fill").font(.system(size: 50)).foregroundColor(.gray))
                     }
 
-                    // Name, username, badges
                     VStack(spacing: 4) {
                         Text("\(profile.firstName) \(profile.lastName)").font(.title).fontWeight(.bold)
                         Text("@\(profile.username)").font(.body).foregroundColor(.gray)
@@ -62,7 +54,6 @@ struct ProfileView: View {
                         .cornerRadius(20)
                         .padding(.top, 4)
 
-                        // Followers / Following
                         if let followerCount = profile.followerCount,
                            let followingCount = profile.followingCount {
                             HStack(spacing: 20) {
@@ -102,7 +93,6 @@ struct ProfileView: View {
                         }
                     }
 
-                    // Follows you
                     if let isFollowingYou = profile.isFollowingYou, isFollowingYou {
                         HStack(spacing: 4) {
                             Image(systemName: "checkmark.circle.fill")
@@ -115,7 +105,6 @@ struct ProfileView: View {
                         .cornerRadius(20)
                     }
 
-                    // Connection status
                     if let status = profile.connectionStatus {
                         HStack {
                             Image(systemName: connectionIcon(for: status))
@@ -128,7 +117,6 @@ struct ProfileView: View {
                         .cornerRadius(20)
                     }
 
-                    // Pending request
                     if let requestType = profile.requestType {
                         Text("Request Pending (\(requestType))")
                             .font(.caption)
@@ -138,7 +126,6 @@ struct ProfileView: View {
                             .cornerRadius(20)
                     }
 
-                    // Connect button
                     if !viewModel.isOwnProfile {
                         Button {
                             viewModel.connect(userId: userId, firstName: profile.firstName, isPrivate: profile.isPrivate)
@@ -156,7 +143,6 @@ struct ProfileView: View {
 
                     Divider().padding(.horizontal)
 
-                    // Info
                     VStack(alignment: .leading, spacing: 16) {
                         if let gender = profile.gender {
                             HStack {
@@ -176,7 +162,6 @@ struct ProfileView: View {
                     }
                     .padding(.horizontal, 20)
 
-                    // Posts
                     if let posts = profile.posts, !posts.isEmpty {
                         Divider().padding(.horizontal)
                         VStack(alignment: .leading, spacing: 12) {

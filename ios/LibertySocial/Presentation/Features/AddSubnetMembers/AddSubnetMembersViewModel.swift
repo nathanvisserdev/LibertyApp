@@ -1,9 +1,3 @@
-//
-//  AddSubnetMembersViewModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-30.
-//
 
 import Foundation
 import Combine
@@ -72,7 +66,6 @@ final class AddSubnetMembersViewModel: ObservableObject {
             let userIdsArray = Array(selectedUserIds)
             try await model.addMembers(subnetId: subnetId, userIds: userIdsArray)
             
-            // Invalidate subnet cache to update memberCount
             subnetService.invalidateCache()
             
             let count = selectedUserIds.count

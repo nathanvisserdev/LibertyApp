@@ -1,9 +1,3 @@
-//
-//  SignupModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-25.
-//
 
 import Foundation
 
@@ -18,16 +12,15 @@ struct AvailabilityResponse: Decodable {
 
 struct SignupModel {
     private let TokenProvider: TokenProviding
-    private let AuthManager: AuthManaging
+    private let AuthManagerBadName: AuthManaging
     
-    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared, AuthManagerBadName: AuthManaging = AuthManager.shared) {
         self.TokenProvider = TokenProvider
-        self.AuthManager = AuthManager
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Check if email or username is available
     func checkAvailability(email: String? = nil, username: String? = nil) async throws -> Bool {
-        let url = AuthService.baseURL.appendingPathComponent("/availability")
+        let url = AuthManager.baseURL.appendingPathComponent("/availability")
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -48,26 +41,20 @@ struct SignupModel {
         }
     }
     
-    /// Signup user - AuthService handles token storage
     func signup(_ request: SignupRequest) async throws {
-        _ = try await AuthManager.signup(request)
+        _ = try await AuthManagerBadName.signup(request)
     }
     
-    /// Upload profile photo - must be called after signup (requires auth token)
     func uploadPhoto(photoData: Data) async throws -> String {
-        // Get presigned URL
         let presignResponse = try await getPresignedURL(contentType: "image/jpeg")
         
-        // Upload to R2
         try await uploadToR2(imageData: photoData, presignResponse: presignResponse)
         
-        // Update user's photo URL in database
         let photoKey = try await updateUserPhoto(key: presignResponse.key)
         
         return photoKey
     }
     
-    // MARK: - Private Photo Upload Methods
     
     private func getPresignedURL(contentType: String) async throws -> PresignResponse {
         let token = try TokenProvider.getAuthToken()
@@ -75,7 +62,7 @@ struct SignupModel {
         let body = ["contentType": contentType]
         let data = try JSONSerialization.data(withJSONObject: body)
         
-        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/uploads/presign"))
+        var req = URLRequest(url: AuthManager.baseURL.appendingPathComponent("/uploads/presign"))
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -109,7 +96,7 @@ struct SignupModel {
         let body = ["key": key]
         let data = try JSONSerialization.data(withJSONObject: body)
         
-        var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/users/me/photo"))
+        var req = URLRequest(url: AuthManager.baseURL.appendingPathComponent("/users/me/photo"))
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")

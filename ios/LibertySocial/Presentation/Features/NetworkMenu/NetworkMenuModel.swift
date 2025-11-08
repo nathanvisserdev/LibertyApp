@@ -1,13 +1,6 @@
-//
-//  NetworkMenuModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-26.
-//
 
 import Foundation
 
-// MARK: - User Group Response
 struct UserGroupsResponse: Codable {
     let groups: [UserGroup]
 }
@@ -31,11 +24,10 @@ struct GroupAdmin: Codable {
     let lastName: String?
 }
 
-// MARK: - Model
 struct NetworkMenuModel {
-    private let AuthManager: AuthManaging
+    private let AuthManagerBadName: AuthManaging
     
-    init(AuthManager: AuthManaging = AuthService.shared) {
-        self.AuthManager = AuthManager
+    init(AuthManagerBadName: AuthManaging = AuthManager.shared) {
+        self.AuthManagerBadName = AuthManagerBadName
     }
 }

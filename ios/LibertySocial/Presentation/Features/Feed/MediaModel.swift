@@ -1,9 +1,3 @@
-//
-//  MediaModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-28.
-//
 
 import Foundation
 
@@ -26,7 +20,7 @@ struct MediaModel {
         let body = ["key": mediaKey]
         let data = try JSONSerialization.data(withJSONObject: body)
         
-        var request = URLRequest(url: AuthService.baseURL.appendingPathComponent("/media/presign-read"))
+        var request = URLRequest(url: AuthManager.baseURL.appendingPathComponent("/media/presign-read"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")

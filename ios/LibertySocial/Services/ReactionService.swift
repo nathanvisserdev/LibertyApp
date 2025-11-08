@@ -1,9 +1,3 @@
-//
-//  ReactionService.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-11-03.
-//
 
 import Foundation
 import Combine

@@ -1,23 +1,15 @@
-//
-//  GroupsMenuModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import Foundation
 
-// MARK: - Model
 struct GroupsMenuModel {
     private let TokenProvider: TokenProviding
-    private let AuthManager: AuthManaging
+    private let AuthManagerBadName: AuthManaging
     
-    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared, AuthManagerBadName: AuthManaging = AuthManager.shared) {
         self.TokenProvider = TokenProvider
-        self.AuthManager = AuthManager
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Fetch user's groups
     func fetchUserGroups(userId: String) async throws -> [UserGroup] {
         guard let url = URL(string: "\(AppConfig.baseURL)/users/\(userId)/groups") else {
             throw URLError(.badURL)

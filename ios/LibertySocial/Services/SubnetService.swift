@@ -1,14 +1,7 @@
-//
-//  SubnetService.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import Foundation
 import Combine
 
-// MARK: - Subnet Models
 struct Subnet: Codable, Identifiable {
     let id: String
     let name: String
@@ -47,22 +40,18 @@ struct SubnetChild: Codable, Identifiable {
     let slug: String
 }
 
-// MARK: - Subnet Session Protocol
-/// Minimal interface for subnet-related operations
 protocol SubnetSession {
     func getUserSubnets() async throws -> [Subnet]
     var subnetsDidChange: AnyPublisher<Void, Never> { get }
     func invalidateCache()
 }
 
-// MARK: - Subnet Service
 @MainActor
 final class SubnetService: SubnetSession {
     static let shared = SubnetService()
     
     private let TokenProvider: TokenProviding
     
-    // MARK: - Cache & Change Signaling
     private var cachedSubnets: [Subnet]?
     private var needsRefresh: Bool = true
     private let subnetsDidChangeSubject = PassthroughSubject<Void, Never>()
@@ -71,33 +60,26 @@ final class SubnetService: SubnetSession {
         subnetsDidChangeSubject.eraseToAnyPublisher()
     }
     
-    init(TokenProvider: TokenProviding = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared) {
         self.TokenProvider = TokenProvider
     }
     
-    // MARK: - Public Methods
     
-    /// Invalidate the cache and signal that data needs to be refreshed
     func invalidateCache() {
         needsRefresh = true
         cachedSubnets = nil
         subnetsDidChangeSubject.send()
     }
     
-    /// Check if cache needs refresh
     func shouldRefresh() -> Bool {
         return needsRefresh
     }
     
-    // MARK: - SubnetSession Protocol
-    /// Get the current user's subnets (with caching)
     func getUserSubnets() async throws -> [Subnet] {
-        // Return cached data if available and not stale
         if !needsRefresh, let cached = cachedSubnets {
             return cached
         }
         
-        // Fetch fresh data from server
         guard let url = URL(string: "\(AppConfig.baseURL)/subnets") else {
             throw URLError(.badURL)
         }
@@ -123,7 +105,6 @@ final class SubnetService: SubnetSession {
         decoder.dateDecodingStrategy = .iso8601
         let subnets = try decoder.decode([Subnet].self, from: data)
         
-        // Update cache and reset stale flag
         cachedSubnets = subnets
         needsRefresh = false
         

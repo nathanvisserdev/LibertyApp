@@ -1,9 +1,3 @@
-//
-//  NotificationManager.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-23.
-//
 
 import Foundation
 import UserNotifications
@@ -12,20 +6,16 @@ import Combine
 
 @MainActor
 final class NotificationManager: NSObject, ObservableObject, NotificationManaging {
-//    static let shared = NotificationManager(tokenProvider: AuthService())
 
     @Published private(set) var deviceToken: String?
 
-    // Dependencies
     private let tokenProvider: TokenProviding
 
-    // Init
     init(tokenProvider: TokenProviding) {
         self.tokenProvider = tokenProvider
         super.init()
     }
 
-    // Permissions
     func requestAuthorization() async throws {
         let center = UNUserNotificationCenter.current()
         let granted = try await center.requestAuthorization(options: [.alert, .badge, .sound])
@@ -34,7 +24,6 @@ final class NotificationManager: NSObject, ObservableObject, NotificationManagin
         }
     }
 
-    // APNs registration
     func didRegisterForRemoteNotifications(deviceToken: Data) {
         let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
         self.deviceToken = tokenString
@@ -45,7 +34,6 @@ final class NotificationManager: NSObject, ObservableObject, NotificationManagin
         print("APNs registration failed: \(error)")
     }
 
-    // Incoming notifications
     func didReceiveRemoteNotification(userInfo: [AnyHashable: Any]) {
         if let aps = userInfo["aps"] as? [String: Any],
            let badge = aps["badge"] as? Int {
@@ -57,14 +45,13 @@ final class NotificationManager: NSObject, ObservableObject, NotificationManagin
         }
     }
 
-    // Logout cleanup
     func unregisterDevice() async {
         guard let token = deviceToken else { return }
         do {
             let authToken = try tokenProvider.getAuthToken()
             let body = ["token": token]
             let data = try JSONSerialization.data(withJSONObject: body)
-            var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/devices/unregister"))
+            var req = URLRequest(url: AuthManager.baseURL.appendingPathComponent("/devices/unregister"))
             req.httpMethod = "DELETE"
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
             req.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
@@ -78,13 +65,12 @@ final class NotificationManager: NSObject, ObservableObject, NotificationManagin
         }
     }
 
-    // MARK: - Private
     private func registerDeviceWithBackend(token: String) async {
         do {
             let authToken = try tokenProvider.getAuthToken()
             let body = ["token": token, "platform": "ios"]
             let data = try JSONSerialization.data(withJSONObject: body)
-            var req = URLRequest(url: AuthService.baseURL.appendingPathComponent("/devices/register"))
+            var req = URLRequest(url: AuthManager.baseURL.appendingPathComponent("/devices/register"))
             req.httpMethod = "POST"
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
             req.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
@@ -96,7 +82,6 @@ final class NotificationManager: NSObject, ObservableObject, NotificationManagin
     }
 }
 
-// Notification name for connection request updates
 extension Notification.Name {
     static let connectionRequestReceived = Notification.Name("connectionRequestReceived")
 }

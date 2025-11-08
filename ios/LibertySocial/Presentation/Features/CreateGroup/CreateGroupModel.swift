@@ -1,13 +1,6 @@
-//
-//  CreateGroupModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-27.
-//
 
 import Foundation
 
-// MARK: - Domain Models
 enum GroupType: String, CaseIterable {
     case autocratic = "AUTOCRATIC"
     case roundTable = "ROUND_TABLE"
@@ -85,7 +78,6 @@ enum ElectionCycle: String, CaseIterable {
     case fourYears = "FOUR_YEARS"
 }
 
-// MARK: - DTOs
 struct CreateGroupRequest: Codable {
     let name: String
     let description: String?
@@ -120,17 +112,15 @@ struct CreateGroupResponse: Codable {
     }
 }
 
-// MARK: - Model
 struct CreateGroupModel {
     private let TokenProvider: TokenProviding
-    private let AuthManager: AuthManaging
+    private let AuthManagerBadName: AuthManaging
     
-    init(TokenProvider: TokenProviding = AuthService.shared, AuthManager: AuthManaging = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared, AuthManagerBadName: AuthManaging = AuthManager.shared) {
         self.TokenProvider = TokenProvider
-        self.AuthManager = AuthManager
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Create autocratic group
     func createGroup(name: String, description: String?, groupType: String, groupPrivacy: String, isHidden: Bool) async throws -> CreateGroupResponse {
         guard let url = URL(string: "\(AppConfig.baseURL)/groups") else {
             throw URLError(.badURL)
@@ -162,7 +152,6 @@ struct CreateGroupModel {
         }
     }
     
-    /// Create round table group
     func createRoundTableGroup(request: CreateRoundTableGroupRequest) async throws -> CreateGroupResponse {
         guard let url = URL(string: "\(AppConfig.baseURL)/groups") else {
             throw URLError(.badURL)
@@ -208,8 +197,7 @@ struct CreateGroupModel {
         }
     }
     
-    /// Fetch user connections - used for selecting Round Table admins
     func fetchConnections() async throws -> [Connection] {
-        return try await AuthManager.fetchConnections()
+        return try await AuthManagerBadName.fetchConnections()
     }
 }

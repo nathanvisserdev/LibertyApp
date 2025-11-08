@@ -1,9 +1,3 @@
-//
-//  FeedModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-25.
-//
 
 import Foundation
 
@@ -29,13 +23,12 @@ struct FeedItem: Decodable, Identifiable {
 }
 
 struct FeedModel {
-    private let AuthManager: AuthManaging
-    init(AuthManager: AuthManaging) {
-        self.AuthManager = AuthManager
+    private let AuthManagerBadName: AuthManaging
+    init(AuthManagerBadName: AuthManaging) {
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Fetch feed - AuthService handles token
     func fetchFeed() async throws -> [FeedItem] {
-        return try await AuthManager.fetchFeed()
+        return try await AuthManagerBadName.fetchFeed()
     }
 }

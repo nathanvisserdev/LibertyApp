@@ -1,9 +1,3 @@
-//
-//  TabBarModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-25.
-//
 
 import Foundation
 
@@ -13,14 +7,13 @@ struct CurrentUserInfo {
 }
 
 struct TabBarModel {
-    private let AuthManager: AuthManaging
-    init(AuthManager: AuthManaging) {
-        self.AuthManager = AuthManager
+    private let AuthManagerBadName: AuthManaging
+    init(AuthManagerBadName: AuthManaging) {
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Fetch current user's photo and ID - AuthService handles token
     func fetchCurrentUserInfo() async throws -> CurrentUserInfo {
-        let userInfo = try await AuthManager.fetchCurrentUser()
+        let userInfo = try await AuthManagerBadName.fetchCurrentUser()
         let photoKey = userInfo["profilePhoto"] as? String
         let userId = userInfo["id"] as? String
         return CurrentUserInfo(photoKey: photoKey, userId: userId)

@@ -1,9 +1,3 @@
-//
-//  CreateGroupViewModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-27.
-//
 
 import Foundation
 import SwiftUI
@@ -12,26 +6,21 @@ import Combine
 @MainActor
 final class CreateGroupViewModel: ObservableObject {
     
-    // MARK: - Dependencies
     private let model: CreateGroupModel
     private let groupService: GroupSession
     private let inviteService: GroupInviteSession
     private weak var coordinator: CreateGroupCoordinator?
     
-    // MARK: - Cancellables
     private var cancellables = Set<AnyCancellable>()
     
-    // MARK: - Published (Input State)
     @Published var name: String = ""
     @Published var description: String = ""
     @Published var selectedGroupType: GroupType = .autocratic
     @Published var selectedGroupPrivacy: GroupPrivacy = .publicGroup {
         didSet {
-            // Force autocratic type when personal privacy is selected
             if selectedGroupPrivacy == .personalGroup && selectedGroupType == .roundTable {
                 selectedGroupType = .autocratic
             }
-            // Force requires approval when private privacy is selected
             if selectedGroupPrivacy == .privateGroup {
                 requiresApproval = true
             }
@@ -42,31 +31,25 @@ final class CreateGroupViewModel: ObservableObject {
     @Published var isSubmitting: Bool = false
     @Published var errorMessage: String?
     
-    // MARK: - Navigation State
     @Published var showGroupInvite: Bool = false
     @Published var createdGroupId: String?
     @Published var showAdminSelection: Bool = false
     
-    // MARK: - Callbacks
     var onFinished: (() -> Void)?
     var onCancelled: (() -> Void)?
     var onRequestAdminSelection: (() -> Void)?
     
-    // MARK: - Round Table specific fields
     @Published var selectedAdmins: [RoundTableAdmin] = []
     @Published var viceChairId: String?
     @Published var enableElections: Bool = false
     @Published var selectedElectionCycle: ElectionCycle = .oneYear
     
-    // MARK: - Connections for Round Table admin selection
     @Published var connections: [Connection] = []
     @Published var isLoadingConnections: Bool = false
     
-    // MARK: - Constants
     let maxNameCharacters = 100
     let maxDescriptionCharacters = 250
     
-    // MARK: - Init
     init(
         model: CreateGroupModel = CreateGroupModel(),
         groupService: GroupSession = GroupService.shared,
@@ -78,11 +61,9 @@ final class CreateGroupViewModel: ObservableObject {
         self.inviteService = inviteService
         self.coordinator = coordinator
         
-        // Subscribe to invite service events
         subscribeToInviteEvents()
     }
     
-    // MARK: - Service Subscription
     
     private func subscribeToInviteEvents() {
         inviteService.inviteEvents
@@ -92,19 +73,15 @@ final class CreateGroupViewModel: ObservableObject {
                 
                 switch event {
                 case .invitesSentSuccessfully:
-                    // When invites are sent successfully, dismiss the entire create group flow
                     self.onFinished?()
                     
                 case .invitesFailed:
-                    // Invite failed, but we stay on the create group view
-                    // User can try inviting again or dismiss manually
                     break
                 }
             }
             .store(in: &cancellables)
     }
     
-    // MARK: - Computed Properties
     var remainingNameCharacters: Int {
         maxNameCharacters - name.count
     }
@@ -126,9 +103,7 @@ final class CreateGroupViewModel: ObservableObject {
         viceChairId != nil
     }
     
-    // MARK: - Intents (User Actions)
     
-    /// Fetch connections for Round Table admin selection
     func fetchConnections() async {
         isLoadingConnections = true
         errorMessage = nil
@@ -146,7 +121,6 @@ final class CreateGroupViewModel: ObservableObject {
         guard selectedAdmins.count < 4 else { return }
         selectedAdmins.append(admin)
         
-        // Auto-assign vice chair if only one admin, reset to nil when adding second admin
         if selectedAdmins.count == 1 {
             viceChairId = admin.userId
         } else if selectedAdmins.count == 2 {
@@ -157,7 +131,6 @@ final class CreateGroupViewModel: ObservableObject {
     func removeAdmin(_ admin: RoundTableAdmin) {
         selectedAdmins.removeAll { $0.id == admin.id }
         
-        // Reset or reassign vice chair
         if viceChairId == admin.userId {
             if selectedAdmins.count == 1 {
                 viceChairId = selectedAdmins.first?.userId
@@ -166,7 +139,6 @@ final class CreateGroupViewModel: ObservableObject {
             }
         }
         
-        // Auto-assign vice chair if only one admin remains
         if selectedAdmins.count == 1 {
             viceChairId = selectedAdmins.first?.userId
         }
@@ -186,7 +158,6 @@ final class CreateGroupViewModel: ObservableObject {
         
         do {
             if selectedGroupType == .roundTable {
-                // Submit Round Table group
                 guard canCreateRoundTable else {
                     errorMessage = "Please select at least 1 admin and a vice president"
                     isSubmitting = false
@@ -199,7 +170,6 @@ final class CreateGroupViewModel: ObservableObject {
                     return false
                 }
                 
-                // Prepare admin data
                 let admins = selectedAdmins.map { admin in
                     [
                         "userId": admin.userId,
@@ -219,10 +189,8 @@ final class CreateGroupViewModel: ObservableObject {
                 
                 let response = try await model.createRoundTableGroup(request: request)
                 
-                // Store the created group ID
                 createdGroupId = response.groupId
             } else {
-                // Submit regular autocratic group
                 guard isValid else {
                     isSubmitting = false
                     return false
@@ -236,14 +204,11 @@ final class CreateGroupViewModel: ObservableObject {
                     isHidden: isHidden
                 )
                 
-                // Store the created group ID
                 createdGroupId = response.groupId
             }
             
-            // Invalidate group cache to trigger refresh
             groupService.invalidateCache()
             
-            // Show GroupInvite view
             showGroupInvite = true
             
             isSubmitting = false
@@ -263,21 +228,17 @@ final class CreateGroupViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Actions
     
     func cancel() {
         onCancelled?()
     }
     
-    // MARK: - Coordinator View Builders
     
-    /// Gets the GroupInviteView from the coordinator
     @ViewBuilder
     func getGroupInviteView(for groupId: String) -> some View {
         if let coordinator = coordinator {
             coordinator.makeGroupInviteView(for: groupId)
         } else {
-            // Fallback for previews/testing without coordinator
             GroupInviteCoordinator(groupId: groupId).start()
         }
     }

@@ -1,9 +1,3 @@
-//
-//  RootView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-07.
-//
 
 import SwiftUI
 

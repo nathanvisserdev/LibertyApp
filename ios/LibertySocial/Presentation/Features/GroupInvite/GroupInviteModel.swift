@@ -1,13 +1,6 @@
-//
-//  GroupInviteModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import Foundation
 
-// MARK: - Invitee Response Model
 struct InviteeUser: Codable, Identifiable {
     let id: String
     let username: String
@@ -16,15 +9,13 @@ struct InviteeUser: Codable, Identifiable {
     let profilePhoto: String?
 }
 
-// MARK: - Model
 struct GroupInviteModel {
     private let TokenProvider: TokenProviding
     
-    init(TokenProvider: TokenProviding = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared) {
         self.TokenProvider = TokenProvider
     }
     
-    /// Fetch eligible users to invite to the group
     func fetchInvitees(groupId: String, include: String? = nil, exclude: String? = nil) async throws -> [InviteeUser] {
         var urlComponents = URLComponents(string: "\(AppConfig.baseURL)/groups/\(groupId)/invitees")!
         
@@ -63,7 +54,6 @@ struct GroupInviteModel {
         }
     }
     
-    /// Send group invites to selected users
     func sendInvites(groupId: String, userIds: [String]) async throws {
         guard let url = URL(string: "\(AppConfig.baseURL)/groups/\(groupId)/invite") else {
             throw URLError(.badURL)

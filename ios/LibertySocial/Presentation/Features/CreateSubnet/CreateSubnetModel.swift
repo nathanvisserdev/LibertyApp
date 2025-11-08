@@ -1,13 +1,6 @@
-//
-//  CreateSubnetModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import Foundation
 
-// MARK: - Request/Response Types
 struct CreateSubnetRequest: Codable {
     let name: String
     let description: String?
@@ -24,16 +17,14 @@ struct CreateSubnetResponse: Codable {
     let ownerId: String
 }
 
-// MARK: - CreateSubnetModel
 struct CreateSubnetModel {
     
     private let TokenProvider: TokenProviding
     
-    init(TokenProvider: TokenProviding = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared) {
         self.TokenProvider = TokenProvider
     }
     
-    // MARK: - Create Subnet
     func createSubnet(name: String, description: String?, visibility: String) async throws -> CreateSubnetResponse {
         let url = URL(string: "/subnets", relativeTo: AppConfig.baseURL)!
         var request = URLRequest(url: url)
@@ -56,7 +47,6 @@ struct CreateSubnetModel {
         if (200...299).contains(http.statusCode) {
             return try JSONDecoder().decode(CreateSubnetResponse.self, from: data)
         } else {
-            // Try to decode error message
             if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
                let errorMessage = errorResponse["error"] {
                 throw NSError(domain: "CreateSubnetModel", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMessage])
@@ -65,7 +55,6 @@ struct CreateSubnetModel {
         }
     }
     
-    // MARK: - Set Default Subnet
     func setDefaultSubnet(subnetId: String) async throws {
         let url = URL(string: "/user/default-subnet", relativeTo: AppConfig.baseURL)!
         var request = URLRequest(url: url)

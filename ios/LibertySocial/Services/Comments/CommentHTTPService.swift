@@ -1,9 +1,3 @@
-//
-//  CommentHTTPService.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-11-03.
-//
 
 import Foundation
 
@@ -16,7 +10,6 @@ class CommentHTTPService: CommentService {
         self.TokenProvider = TokenProvider
     }
     
-    // GET /posts/:postId/comments
     func fetch(postId: String, cursor: String?) async throws -> ([CommentItem], String?) {
         print("🌐 CommentHTTPService.fetch - postId: \(postId), cursor: \(cursor ?? "nil")")
         guard var urlComponents = URLComponents(string: "\(baseURL.absoluteString)/posts/\(postId)/comments") else {
@@ -72,7 +65,6 @@ class CommentHTTPService: CommentService {
         return (decoded.comments, decoded.nextCursor)
     }
     
-    // POST /posts/:postId/comments
     func create(postId: String, content: String) async throws -> CommentItem {
         guard let url = URL(string: "\(baseURL.absoluteString)/posts/\(postId)/comments") else {
             throw CommentServiceError.invalidURL
@@ -109,7 +101,6 @@ class CommentHTTPService: CommentService {
         return try JSONDecoder().decode(CommentItem.self, from: data)
     }
     
-    // PATCH /comments/:commentId
     func update(commentId: String, content: String) async throws -> CommentItem {
         guard let url = URL(string: "\(baseURL.absoluteString)/comments/\(commentId)") else {
             throw CommentServiceError.invalidURL
@@ -146,7 +137,6 @@ class CommentHTTPService: CommentService {
         return try JSONDecoder().decode(CommentItem.self, from: data)
     }
     
-    // DELETE /comments/:commentId
     func delete(commentId: String) async throws {
         guard let url = URL(string: "\(baseURL.absoluteString)/comments/\(commentId)") else {
             throw CommentServiceError.invalidURL
@@ -174,7 +164,6 @@ class CommentHTTPService: CommentService {
     }
 }
 
-// MARK: - Error Types
 enum CommentServiceError: Error, LocalizedError {
     case invalidURL
     case invalidResponse

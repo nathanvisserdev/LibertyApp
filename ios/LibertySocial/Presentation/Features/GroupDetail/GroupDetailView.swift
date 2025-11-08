@@ -1,9 +1,3 @@
-//
-//  GroupDetailView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-27.
-//
 
 import SwiftUI
 
@@ -54,7 +48,6 @@ struct GroupDetailView: View {
                 } else if let groupDetail = viewModel.groupDetail {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 20) {
-                            // Success Message
                             if let successMessage = viewModel.joinSuccessMessage {
                                 HStack {
                                     Image(systemName: "checkmark.circle.fill")
@@ -70,7 +63,6 @@ struct GroupDetailView: View {
                                 .padding(.horizontal)
                             }
                             
-                            // Join Group Button
                             if !groupDetail.isMember {
                                 Button {
                                     Task {
@@ -99,9 +91,7 @@ struct GroupDetailView: View {
                                 .padding(.horizontal)
                             }
                             
-                            // Group Information Section
                             VStack(alignment: .leading, spacing: 16) {
-                                // Group Header
                                 HStack(alignment: .top) {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(groupDetail.name)
@@ -128,7 +118,6 @@ struct GroupDetailView: View {
                                 
                                 Divider()
                                 
-                                // Group Stats
                                 HStack(spacing: 30) {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text("Members")
@@ -151,7 +140,6 @@ struct GroupDetailView: View {
                                 
                                 Divider()
                                 
-                                // Admin Section
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text("Admin")
                                         .font(.headline)
@@ -187,7 +175,6 @@ struct GroupDetailView: View {
                             .shadow(radius: 2)
                             .padding(.horizontal)
                             
-                            // Members Section
                             VStack(alignment: .leading, spacing: 12) {
                                 Text("Members (\(groupDetail.memberCount))")
                                     .font(.headline)
@@ -254,7 +241,6 @@ struct GroupDetailView: View {
     }
 }
 
-// MARK: - Member Row
 struct MemberRow: View {
     let member: GroupMember
     

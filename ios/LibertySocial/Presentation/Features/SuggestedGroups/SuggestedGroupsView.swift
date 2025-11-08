@@ -1,9 +1,3 @@
-//
-//  SuggestedGroupsView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-27.
-//
 
 import SwiftUI
 
@@ -102,7 +96,6 @@ struct SuggestedGroupsView: View {
     }
 }
 
-// MARK: - Group Row
 struct GroupRow: View {
     let group: UserGroup
     
@@ -128,7 +121,6 @@ struct GroupRow: View {
                     .foregroundColor(group.groupType == "PUBLIC" ? .blue : .orange)
             }
             
-            // Admin information
             HStack(spacing: 4) {
                 Image(systemName: "person.fill")
                     .font(.caption2)

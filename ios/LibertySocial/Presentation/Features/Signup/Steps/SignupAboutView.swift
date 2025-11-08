@@ -1,9 +1,3 @@
-//
-//  SignupAboutView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-23.
-//
 
 import SwiftUI
 import Combine
@@ -47,7 +41,6 @@ struct SignupAboutView: View {
             
             VStack(spacing: 12) {
                 Button(action: {
-                    // Just move to next step, don't signup yet
                     viewModel.nextStep()
                 }) {
                     Text(viewModel.about.isEmpty ? "Opt-out" : "Continue")

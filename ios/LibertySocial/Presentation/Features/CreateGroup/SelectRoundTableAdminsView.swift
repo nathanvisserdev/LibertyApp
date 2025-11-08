@@ -1,9 +1,3 @@
-//
-//  SelectRoundTableAdminsView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-28.
-//
 
 import SwiftUI
 
@@ -246,7 +240,6 @@ struct SelectRoundTableAdminsView: View {
     }
 }
 
-// Mock preview
 #Preview {
     let viewModel = CreateGroupViewModel()
     viewModel.name = "Test Group"

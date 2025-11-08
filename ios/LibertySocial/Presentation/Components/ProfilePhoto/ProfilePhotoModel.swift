@@ -1,9 +1,3 @@
-//
-//  ProfilePhotoModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-25.
-//
 
 
 import Foundation
@@ -11,7 +5,7 @@ import Foundation
 struct ProfilePhotoModel {
     private let TokenProvider: TokenProviding
     
-    init(TokenProvider: TokenProviding = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared) {
         self.TokenProvider = TokenProvider
     }
     
@@ -21,7 +15,7 @@ struct ProfilePhotoModel {
         let body = ["key": photoKey]
         let data = try JSONSerialization.data(withJSONObject: body)
         
-        var request = URLRequest(url: AuthService.baseURL.appendingPathComponent("/media/presign-read"))
+        var request = URLRequest(url: AuthManager.baseURL.appendingPathComponent("/media/presign-read"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")

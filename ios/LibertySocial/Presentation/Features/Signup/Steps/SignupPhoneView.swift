@@ -1,9 +1,3 @@
-//
-//  SignupPhoneView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-23.
-//
 
 import SwiftUI
 import Combine
@@ -37,13 +31,10 @@ struct SignupPhoneView: View {
                     .onChange(of: formattedPhone) { oldValue, newValue in
                         let digitsOnly = newValue.filter { $0.isNumber }
                         
-                        // Limit to 10 digits
                         let limitedDigits = String(digitsOnly.prefix(10))
                         
-                        // Store unformatted number in viewModel
                         viewModel.phoneNumber = limitedDigits
                         
-                        // Format for display
                         formattedPhone = formatPhoneNumber(limitedDigits)
                     }
                 
@@ -119,15 +110,12 @@ struct SignupPhoneView: View {
         let count = digits.count
         
         if count <= 3 {
-            // (508
             formatted = "(\(digits)"
         } else if count <= 6 {
-            // (508)918
             let areaCode = digits.prefix(3)
             let middle = digits.dropFirst(3)
             formatted = "(\(areaCode))\(middle)"
         } else {
-            // (508)918-6749
             let areaCode = digits.prefix(3)
             let middle = digits.dropFirst(3).prefix(3)
             let last = digits.dropFirst(6)

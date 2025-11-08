@@ -1,9 +1,3 @@
-//
-//  SignupCredentialsView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-23.
-//
 
 import SwiftUI
 
@@ -131,7 +125,6 @@ struct SignupCredentialsView: View {
             Spacer()
             
             Button(action: {
-                // Extra safeguard: verify email is available before proceeding
                 if emailIsValid == false {
                     showEmailTakenAlert = true
                     return

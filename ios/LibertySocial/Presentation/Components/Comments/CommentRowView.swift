@@ -1,9 +1,3 @@
-//
-//  CommentRowView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-11-03.
-//
 
 import SwiftUI
 
@@ -16,14 +10,11 @@ struct CommentRowView: View {
     
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
-            // Avatar placeholder
             Circle()
                 .fill(Color.gray.opacity(0.3))
                 .frame(width: 28, height: 28)
             
-            // Content
             VStack(alignment: .leading, spacing: 4) {
-                // Author line
                 HStack(spacing: 4) {
                     if let user = comment.user {
                         Text("\(user.firstName) \(user.lastName)")
@@ -45,7 +36,6 @@ struct CommentRowView: View {
                     
                     Spacer()
                     
-                    // Ellipsis button for own comments
                     if isMine {
                         Button {
                             onMore?()
@@ -58,7 +48,6 @@ struct CommentRowView: View {
                     }
                 }
                 
-                // Comment text
                 Text(comment.content)
                     .font(.subheadline)
             }

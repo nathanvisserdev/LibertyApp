@@ -1,9 +1,3 @@
-//
-//  SessionStore.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-07.
-//
 
 import Foundation
 import Combine
@@ -12,7 +6,6 @@ import Combine
 final class SessionStore: ObservableObject {
     @Published private(set) var isAuthenticated = false
 
-    // Dependencies
     private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
     private let notificationManager: NotificationManaging
@@ -37,17 +30,14 @@ final class SessionStore: ObservableObject {
         Task { await refresh() }
     }
 
-    // MARK: - Public
 
     func refresh() async {
-        // Local presence check
         do { _ = try tokenProvider.getAuthToken() }
         catch {
             isAuthenticated = false
             return
         }
 
-        // Server validation
         do {
             _ = try await authManager.fetchCurrentUserTyped()
             isAuthenticated = true
@@ -66,7 +56,6 @@ final class SessionStore: ObservableObject {
         }
     }
 
-    // MARK: - Private
 
     private func handleLogoutSideEffects() {
         isAuthenticated = false

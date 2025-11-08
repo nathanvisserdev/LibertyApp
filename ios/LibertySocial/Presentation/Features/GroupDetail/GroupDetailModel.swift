@@ -1,13 +1,6 @@
-//
-//  GroupDetailModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-27.
-//
 
 import Foundation
 
-// MARK: - Group Detail Response
 struct GroupDetail: Codable {
     let id: String
     let name: String
@@ -42,12 +35,11 @@ struct MemberUser: Codable {
     let lastName: String?
 }
 
-// MARK: - API
 struct GroupDetailModel {
     
     private let TokenProvider: TokenProviding
     
-    init(TokenProvider: TokenProviding = AuthService.shared) {
+    init(TokenProvider: TokenProviding = AuthManager.shared) {
         self.TokenProvider = TokenProvider
     }
     

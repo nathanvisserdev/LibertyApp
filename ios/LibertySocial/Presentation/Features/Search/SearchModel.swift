@@ -1,9 +1,3 @@
-//
-//  SearchModel.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-25.
-//
 
 import Foundation
 
@@ -28,14 +22,13 @@ struct SearchResponse: Decodable {
 }
 
 struct SearchModel {
-    private let AuthManager: AuthManaging
+    private let AuthManagerBadName: AuthManaging
     
-    init(AuthManager: AuthManaging = AuthService.shared) {
-        self.AuthManager = AuthManager
+    init(AuthManagerBadName: AuthManaging = AuthManager.shared) {
+        self.AuthManagerBadName = AuthManagerBadName
     }
     
-    /// Search for users and groups
     func searchUsers(query: String) async throws -> SearchResponse {
-        return try await AuthManager.searchUsers(query: query)
+        return try await AuthManagerBadName.searchUsers(query: query)
     }
 }

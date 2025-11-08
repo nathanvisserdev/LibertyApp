@@ -1,9 +1,3 @@
-//
-//  SubnetMenuView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import SwiftUI
 
@@ -18,7 +12,6 @@ struct SubnetMenuView: View {
     var body: some View {
         NavigationStack {
             List {
-                // Create Subnet option
                 Button {
                     viewModel.showCreateSubnetView()
                 } label: {
@@ -68,7 +61,6 @@ struct SubnetMenuView: View {
                                 viewModel.showSubnet(subnet)
                             } label: {
                                 HStack(spacing: 12) {
-                                    // Priority number badge
                                     Text("\(index + 1)")
                                         .font(.caption2)
                                         .fontWeight(.bold)
@@ -79,7 +71,6 @@ struct SubnetMenuView: View {
                                                 .fill(priorityColor(for: index))
                                         )
                                     
-                                    // Icon based on visibility or default status
                                     Image(systemName: subnet.isDefault ? "star.circle.fill" : visibilityIcon(for: subnet.visibility))
                                         .font(.title2)
                                         .foregroundColor(subnet.isDefault ? .yellow : visibilityColor(for: subnet.visibility))
@@ -97,7 +88,6 @@ struct SubnetMenuView: View {
                                                 .lineLimit(1)
                                         }
                                         
-                                        // Show member/post counts
                                         HStack(spacing: 8) {
                                             Label("\(subnet.memberCount)", systemImage: "person.2")
                                                 .font(.caption2)
@@ -179,7 +169,6 @@ struct SubnetMenuView: View {
         }
     }
     
-    // Helper functions for subnet visibility icons/colors
     private func visibilityIcon(for visibility: String) -> String {
         switch visibility {
         case "PUBLIC":
@@ -211,7 +200,6 @@ struct SubnetMenuView: View {
     }
     
     private func priorityColor(for index: Int) -> Color {
-        // Use subtle iOS-native gray gradients based on priority
         switch index {
         case 0:
             return Color(.systemGray)      // Highest priority

@@ -1,9 +1,3 @@
-//
-//  ProfilePhotoView.swift
-//  LibertySocial
-//
-//  Created by AI Assistant on 2025-10-24.
-//
 
 import SwiftUI
 

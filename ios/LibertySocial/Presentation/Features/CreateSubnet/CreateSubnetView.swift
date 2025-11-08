@@ -1,9 +1,3 @@
-//
-//  CreateSubnetView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-31.
-//
 
 import SwiftUI
 
@@ -18,7 +12,6 @@ struct CreateSubnetView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // Name Section
                 Section {
                     TextField("Example: Family", text: $viewModel.name)
                         .autocorrectionDisabled()
@@ -30,7 +23,6 @@ struct CreateSubnetView: View {
                         .foregroundStyle(.secondary)
                 }
                 
-                // Description Section
                 Section {
                     TextField("Description (optional)", text: $viewModel.description, axis: .vertical)
                         .lineLimit(3...6)
@@ -38,7 +30,6 @@ struct CreateSubnetView: View {
                     Text("Description")
                 }
                 
-                // Visibility Section
                 Section {
                     VStack(alignment: .leading, spacing: 12) {
                         ForEach(SubNetVisibilityOption.allCases, id: \.self) { visibility in
@@ -76,7 +67,6 @@ struct CreateSubnetView: View {
                         .foregroundStyle(.secondary)
                 }
                 
-                // Default Subnet Toggle
                 Section {
                     Toggle(isOn: $viewModel.isDefault) {
                         VStack(alignment: .leading, spacing: 4) {
@@ -89,7 +79,6 @@ struct CreateSubnetView: View {
                     }
                 }
                 
-                // Create Button
                 Section {
                     Button(action: {
                         Task {
@@ -117,7 +106,6 @@ struct CreateSubnetView: View {
                     .listRowBackground(Color.clear)
                 }
                 
-                // Error Message
                 if let errorMessage = viewModel.errorMessage {
                     Section {
                         Text(errorMessage)
@@ -156,7 +144,6 @@ struct CreateSubnetView: View {
     }
 }
 
-// MARK: - SubNetVisibilityOption Enum
 enum SubNetVisibilityOption: String, CaseIterable {
     case privateVisibility = "PRIVATE"
     case acquaintances = "ACQUAINTANCES"

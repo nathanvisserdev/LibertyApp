@@ -1,9 +1,3 @@
-//
-//  LoginView.swift
-//  LibertySocial
-//
-//  Created by Nathan Visser on 2025-10-06.
-//
 
 import SwiftUI
 
@@ -18,7 +12,6 @@ struct LoginView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
-                // MARK: - Header
                 HStack(spacing: 1) {
                     Image("liberty_bell")
                         .resizable()
@@ -37,7 +30,6 @@ struct LoginView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                // MARK: - Input Fields
                 VStack(spacing: 14) {
                     TextField("you@example.com", text: $viewModel.email)
                         .textContentType(.username)
@@ -66,7 +58,6 @@ struct LoginView: View {
                     .padding(14)
                     .background(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
 
-                    // MARK: - Forgot Password
                     HStack {
                         Spacer()
                         Button("Forgot password?") {}
@@ -74,7 +65,6 @@ struct LoginView: View {
                     .font(.callout)
                 }
 
-                // MARK: - Sign-in Button
                 Button {
                     Task {
                         await viewModel.login()
@@ -91,12 +81,10 @@ struct LoginView: View {
                 .disabled(!viewModel.canSubmit)
                 .frame(maxWidth: .infinity)
 
-                // MARK: - Or Divider
                 Text("or")
                     .foregroundStyle(.secondary)
                     .font(.callout)
 
-                // MARK: - Create Account Button
                 Button {
                     viewModel.tapCreateAccount()
                 } label: {
@@ -108,7 +96,6 @@ struct LoginView: View {
 
                 Spacer(minLength: 0)
                 
-                // MARK: - Test Users Button (Development Only)
                 Button {
                     Task {
                         let result = await CreateTestUsers.createAllUsers()
