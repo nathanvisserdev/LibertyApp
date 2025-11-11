@@ -27,7 +27,7 @@ final class LoginCoordinator {
     
     fileprivate func makeSignupView(onDismiss: @escaping () -> Void) -> some View {
         signupCoordinator.onFinished = onDismiss
-        return signupCoordinator.start()
+        return signupCoordinator.start(nextView: NextView.signupFlow)
     }
 }
 

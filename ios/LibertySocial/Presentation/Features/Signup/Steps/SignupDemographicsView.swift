@@ -90,7 +90,7 @@ struct SignupDemographicsView: View {
             Spacer()
             
             Button(action: {
-                viewModel.nextStep()
+                viewModel.nextStep(.photo)
             }) {
                 Text("Continue")
                     .fontWeight(.semibold)

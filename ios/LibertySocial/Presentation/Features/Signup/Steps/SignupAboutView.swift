@@ -41,7 +41,7 @@ struct SignupAboutView: View {
             
             VStack(spacing: 12) {
                 Button(action: {
-                    viewModel.nextStep()
+                    viewModel.nextStep(.phone)
                 }) {
                     Text(viewModel.about.isEmpty ? "Opt-out" : "Continue")
                         .fontWeight(.semibold)

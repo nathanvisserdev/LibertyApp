@@ -40,7 +40,7 @@ struct SignupFlowView: View {
             ToolbarItem(placement: .navigationBarLeading) {
                 if viewModel.currentStep != .complete {
                     Button("Cancel") {
-                        viewModel.onSignupComplete?()
+                        viewModel.cancelSignup()
                     }
                 }
             }

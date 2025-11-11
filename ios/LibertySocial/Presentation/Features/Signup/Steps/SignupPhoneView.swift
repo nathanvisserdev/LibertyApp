@@ -30,11 +30,8 @@ struct SignupPhoneView: View {
                     .cornerRadius(10)
                     .onChange(of: formattedPhone) { oldValue, newValue in
                         let digitsOnly = newValue.filter { $0.isNumber }
-                        
                         let limitedDigits = String(digitsOnly.prefix(10))
-                        
                         viewModel.phoneNumber = limitedDigits
-                        
                         formattedPhone = formatPhoneNumber(limitedDigits)
                     }
                 
@@ -49,9 +46,6 @@ struct SignupPhoneView: View {
                 Button(action: {
                     Task {
                         await viewModel.completeSignup()
-                        if viewModel.errorMessage == nil {
-                            viewModel.nextStep()
-                        }
                     }
                 }) {
                     if viewModel.isLoading {
@@ -78,7 +72,7 @@ struct SignupPhoneView: View {
                         Task {
                             await viewModel.completeSignup()
                             if viewModel.errorMessage == nil {
-                                viewModel.nextStep()
+                                viewModel.nextStep(.complete)
                             }
                         }
                     }) {

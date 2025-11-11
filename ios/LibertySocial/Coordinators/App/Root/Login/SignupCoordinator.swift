@@ -1,22 +1,66 @@
 import SwiftUI
-import Combine
+
+enum NextView {
+    case signupFlow
+    case credentials
+    case name
+    case username
+    case demographics
+    case photo
+    case about
+    case phone
+    case complete
+}
 
 @MainActor
 final class SignupCoordinator {
     var onFinished: (() -> Void)?
+    private var continueTapped: Bool = false
     
-    init() {
-        
+    init() { }
+    
+    func start(nextView: NextView) -> some View {
+        let viewModel = buildViewModel()
+        switch nextView {
+        case .signupFlow:
+            return AnyView(SignupFlowView(viewModel: viewModel))
+        case .credentials:
+            return AnyView(SignupCredentialsView(viewModel: viewModel))
+        case .name:
+            return AnyView(SignupNameView(viewModel: viewModel))
+        case .username:
+            return AnyView(SignupUsernameView(viewModel: viewModel))
+        case .demographics:
+            return AnyView(SignupDemographicsView(viewModel: viewModel))
+        case .photo:
+            return AnyView(SignupPhotoView(viewModel: viewModel))
+        case .about:
+            return AnyView(SignupAboutView(viewModel: viewModel))
+        case .phone:
+            return AnyView(SignupPhoneView(viewModel: viewModel))
+        case .complete:
+            return AnyView(SignupWelcomeView(viewModel: viewModel))
+        }
     }
     
-    func start() -> some View {
-        let signupModel = SignupModel()
-        let viewModel = SignupViewModel(model: signupModel)
-        viewModel.onSignupComplete = { [weak self] in
-            self?.onFinished?()
-        }
-        return NavigationStack {
-            SignupFlowView(viewModel: viewModel)
-        }
+    private func handleNavTap(nextView: NextView) -> Void {
+        start(nextView: nextView)
+    }
+        
+    private func buildViewModel() -> SignupViewModel {
+        let model = SignupModel()
+        let viewModel = SignupViewModel(
+            model: model,
+            onNextStep: { [weak self] nextView in
+                self?.handleNavTap(nextView: nextView)
+            },
+            onSignupComplete: { [weak self] in
+                self?.onFinished?()
+            }
+        )
+        return viewModel
     }
 }
+    
+
+

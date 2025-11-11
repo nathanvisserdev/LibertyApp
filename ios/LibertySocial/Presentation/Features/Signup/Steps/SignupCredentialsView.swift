@@ -7,7 +7,6 @@ struct SignupCredentialsView: View {
     @State private var emailCheckMessage: String = ""
     @State private var isCheckingEmail: Bool = false
     @State private var emailIsValid: Bool? = nil
-    @State private var showEmailTakenAlert: Bool = false
     
     private var passwordsMatch: Bool {
         !viewModel.password.isEmpty && viewModel.password == confirmPassword
@@ -125,17 +124,7 @@ struct SignupCredentialsView: View {
             Spacer()
             
             Button(action: {
-                if emailIsValid == false {
-                    showEmailTakenAlert = true
-                    return
-                }
-                
-                guard emailIsValid == true else {
-                    emailCheckMessage = "Please wait for email validation to complete"
-                    return
-                }
-                
-                viewModel.nextStep()
+                viewModel.nextStep(.name)
             }) {
                 Text("Continue")
                     .fontWeight(.semibold)
@@ -149,11 +138,11 @@ struct SignupCredentialsView: View {
             .padding(.bottom, 20)
         }
         .padding(.horizontal)
-        .alert("Email Already Exists", isPresented: $showEmailTakenAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text("This email is already registered. Please use a different email or sign in to your existing account.")
-        }
+//        .alert("Email Already Exists", isPresented: $showEmailTakenAlert) {
+//            Button("OK", role: .cancel) { }
+//        } message: {
+//            Text("This email is already registered. Please use a different email or sign in to your existing account.")
+//        }
     }
     
     private func checkEmailAvailability() async {

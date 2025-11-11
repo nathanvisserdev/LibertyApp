@@ -15,10 +15,9 @@ enum SignupStep: Int, CaseIterable {
 
 @MainActor
 final class SignupViewModel: ObservableObject {
-    
     private let model: SignupModel
-    
-    var onSignupComplete: (() -> Void)?
+    private let onNextStep: (NextView) -> Void
+    private let onSignupComplete: () -> Void
     
     @Published var currentStep: SignupStep = .credentials
     
@@ -47,8 +46,10 @@ final class SignupViewModel: ObservableObject {
     @Published var photoUploadSuccess: Bool = false
     @Published var photoUploadMessage: String?
     
-    init(model: SignupModel = SignupModel()) {
+    init(model: SignupModel, onNextStep: @escaping (NextView) -> Void, onSignupComplete: @escaping () -> Void) {
         self.model = model
+        self.onNextStep = onNextStep
+        self.onSignupComplete = onSignupComplete
     }
     
     var canSubmit: Bool {
@@ -71,10 +72,15 @@ final class SignupViewModel: ObservableObject {
         return formatter.string(from: dateOfBirth)
     }
     
-    func nextStep() {
+    func nextStep(_ nextView: NextView) {
         if let next = SignupStep(rawValue: currentStep.rawValue + 1) {
             currentStep = next
         }
+        onNextStep(nextView)
+    }
+    
+    func cancelSignup() {
+        onSignupComplete()
     }
     
     func skipToComplete() {
@@ -84,24 +90,15 @@ final class SignupViewModel: ObservableObject {
     
     
     func completeSignup() async {
-        print("🚀 completeSignup: Starting signup process...")
-        print("🚀 completeSignup: Has photo data? \(photoData != nil)")
-        if let photoData = photoData {
-            print("🚀 completeSignup: Photo data size: \(photoData.count) bytes")
-        }
-        
         isLoading = true
         errorMessage = nil
-        
         do {
             guard photoData != nil else {
                 errorMessage = "Profile photo is required. Please select a photo."
                 isLoading = false
                 return
             }
-            
             let placeholderPhotoURL = "https://placeholder.com/profile-photo-pending"
-            
             let request = SignupRequest(
                 firstName: firstName.trimmed,
                 lastName: lastName.trimmed,
@@ -115,40 +112,20 @@ final class SignupViewModel: ObservableObject {
                 profilePhoto: placeholderPhotoURL,
                 about: about.trimmed.isEmpty ? nil : about.trimmed
             )
-            
-            print("📝 completeSignup: Calling signup endpoint...")
             try await model.signup(request)
-            print("✅ completeSignup: Signup successful!")
-            
-            print("✅ completeSignup: User is now logged in!")
-            
             if let photoData = photoData {
                 do {
-                    print("📸 completeSignup: Starting photo upload with \(photoData.count) bytes...")
                     let photoKey = try await model.uploadPhoto(photoData: photoData)
                     photo = photoKey
                     photoUploadSuccess = true
                     photoUploadMessage = "Profile photo uploaded successfully! ✓"
-                    print("✅ completeSignup: Photo upload completed successfully")
                 } catch {
-                    print("❌ completeSignup: Photo upload failed!")
-                    print("❌ completeSignup: Error: \(error)")
-                    print("❌ completeSignup: Error description: \(error.localizedDescription)")
-                    
-                    if let nsError = error as NSError? {
-                        print("❌ completeSignup: Error domain: \(nsError.domain)")
-                        print("❌ completeSignup: Error code: \(nsError.code)")
-                        print("❌ completeSignup: Error userInfo: \(nsError.userInfo)")
-                    }
-                    
                     photoUploadSuccess = false
                     photoUploadMessage = "Photo upload failed, but your account was created. You can upload a photo later."
                 }
             }
-            
-            // Signup completed successfully, notify coordinator
-            onSignupComplete?()
-            
+            nextStep(.complete)
+//            onSignupComplete()
         } catch {
             errorMessage = error.localizedDescription
         }

@@ -66,7 +66,7 @@ struct SignupPhotoView: View {
             VStack(spacing: 12) {
                 Button(action: {
                     viewModel.photoData = selectedImageData
-                    viewModel.nextStep()
+                    viewModel.nextStep(.about)
                 }) {
                     Text("Continue")
                         .fontWeight(.semibold)
