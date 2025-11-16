@@ -6,6 +6,7 @@ import SwiftUI
 @MainActor
 final class LoginViewModel: ObservableObject {
     private let model: LoginModel
+    private let sessionStore: SessionStore
     private let onSignupTapped: () -> Void
     private let onTap: ((LoginItem) -> Void)?
     
@@ -19,9 +20,11 @@ final class LoginViewModel: ObservableObject {
     @Published var testUsersMessage: String?
     
     init(model: LoginModel,
+         sessionStore: SessionStore,
          onTap: ((LoginItem) -> Void)? = nil,
          onSignupTapped: @escaping () -> Void) {
         self.model = model
+        self.sessionStore = sessionStore
         self.onTap = onTap
         self.onSignupTapped = onSignupTapped
     }
@@ -37,6 +40,7 @@ final class LoginViewModel: ObservableObject {
         do {
             try await model.login(email: email.trimmed, password: password)
             me = try await model.fetchCurrentUser()
+            await sessionStore.refresh()
         } catch {
             errorMessage = error.localizedDescription
         }

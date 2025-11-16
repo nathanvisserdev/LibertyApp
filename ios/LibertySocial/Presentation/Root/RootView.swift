@@ -2,14 +2,14 @@
 import SwiftUI
 
 struct RootView: View {
-    @StateObject private var viewModel: RootViewModel
+    @ObservedObject private var viewModel: RootViewModel
     private let makeContent: (Bool) -> AnyView
 
     init(
             viewModel: RootViewModel,
             makeContent: @escaping (Bool) -> AnyView
         ) {
-            _viewModel = StateObject(wrappedValue: viewModel)
+            self.viewModel = viewModel
             self.makeContent = makeContent
         }
 

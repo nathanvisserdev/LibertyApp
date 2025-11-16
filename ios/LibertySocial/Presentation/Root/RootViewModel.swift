@@ -19,5 +19,4 @@ final class RootViewModel: ObservableObject {
     init(isAuthenticated: Bool) {
         self.isAuthenticated = isAuthenticated
     }
-    
 }

@@ -2,7 +2,6 @@ import SwiftUI
 
 struct LoginView: View {
     @StateObject private var viewModel: LoginViewModel
-    @EnvironmentObject private var session: SessionStore
     
     init(viewModel: LoginViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -67,9 +66,6 @@ struct LoginView: View {
             Button {
                 Task {
                     await viewModel.login()
-                    if viewModel.me != nil {
-                        await session.refresh()
-                    }
                 }
             } label: {
                 if viewModel.isLoading { ProgressView().controlSize(.small) }

@@ -16,11 +16,11 @@ enum SignupStep: Int, CaseIterable {
 @MainActor
 final class SignupViewModel: ObservableObject {
     private let model: SignupModel
+    private let sessionStore: SessionStore
     private let onNextStep: (NextView) -> Void
     private let onSignupComplete: () -> Void
     
     @Published var currentStep: SignupStep = .credentials
-    
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     @Published var email: String = ""
@@ -33,9 +33,7 @@ final class SignupViewModel: ObservableObject {
     @Published var phoneNumber: String = ""
     @Published var photo: String = ""
     @Published var about: String = ""
-    
     @Published var photoData: Data?
-    
     @Published var isSecure: Bool = true
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
@@ -46,8 +44,9 @@ final class SignupViewModel: ObservableObject {
     @Published var photoUploadSuccess: Bool = false
     @Published var photoUploadMessage: String?
     
-    init(model: SignupModel, onNextStep: @escaping (NextView) -> Void, onSignupComplete: @escaping () -> Void) {
+    init(model: SignupModel, sessionStore: SessionStore, onNextStep: @escaping (NextView) -> Void, onSignupComplete: @escaping () -> Void) {
         self.model = model
+        self.sessionStore = sessionStore
         self.onNextStep = onNextStep
         self.onSignupComplete = onSignupComplete
     }
@@ -209,6 +208,10 @@ final class SignupViewModel: ObservableObject {
     
     func toggleSecure() {
         isSecure.toggle()
+    }
+    
+    func refreshSession() async {
+        await sessionStore.refresh()
     }
     
     func clearForm() {

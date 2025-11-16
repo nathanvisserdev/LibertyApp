@@ -14,8 +14,7 @@ struct LibertySocialApp: App {
     private let groupService: GroupSession
     private let subnetService: SubnetSession
     private let commentService: CommentService
-
-    @StateObject private var session: SessionStore
+    private let sessionStore: SessionStore
     private let appCoordinator: AppCoordinator
 
     @MainActor
@@ -27,7 +26,7 @@ struct LibertySocialApp: App {
         let groupInviteService = GroupInviteService()
         let groupService = GroupService()
         let subnetService = SubnetService()
-        let commentService = DefaultCommentService(auth: authManager)
+        let commentService = DefaultCommentService(authManager: authManager)
         
         self.authManager = authManager
         self.tokenProvider = tokenProvider
@@ -38,15 +37,15 @@ struct LibertySocialApp: App {
         self.subnetService = subnetService
         self.commentService = commentService
         
-        let session = SessionStore(
+        let sessionStore = SessionStore(
             authManager: authManager,
             tokenProvider: tokenProvider,
             notificationManager: notificationManager
         )
-        _session = StateObject(wrappedValue: session)
+        self.sessionStore = sessionStore
         
         self.appCoordinator = AppCoordinator(
-            sessionStore: session,
+            sessionStore: sessionStore,
             authManager: authManager,
             tokenProvider: tokenProvider,
             feedService: feedService,
@@ -61,8 +60,7 @@ struct LibertySocialApp: App {
     var body: some Scene {
         WindowGroup {
             appCoordinator.start()
-                .environmentObject(session)
-                .onAppear { Task { await session.refresh() } }
+                .onAppear { Task { await sessionStore.refresh() } }
                 .onOpenURL { url in
                     appCoordinator.root.handleDeeplink(url)
                 }

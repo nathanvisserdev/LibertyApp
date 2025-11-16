@@ -29,10 +29,10 @@ protocol CommentService {
 }
 
 final class DefaultCommentService: CommentService {
-    private let auth: AuthManaging
+    private let authManager: AuthManaging
 
-    init(auth: AuthManaging) {
-        self.auth = auth
+    init(authManager: AuthManaging) {
+        self.authManager = authManager
     }
 
     func fetch(postId: String, cursor: String?) async throws -> ([CommentItem], String?) {

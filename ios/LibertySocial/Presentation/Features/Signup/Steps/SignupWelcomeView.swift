@@ -3,7 +3,6 @@ import SwiftUI
 
 struct SignupWelcomeView: View {
     @ObservedObject var viewModel: SignupViewModel
-    @EnvironmentObject var sessionStore: SessionStore
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -45,7 +44,7 @@ struct SignupWelcomeView: View {
             
             Button(action: {
                 Task {
-                    await sessionStore.refresh()
+                    await viewModel.refreshSession()
                     dismiss()
                 }
             }) {

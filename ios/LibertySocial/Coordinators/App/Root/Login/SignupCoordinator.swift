@@ -16,8 +16,11 @@ enum NextView {
 final class SignupCoordinator {
     var onFinished: (() -> Void)?
     private var continueTapped: Bool = false
+    private let sessionStore: SessionStore
     
-    init() { }
+    init(sessionStore: SessionStore) {
+        self.sessionStore = sessionStore
+    }
     
     func start(nextView: NextView) -> some View {
         let viewModel = buildViewModel()
@@ -51,6 +54,7 @@ final class SignupCoordinator {
         let model = SignupModel()
         let viewModel = SignupViewModel(
             model: model,
+            sessionStore: sessionStore,
             onNextStep: { [weak self] nextView in
                 self?.handleNavTap(nextView: nextView)
             },

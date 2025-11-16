@@ -35,7 +35,7 @@ final class FeedCoordinator: ObservableObject {
                 let mediaModel = MediaModel(TokenProvider: self.tokenProvider)
                 return MediaViewModel(mediaKey: key, model: mediaModel)
             },
-            auth: authManager,
+            authManager: authManager,
             commentService: commentService,
             onShowProfile: { [weak self] userId in
                 self?.onUserSelected?(userId)

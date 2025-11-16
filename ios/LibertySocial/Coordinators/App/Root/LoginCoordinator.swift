@@ -4,11 +4,13 @@ import Combine
 @MainActor
 final class LoginCoordinator {
     private let authManager: AuthManaging
+    private let sessionStore: SessionStore
     private let signupCoordinator: SignupCoordinator
     
-    init(authManager: AuthManaging) {
+    init(authManager: AuthManaging, sessionStore: SessionStore) {
         self.authManager = authManager
-        self.signupCoordinator = SignupCoordinator()
+        self.sessionStore = sessionStore
+        self.signupCoordinator = SignupCoordinator(sessionStore: sessionStore)
     }
     
     func start() -> some View {
@@ -19,6 +21,7 @@ final class LoginCoordinator {
         let loginModel = LoginModel(authManager: authManager)
         let viewModel = LoginViewModel(
             model: loginModel,
+            sessionStore: sessionStore,
             onTap: nil,
             onSignupTapped: onSignupTapped
         )

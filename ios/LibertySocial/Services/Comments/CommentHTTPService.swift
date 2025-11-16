@@ -11,7 +11,6 @@ class CommentHTTPService: CommentService {
     }
     
     func fetch(postId: String, cursor: String?) async throws -> ([CommentItem], String?) {
-        print("🌐 CommentHTTPService.fetch - postId: \(postId), cursor: \(cursor ?? "nil")")
         guard var urlComponents = URLComponents(string: "\(baseURL.absoluteString)/posts/\(postId)/comments") else {
             throw CommentServiceError.invalidURL
         }
@@ -24,17 +23,8 @@ class CommentHTTPService: CommentService {
             throw CommentServiceError.invalidURL
         }
         
-        print("🌐 Request URL: \(url)")
-        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        
-        if let token = try? TokenProvider.getAuthToken() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-            print("🌐 Authorization header set")
-        } else {
-            print("⚠️ No auth token available")
-        }
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
@@ -42,15 +32,9 @@ class CommentHTTPService: CommentService {
             throw CommentServiceError.invalidResponse
         }
         
-        print("🌐 Response status code: \(httpResponse.statusCode)")
-        
         guard httpResponse.statusCode == 200 else {
             if httpResponse.statusCode == 401 {
                 throw CommentServiceError.unauthorized
-            }
-            print("🔴 Server error: \(httpResponse.statusCode)")
-            if let responseString = String(data: data, encoding: .utf8) {
-                print("🔴 Response body: \(responseString)")
             }
             throw CommentServiceError.serverError(httpResponse.statusCode)
         }
@@ -61,7 +45,6 @@ class CommentHTTPService: CommentService {
         }
         
         let decoded = try JSONDecoder().decode(Response.self, from: data)
-        print("🌐 Decoded \(decoded.comments.count) comments")
         return (decoded.comments, decoded.nextCursor)
     }
     

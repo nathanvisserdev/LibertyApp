@@ -6,15 +6,18 @@ import Combine
 final class RootCoordinator: ObservableObject {
     private let loginCoordinator: LoginCoordinator
     private let tabBarCoordinator: TabBarCoordinator
+    private let sessionStore: SessionStore
     @Published private var rootViewModel: RootViewModel
+    private var cancellables = Set<AnyCancellable>()
 
     init(
-        initialAuthenticationState: Bool,
+        sessionStore: SessionStore,
         authManager: AuthManaging,
         tokenProvider: TokenProviding,
         feedService: FeedSession,
         commentService: CommentService
     ) {
+        self.sessionStore = sessionStore
         self.tabBarCoordinator = TabBarCoordinator(
             authManager: authManager,
             tokenProvider: tokenProvider,
@@ -22,11 +25,19 @@ final class RootCoordinator: ObservableObject {
             commentService: commentService
         )
         self.loginCoordinator = LoginCoordinator(
-            authManager: authManager
+            authManager: authManager,
+            sessionStore: sessionStore
         )
         self.rootViewModel = RootViewModel(
-            isAuthenticated: initialAuthenticationState
+            isAuthenticated: sessionStore.isAuthenticated
         )
+        
+        sessionStore.$isAuthenticated
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] newValue in
+                self?.rootViewModel.isAuthenticated = newValue
+            }
+            .store(in: &cancellables)
     }
 
     func start() -> some View {
@@ -41,10 +52,6 @@ final class RootCoordinator: ObservableObject {
                 }
             }
         )
-    }
-
-    func updateAuthenticationState(_ isAuthenticated: Bool) {
-        rootViewModel.isAuthenticated = isAuthenticated
     }
     
     func handleDeeplink(_ url: URL) {

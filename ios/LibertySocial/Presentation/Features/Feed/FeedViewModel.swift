@@ -15,7 +15,7 @@ final class FeedViewModel: ObservableObject {
     private let model: FeedModel
     private let feedService: FeedSession
     private let makeMediaVM: (String) -> MediaViewModel
-    private let auth: AuthManaging
+    private let authManager: AuthManaging
     private let commentService: CommentService
     private let onShowProfile: (String) -> Void
     private var cancellables = Set<AnyCancellable>()
@@ -28,13 +28,13 @@ final class FeedViewModel: ObservableObject {
     init(model: FeedModel,
          feedService: FeedSession,
          makeMediaVM: @escaping (String) -> MediaViewModel,
-         auth: AuthManaging,
+         authManager: AuthManaging,
          commentService: CommentService,
          onShowProfile: @escaping (String) -> Void) {
         self.model = model
         self.feedService = feedService
         self.makeMediaVM = makeMediaVM
-        self.auth = auth
+        self.authManager = authManager
         self.commentService = commentService
         self.onShowProfile = onShowProfile
 
@@ -57,7 +57,7 @@ final class FeedViewModel: ObservableObject {
     }
 
     func logoutTapped() {
-        auth.logout()
+        authManager.logout()
     }
 
     func load() async {
@@ -81,30 +81,22 @@ final class FeedViewModel: ObservableObject {
     }
 
     func toggleComments(for postId: String) {
-        print("🔵 toggleComments called for postId: \(postId)")
         if threads[postId] == nil { threads[postId] = CommentThreadState() }
         threads[postId]!.isOpen.toggle()
-        print("🔵 isOpen: \(threads[postId]!.isOpen), comments.isEmpty: \(threads[postId]!.comments.isEmpty)")
         if threads[postId]!.isOpen && threads[postId]!.comments.isEmpty {
-            print("🔵 Triggering loadComments for postId: \(postId)")
             Task { await loadComments(for: postId) }
         }
     }
 
     func loadComments(for postId: String) async {
-        print("🔵 loadComments started for postId: \(postId)")
         threads[postId]?.isLoading = true
         do {
             let (comments, nextCursor) = try await commentService.fetch(postId: postId, cursor: nil)
-            print("🔵 Received \(comments.count) comments, nextCursor: \(nextCursor ?? "nil")")
-            print("🔵 Comments: \(comments)")
             threads[postId]?.comments = comments
-            print("🔵 Assigned comments to thread, current count: \(threads[postId]?.comments.count ?? 0)")
         } catch {
             print("🔴 Failed to load comments for \(postId): \(error)")
         }
         threads[postId]?.isLoading = false
-        print("🔵 loadComments finished for postId: \(postId)")
     }
     
     func bindThread(for postId: String) -> Binding<CommentThreadState> {
