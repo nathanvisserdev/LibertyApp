@@ -17,4 +17,3 @@ struct RootView: View {
         makeContent(viewModel.isAuthenticated)
     }
 }
-

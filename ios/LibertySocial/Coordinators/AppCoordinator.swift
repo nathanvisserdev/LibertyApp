@@ -11,13 +11,17 @@ final class AppCoordinator: ObservableObject {
          authManager: AuthManaging,
          tokenProvider: TokenProviding,
          feedService: FeedSession,
-         commentService: CommentService) {
+         commentService: CommentService,
+         subnetService: SubnetSession,
+         groupService: GroupSession) {
         self.rootCoordinator = RootCoordinator(
             sessionStore: sessionStore,
             authManager: authManager,
             tokenProvider: tokenProvider,
             feedService: feedService,
-            commentService: commentService
+            commentService: commentService,
+            subnetService: subnetService,
+            groupService: groupService
         )
     }
     

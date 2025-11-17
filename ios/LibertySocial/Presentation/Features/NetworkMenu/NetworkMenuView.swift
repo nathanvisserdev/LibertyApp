@@ -41,19 +41,25 @@ struct NetworkMenuView: View {
                 }
             }
             .sheet(isPresented: $viewModel.isShowingConnections) {
-                viewModel.onShowConnections()
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
+                if let makeView = viewModel.makeConnectionsView {
+                    makeView()
+                } else {
+                    EmptyView()
+                }
             }
             .sheet(isPresented: $viewModel.isShowingGroupsMenu) {
-                viewModel.onShowGroupsMenu()
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
+                if let makeView = viewModel.makeGroupsMenuView {
+                    makeView()
+                } else {
+                    EmptyView()
+                }
             }
             .sheet(isPresented: $viewModel.isShowingSubnetMenu) {
-                viewModel.onShowSubnetMenu()
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
+                if let makeView = viewModel.makeSubnetMenuView {
+                    makeView()
+                } else {
+                    EmptyView()
+                }
             }
         }
     }

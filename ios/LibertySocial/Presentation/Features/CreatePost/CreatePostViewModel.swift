@@ -30,7 +30,7 @@ final class CreatePostViewModel: ObservableObject {
     
     let maxCharacters = 1000
     
-    init(model: CreatePostModel = CreatePostModel(), feedService: FeedSession = FeedService.shared) {
+    init(model: CreatePostModel, feedService: FeedSession) {
         self.model = model
         self.feedService = feedService
     }

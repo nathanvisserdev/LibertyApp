@@ -10,7 +10,7 @@ final class NotificationsMenuViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    init(model: NotificationsMenuModel = NotificationsMenuModel()) {
+    init(model: NotificationsMenuModel) {
         self.model = model
     }
     

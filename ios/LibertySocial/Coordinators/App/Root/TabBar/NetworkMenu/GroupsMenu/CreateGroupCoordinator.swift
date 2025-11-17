@@ -6,23 +6,31 @@ final class CreateGroupCoordinator {
     
     private let tokenProvider: TokenProviding
     private let authManager: AuthManaging
+    private let groupsListViewModel: GroupsListViewModel
     
     private var groupInviteCoordinator: GroupInviteCoordinator?
     
     private var viewModel: CreateGroupViewModel?
     
-    init(tokenProvider: TokenProviding = AuthManager.shared, authManager: AuthManaging = AuthManager.shared) {
+    init(tokenProvider: TokenProviding,
+         authManager: AuthManaging,
+         groupsListViewModel: GroupsListViewModel) {
         self.tokenProvider = tokenProvider
         self.authManager = authManager
+        self.groupsListViewModel = groupsListViewModel
     }
     
-    func start(onDismiss: @escaping () -> Void) -> some View {
+    func start() -> some View {
         let model = CreateGroupModel(TokenProvider: tokenProvider, AuthManagerBadName: authManager)
         let viewModel = CreateGroupViewModel(model: model, coordinator: self)
         self.viewModel = viewModel
         
-        viewModel.onFinished = onDismiss
-        viewModel.onCancelled = onDismiss
+        viewModel.onFinished = { [weak self] in
+            self?.groupsListViewModel.hideCreateGroupView()
+        }
+        viewModel.onCancelled = { [weak self] in
+            self?.groupsListViewModel.hideCreateGroupView()
+        }
         viewModel.onRequestAdminSelection = { [weak self] in
             self?.presentAdminSelection()
         }

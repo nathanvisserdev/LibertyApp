@@ -4,20 +4,28 @@ import SwiftUI
 import Combine
 
 @MainActor
-final class GroupsMenuViewModel: ObservableObject {
+final class GroupsListViewModel: ObservableObject {
     
-    private let model: GroupsMenuModel
+    private let model: GroupsListModel
     private let AuthManagerBadName: AuthManaging
     private let groupService: GroupSession
-    private weak var coordinator: GroupsMenuCoordinator?
     private var cancellables = Set<AnyCancellable>()
     
     @Published var userGroups: [UserGroup] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
-    init(coordinator: GroupsMenuCoordinator? = nil, model: GroupsMenuModel = GroupsMenuModel(), AuthManagerBadName: AuthManaging = AuthManager.shared, groupService: GroupSession = GroupService.shared) {
-        self.coordinator = coordinator
+    @Published var showCreateGroup: Bool = false
+    @Published var showGroupView: Bool = false
+    @Published var selectedGroup: UserGroup?
+    @Published var showSuggestedGroups: Bool = false
+    
+    var makeCreateGroupView: (() -> AnyView)?
+    var makeGroupView: ((UserGroup) -> AnyView)?
+    var makeSuggestedGroupsView: (() -> AnyView)?
+    var onNavigate: ((NextGroupView) -> Void)?
+    
+    init(model: GroupsListModel, AuthManagerBadName: AuthManaging, groupService: GroupSession) {
         self.model = model
         self.AuthManagerBadName = AuthManagerBadName
         self.groupService = groupService
@@ -48,14 +56,28 @@ final class GroupsMenuViewModel: ObservableObject {
     }
     
     func showCreateGroupView() {
-        coordinator?.presentCreateGroup()
+        showCreateGroup = true
+    }
+    
+    func hideCreateGroupView() {
+        showCreateGroup = false
     }
     
     func showSuggestedGroupsView() {
-        coordinator?.presentSuggestedGroups()
+        showSuggestedGroups = true
+    }
+    
+    func hideSuggestedGroupsView() {
+        showSuggestedGroups = false
     }
     
     func showGroup(_ group: UserGroup) {
-        coordinator?.presentGroup(group)
+        selectedGroup = group
+        showGroupView = true
+    }
+    
+    func hideGroup() {
+        selectedGroup = nil
+        showGroupView = false
     }
 }

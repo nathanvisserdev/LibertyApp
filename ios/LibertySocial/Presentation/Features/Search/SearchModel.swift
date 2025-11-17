@@ -24,7 +24,7 @@ struct SearchResponse: Decodable {
 struct SearchModel {
     private let AuthManagerBadName: AuthManaging
     
-    init(AuthManagerBadName: AuthManaging = AuthManager.shared) {
+    init(AuthManagerBadName: AuthManaging) {
         self.AuthManagerBadName = AuthManagerBadName
     }
     

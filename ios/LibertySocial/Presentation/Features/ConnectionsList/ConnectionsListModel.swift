@@ -15,7 +15,7 @@ struct Connection: Decodable, Identifiable {
 struct ConnectionsListModel {
     private let AuthManagerBadName: AuthManaging
     
-    init(AuthManagerBadName: AuthManaging = AuthManager.shared) {
+    init(AuthManagerBadName: AuthManaging) {
         self.AuthManagerBadName = AuthManagerBadName
     }
     

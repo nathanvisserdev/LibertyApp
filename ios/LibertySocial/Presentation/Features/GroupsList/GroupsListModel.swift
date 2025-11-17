@@ -1,11 +1,11 @@
 
 import Foundation
 
-struct GroupsMenuModel {
+struct GroupsListModel {
     private let TokenProvider: TokenProviding
     private let AuthManagerBadName: AuthManaging
     
-    init(TokenProvider: TokenProviding = AuthManager.shared, AuthManagerBadName: AuthManaging = AuthManager.shared) {
+    init(TokenProvider: TokenProviding, AuthManagerBadName: AuthManaging) {
         self.TokenProvider = TokenProvider
         self.AuthManagerBadName = AuthManagerBadName
     }
@@ -31,7 +31,7 @@ struct GroupsMenuModel {
             return responseData.groups
         } else {
             let errorMsg = (try? JSONDecoder().decode([String: String].self, from: data)["error"]) ?? "Failed to fetch groups"
-            throw NSError(domain: "GroupsMenuModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
+            throw NSError(domain: "GroupsListModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
         }
     }
 }

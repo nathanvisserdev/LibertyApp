@@ -35,8 +35,8 @@ struct CreatePostModel {
     private let TokenProvider: TokenProviding
     private let subnetSession: SubnetSession
     
-    init(TokenProvider: TokenProviding = AuthManager.shared,
-         subnetSession: SubnetSession = SubnetService.shared) {
+    init(TokenProvider: TokenProviding,
+         subnetSession: SubnetSession) {
         self.TokenProvider = TokenProvider
         self.subnetSession = subnetSession
     }

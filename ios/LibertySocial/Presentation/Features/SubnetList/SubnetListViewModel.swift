@@ -17,12 +17,19 @@ final class SubnetListViewModel: ObservableObject {
     @Published var showCreateSubnet: Bool = false
     @Published var showSubnetView: Bool = false
     @Published var selectedSubnet: Subnet?
+    @Published var showAddSubnetMembers: Bool = false
+    @Published var selectedSubnetId: String?
     
     @Published var showSuccessAlert: Bool = false
     @Published var showErrorAlert: Bool = false
     @Published var alertMessage: String = ""
     
-    init(model: SubnetListModel = SubnetListModel(), subnetService: SubnetSession = SubnetService.shared) {
+    var makeCreateSubnetView: (() -> AnyView)?
+    var makeSubnetView: ((Subnet) -> AnyView)?
+    var makeAddSubnetMembersView: ((String) -> AnyView)?
+    var onNavigate: ((NextSubnetView, String?) -> Void)?
+    
+    init(model: SubnetListModel, subnetService: SubnetSession) {
         self.model = model
         self.subnetService = subnetService
         
@@ -102,5 +109,10 @@ final class SubnetListViewModel: ObservableObject {
                 print("Error updating ordering for subnet \(subnet.name): \(error)")
             }
         }
+    }
+    
+    func navigateToAddSubnetMembersView(subnetId: String) {
+        selectedSubnetId = subnetId
+        showAddSubnetMembers = true
     }
 }

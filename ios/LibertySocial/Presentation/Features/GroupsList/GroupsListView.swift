@@ -1,13 +1,11 @@
 
 import SwiftUI
 
-struct GroupsMenuView: View {
-    @StateObject private var viewModel: GroupsMenuViewModel
-    @ObservedObject private var coordinator: GroupsMenuCoordinator
+struct GroupsListView: View {
+    @StateObject private var viewModel: GroupsListViewModel
     
-    init(viewModel: GroupsMenuViewModel, coordinator: GroupsMenuCoordinator) {
+    init(viewModel: GroupsListViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.coordinator = coordinator
     }
     
     var body: some View {
@@ -91,7 +89,7 @@ struct GroupsMenuView: View {
                                     
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(group.name)
-                                            .font(.body)
+                            .font(.body)
                                             .fontWeight(.medium)
                                             .foregroundColor(.primary)
                                         
@@ -129,30 +127,34 @@ struct GroupsMenuView: View {
             .task {
                 await viewModel.fetchUserGroups()
             }
-            .sheet(isPresented: $coordinator.showCreateGroup) {
-                coordinator.makeCreateGroupView()
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
+            .sheet(isPresented: $viewModel.showCreateGroup) {
+                if let makeView = viewModel.makeCreateGroupView {
+                    makeView()
+                } else {
+                    EmptyView()
+                }
             }
-            .sheet(isPresented: $coordinator.showSuggestedGroups) {
-                coordinator.makeSuggestedGroupsView()
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
+            .sheet(isPresented: $viewModel.showSuggestedGroups) {
+                if let makeView = viewModel.makeSuggestedGroupsView {
+                    makeView()
+                } else {
+                    EmptyView()
+                }
             }
-            .sheet(item: $coordinator.selectedGroup) { group in
-                coordinator.makeGroupView(for: group)
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
+            .sheet(item: $viewModel.selectedGroup) { group in
+                if let makeView = viewModel.makeGroupView {
+                    makeView(group)
+                } else {
+                    EmptyView()
+                }
             }
         }
     }
-}
-
-#Preview {
-    let coordinator = GroupsMenuCoordinator(
-        authManager: AuthManager.shared,
-        tokenProvider: AuthManager.shared
-    )
-    let viewModel = GroupsMenuViewModel(coordinator: coordinator)
-    return GroupsMenuView(viewModel: viewModel, coordinator: coordinator)
-}
+}//#Preview {
+//    let coordinator = GroupsListCoordinator(
+//        authManager: AuthManager.shared,
+//        tokenProvider: AuthManager.shared
+//    )
+//    let viewModel = GroupsListViewModel(coordinator: coordinator)
+//    return GroupsListView(viewModel: viewModel, coordinator: coordinator)
+//}

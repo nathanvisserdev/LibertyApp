@@ -1,6 +1,7 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 @MainActor
 final class CreateSubnetViewModel: ObservableObject {
@@ -21,7 +22,9 @@ final class CreateSubnetViewModel: ObservableObject {
     @Published var showAddMembers: Bool = false
     @Published var createdSubnetId: String?
     
-    init(model: CreateSubnetModel = CreateSubnetModel(), subnetService: SubnetSession = SubnetService.shared) {
+    var makeAddSubnetMembersView: ((String) -> AnyView)?
+    
+    init(model: CreateSubnetModel, subnetService: SubnetSession) {
         self.model = model
         self.subnetService = subnetService
     }

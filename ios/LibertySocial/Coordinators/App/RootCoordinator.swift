@@ -7,22 +7,26 @@ final class RootCoordinator: ObservableObject {
     private let loginCoordinator: LoginCoordinator
     private let tabBarCoordinator: TabBarCoordinator
     private let sessionStore: SessionStore
-    @Published private var rootViewModel: RootViewModel
     private var cancellables = Set<AnyCancellable>()
+    @Published private var rootViewModel: RootViewModel
 
     init(
         sessionStore: SessionStore,
         authManager: AuthManaging,
         tokenProvider: TokenProviding,
         feedService: FeedSession,
-        commentService: CommentService
+        commentService: CommentService,
+        subnetService: SubnetSession,
+        groupService: GroupSession
     ) {
         self.sessionStore = sessionStore
         self.tabBarCoordinator = TabBarCoordinator(
             authManager: authManager,
             tokenProvider: tokenProvider,
             feedService: feedService,
-            commentService: commentService
+            commentService: commentService,
+            subnetService: subnetService,
+            groupService: groupService
         )
         self.loginCoordinator = LoginCoordinator(
             authManager: authManager,
@@ -46,7 +50,7 @@ final class RootCoordinator: ObservableObject {
             makeContent: { [weak self] isAuthenticated in
                 guard let self = self else { return AnyView(EmptyView()) }
                 if isAuthenticated {
-                    return AnyView(self.tabBarCoordinator.start())
+                    return AnyView(self.tabBarCoordinator.startWithTabBar())
                 } else {
                     return AnyView(self.loginCoordinator.start())
                 }

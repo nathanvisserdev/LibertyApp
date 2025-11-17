@@ -49,7 +49,9 @@ struct LibertySocialApp: App {
             authManager: authManager,
             tokenProvider: tokenProvider,
             feedService: feedService,
-            commentService: commentService
+            commentService: commentService,
+            subnetService: subnetService,
+            groupService: groupService
         )
         defer {
             appDelegate.notificationManager = notificationManager

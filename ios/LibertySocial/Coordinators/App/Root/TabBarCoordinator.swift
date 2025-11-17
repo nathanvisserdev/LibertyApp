@@ -1,46 +1,81 @@
 import SwiftUI
-import Combine
+
+enum NextTabBarView {
+    case feed
+    case notificationsMenu
+    case networkMenu
+    case search
+    case mainMenu(String)
+    case createPost
+    case profile(String)
+}
 
 @MainActor
-final class TabBarCoordinator: ObservableObject {
+final class TabBarCoordinator {
     private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
+    private let feedService: FeedSession
+    private let subnetService: SubnetSession
+    private let groupService: GroupSession
     private let feedCoordinator: FeedCoordinator
     private let searchCoordinator: SearchCoordinator
     private let networkMenuCoordinator: NetworkMenuCoordinator
     private let notificationsMenuCoordinator: NotificationsMenuCoordinator
     private let mainMenuCoordinator: MainMenuCoordinator
+    private let createPostCoordinator: CreatePostCoordinator
     private var activeProfileCoordinator: ProfileCoordinator?
-    private var createPostCoordinator: CreatePostCoordinator?
-    @Published var isShowingProfile: Bool = false
-    @Published var isShowingCreatePost: Bool = false
     
     init(feedCoordinator: FeedCoordinator,
          authManager: AuthManaging,
-         tokenProvider: TokenProviding) {
+         tokenProvider: TokenProviding,
+         feedService: FeedSession,
+         subnetService: SubnetSession,
+         groupService: GroupSession) {
         self.feedCoordinator = feedCoordinator
         self.authManager = authManager
         self.tokenProvider = tokenProvider
-        self.notificationsMenuCoordinator = NotificationsMenuCoordinator()
-        self.networkMenuCoordinator = NetworkMenuCoordinator(
+        self.feedService = feedService
+        self.subnetService = subnetService
+        self.groupService = groupService
+        
+        self.notificationsMenuCoordinator = NotificationsMenuCoordinator(
             authManager: authManager,
             tokenProvider: tokenProvider
         )
+        
+        self.networkMenuCoordinator = NetworkMenuCoordinator(
+            authManager: authManager,
+            tokenProvider: tokenProvider,
+            groupService: groupService,
+            subnetService: subnetService
+        )
+        
         self.searchCoordinator = SearchCoordinator(
             authManager: authManager,
             tokenProvider: tokenProvider
         )
+        
         self.mainMenuCoordinator = MainMenuCoordinator(
             authManager: authManager,
             tokenProvider: tokenProvider
         )
+        
+        self.createPostCoordinator = CreatePostCoordinator(
+            authManager: authManager,
+            tokenProvider: tokenProvider,
+            feedService: feedService,
+            subnetService: subnetService
+        )
+        
         wireCallbacks()
     }
 
     convenience init(authManager: AuthManaging,
                      tokenProvider: TokenProviding,
                      feedService: FeedSession,
-                     commentService: CommentService) {
+                     commentService: CommentService,
+                     subnetService: SubnetSession,
+                     groupService: GroupSession) {
         let feed = FeedCoordinator(
             tokenProvider: tokenProvider,
             authManager: authManager,
@@ -49,7 +84,10 @@ final class TabBarCoordinator: ObservableObject {
         )
         self.init(feedCoordinator: feed,
                   authManager: authManager,
-                  tokenProvider: tokenProvider)
+                  tokenProvider: tokenProvider,
+                  feedService: feedService,
+                  subnetService: subnetService,
+                  groupService: groupService)
     }
     
     private func wireCallbacks() {
@@ -61,86 +99,95 @@ final class TabBarCoordinator: ObservableObject {
         }
     }
     
-    func showProfile(userId: String) {
+    private func showProfile(userId: String) {
         activeProfileCoordinator = ProfileCoordinator(
             userId: userId,
             authManager: authManager,
             tokenProvider: tokenProvider
         )
-        isShowingProfile = true
     }
     
-    private func showCreatePost() {
-        createPostCoordinator = CreatePostCoordinator()
-        isShowingCreatePost = true
+    func start(nextView: NextTabBarView) -> some View {
+        switch nextView {
+        case .feed:
+            return AnyView(feedCoordinator.start())
+        case .notificationsMenu:
+            return AnyView(notificationsMenuCoordinator.start())
+        case .networkMenu:
+            return AnyView(networkMenuCoordinator.start(nextView: .networkMenu))
+        case .search:
+            return AnyView(searchCoordinator.start())
+        case .mainMenu(let userId):
+            return AnyView(mainMenuCoordinator.start(userId: userId))
+        case .createPost:
+            return AnyView(createPostCoordinator.start())
+        case .profile(let userId):
+            showProfile(userId: userId)
+            if let coordinator = activeProfileCoordinator {
+                return AnyView(coordinator.start())
+            }
+            return AnyView(EmptyView())
+        }
     }
     
-    func switchTo(_ tab: TabBarItem) {
-        isShowingProfile = false
-        isShowingCreatePost = false
-    }
-    
-    func start() -> some View {
-        let feedView = feedCoordinator.start()
-        let notificationsView = notificationsMenuCoordinator.makeView()
-        let networkMenuView = networkMenuCoordinator.makeView()
-        let searchView = searchCoordinator.makeView()
+    func startWithTabBar() -> some View {
+        let feedView = start(nextView: .feed)
+        
         let viewModel = TabBarViewModel(
             model: TabBarModel(AuthManagerBadName: authManager),
-            onTabSelected: { [weak self] tab in
-                self?.switchTo(tab)
-            },
-            onNotificationsTapped: { [weak self] in
-                self?.notificationsMenuCoordinator.showNotifications()
-            },
-            onNetworkMenuTapped: { [weak self] in
-                self?.networkMenuCoordinator.showNetworkMenu()
-            },
-            onComposeTapped: { [weak self] in
-                self?.showCreatePost()
-            },
-            onSearchTapped: { [weak self] in
-                self?.searchCoordinator.showSearch()
-            },
-            onProfileTapped: { [weak self] id in
-                self?.mainMenuCoordinator.showProfile(userId: id)
-            }
+            onTabSelected: { _ in },
+            onNotificationsTapped: { },
+            onNetworkMenuTapped: { },
+            onComposeTapped: { },
+            onSearchTapped: { },
+            onProfileTapped: { _ in }
         )
-        viewModel.onShowNotificationsMenu = {
-            AnyView(notificationsView)
-        }
-        viewModel.onShowNetworkMenu = {
-            AnyView(networkMenuView)
-        }
-        viewModel.onShowSearch = {
-            AnyView(searchView)
-        }
-        viewModel.onShowProfile = { [weak self] in
+        
+        viewModel.onShowNotificationsMenu = { [weak self] in
             guard let self = self else { return AnyView(EmptyView()) }
-            return AnyView(self.mainMenuCoordinator.makeView())
+            return AnyView(self.start(nextView: .notificationsMenu))
         }
-        viewModel.onShowCreatePost = { [weak self] in
-            guard let coordinator = self?.createPostCoordinator else {
+        
+        viewModel.onShowNetworkMenu = { [weak self] in
+            guard let self = self else { return AnyView(EmptyView()) }
+            return AnyView(self.start(nextView: .networkMenu))
+        }
+        
+        viewModel.onShowSearch = { [weak self] in
+            guard let self = self else { return AnyView(EmptyView()) }
+            return AnyView(self.start(nextView: .search))
+        }
+        
+        viewModel.onShowProfile = { [weak self] in
+            guard let self = self,
+                  let userId = viewModel.currentUserId else {
                 return AnyView(EmptyView())
             }
-            return AnyView(coordinator.start())
+            return AnyView(self.start(nextView: .mainMenu(userId)))
         }
+        
+        viewModel.onShowCreatePost = { [weak self] in
+            guard let self = self else {
+                return AnyView(EmptyView())
+            }
+            return AnyView(self.start(nextView: .createPost))
+        }
+        
         return feedView
             .safeAreaInset(edge: .bottom) {
                 TabBarView(viewModel: viewModel)
                     .ignoresSafeArea(edges: .bottom)
             }
-            .sheet(
-                isPresented: Binding(
-                    get: { self.isShowingProfile },
-                    set: { [weak self] newValue in
-                        self?.isShowingProfile = newValue
-                        if newValue == false {
-                            self?.activeProfileCoordinator = nil
-                        }
+            .sheet(isPresented: Binding(
+                get: { [weak self] in
+                    self?.activeProfileCoordinator != nil
+                },
+                set: { [weak self] newValue in
+                    if !newValue {
+                        self?.activeProfileCoordinator = nil
                     }
-                )
-            ) {
+                }
+            )) {
                 if let coordinator = self.activeProfileCoordinator {
                     coordinator.start()
                         .presentationDetents([.large])

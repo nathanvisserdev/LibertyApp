@@ -1,12 +1,7 @@
-
 import SwiftUI
-import Combine
 
 @MainActor
-final class SearchCoordinator: ObservableObject {
-    @Published var isShowingSearch: Bool = false
-    
-    private var selectedUserId: String?
+final class SearchCoordinator {
     private var profileCoordinator: ProfileCoordinator?
     private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
@@ -17,12 +12,7 @@ final class SearchCoordinator: ObservableObject {
         self.tokenProvider = tokenProvider
     }
     
-    func showSearch() {
-        isShowingSearch = true
-    }
-    
-    func showProfile(for userId: String) {
-        selectedUserId = userId
+    private func showProfile(for userId: String) {
         profileCoordinator = ProfileCoordinator(
             userId: userId,
             authManager: authManager,
@@ -30,8 +20,8 @@ final class SearchCoordinator: ObservableObject {
         )
     }
 
-    func makeView() -> some View {
-        let model = SearchModel()
+    func start() -> some View {
+        let model = SearchModel(AuthManagerBadName: authManager)
         let viewModel = SearchViewModel(
             model: model,
             onUserSelected: { [weak self] userId in

@@ -2,77 +2,91 @@
 import SwiftUI
 import Combine
 
+enum NextNetworkView {
+    case networkMenu
+    case connections
+    case groupsList
+    case subnetList
+}
+
 @MainActor
-final class NetworkMenuCoordinator: ObservableObject {
-    @Published var isShowingNetworkMenu: Bool = false
+final class NetworkMenuCoordinator {
+    var onFinished: (() -> Void)?
     private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
+    private let groupService: GroupSession
+    private let subnetService: SubnetSession
+    private let networkMenuView: NetworkMenuView
+    private let networkMenuViewModel: NetworkMenuViewModel
     private let connectionsListCoordinator: ConnectionsListCoordinator
-    private let groupsMenuCoordinator: GroupsMenuCoordinator
+    private let groupsListCoordinator: GroupsListCoordinator
     private let subnetMenuCoordinator: SubnetListCoordinator
 
     init(authManager: AuthManaging,
-         tokenProvider: TokenProviding) {
+         tokenProvider: TokenProviding,
+         groupService: GroupSession,
+         subnetService: SubnetSession) {
         self.authManager = authManager
         self.tokenProvider = tokenProvider
+        self.groupService = groupService
+        self.subnetService = subnetService
+        
+        let networkMenuModel = NetworkMenuModel()
+        let networkMenuViewModel = NetworkMenuViewModel(
+            model: networkMenuModel,
+            authManager: authManager
+        )
+        self.networkMenuViewModel = networkMenuViewModel
+        self.networkMenuView = NetworkMenuView(viewModel: networkMenuViewModel)
+        
         self.connectionsListCoordinator = ConnectionsListCoordinator(
             authManager: authManager,
-            tokenProvider: tokenProvider
+            tokenProvider: tokenProvider,
+            networkMenuViewModel: networkMenuViewModel
         )
-        self.groupsMenuCoordinator = GroupsMenuCoordinator(
+        
+        self.groupsListCoordinator = GroupsListCoordinator(
             authManager: authManager,
-            tokenProvider: tokenProvider
+            tokenProvider: tokenProvider,
+            groupService: groupService
         )
+        
         self.subnetMenuCoordinator = SubnetListCoordinator(
             authManager: authManager,
-            tokenProvider: tokenProvider
-        )
-    }
-    
-    func showNetworkMenu() {
-        isShowingNetworkMenu = true
-    }
-    
-    private func showConnections() {
-        connectionsListCoordinator.showConnections()
-    }
-    
-    private func showGroupsMenu() {
-        groupsMenuCoordinator.showGroupsMenu()
-    }
-    
-    private func showSubnetMenu() {
-        subnetMenuCoordinator.showSubnetMenu()
-    }
-    
-    func makeView() -> some View {
-        let viewModel = NetworkMenuViewModel(
-            onConnectionsTapped: { [weak self] in
-                self?.showConnections()
-            },
-            onGroupsMenuTapped: { [weak self] in
-                self?.showGroupsMenu()
-            },
-            onSubnetMenuTapped: { [weak self] in
-                self?.showSubnetMenu()
-            }
+            tokenProvider: tokenProvider,
+            subnetService: subnetService
         )
         
-        viewModel.onShowConnections = { [weak self] in
-            guard let self = self else { return AnyView(EmptyView()) }
-            return AnyView(self.connectionsListCoordinator.makeView())
+        networkMenuViewModel.onNavigate = { [weak self] nextView in
+            self?.start(nextView: nextView)
         }
         
-        viewModel.onShowGroupsMenu = { [weak self] in
+        networkMenuViewModel.makeConnectionsView = { [weak self] in
             guard let self = self else { return AnyView(EmptyView()) }
-            return AnyView(self.groupsMenuCoordinator.makeView())
+            return AnyView(self.start(nextView: .connections))
         }
         
-        viewModel.onShowSubnetMenu = { [weak self] in
+        networkMenuViewModel.makeGroupsMenuView = { [weak self] in
             guard let self = self else { return AnyView(EmptyView()) }
-            return AnyView(self.subnetMenuCoordinator.makeView())
+            return AnyView(self.start(nextView: .groupsList))
         }
         
-        return NetworkMenuView(viewModel: viewModel)
+        networkMenuViewModel.makeSubnetMenuView = { [weak self] in
+            guard let self = self else { return AnyView(EmptyView()) }
+            return AnyView(self.start(nextView: .subnetList))
+        }
+    }
+
+    func start(nextView: NextNetworkView) -> some View {
+        switch nextView {
+        case .networkMenu:
+            return AnyView(networkMenuView)
+        case .connections:
+            return AnyView(connectionsListCoordinator.start())
+        case .groupsList:
+            return AnyView(groupsListCoordinator.start(nextView: .groupsList))
+        case .subnetList:
+            return AnyView(subnetMenuCoordinator.start(nextView: .subnetList))
+        }
     }
 }

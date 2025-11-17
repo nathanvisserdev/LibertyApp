@@ -145,15 +145,26 @@ struct SubnetListView: View {
                 await viewModel.fetchSubnets()
             }
             .sheet(isPresented: $viewModel.showCreateSubnet) {
-                CreateSubnetCoordinator().start()
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
-            }
-            .sheet(isPresented: $viewModel.showSubnetView) {
-                if let subnet = viewModel.selectedSubnet {
-                    SubnetCoordinator(subnet: subnet).start()
+                if let makeView = viewModel.makeCreateSubnetView {
+                    makeView()
                         .presentationDetents([.large])
                         .presentationDragIndicator(.visible)
+                }
+            }
+            .sheet(isPresented: $viewModel.showSubnetView) {
+                if let subnet = viewModel.selectedSubnet,
+                   let makeView = viewModel.makeSubnetView {
+                    makeView(subnet)
+                        .presentationDetents([.large])
+                        .presentationDragIndicator(.visible)
+                        .sheet(isPresented: $viewModel.showAddSubnetMembers) {
+                            if let subnetId = viewModel.selectedSubnetId,
+                               let makeView = viewModel.makeAddSubnetMembersView {
+                                makeView(subnetId)
+                                    .presentationDetents([.large])
+                                    .presentationDragIndicator(.visible)
+                            }
+                        }
                 }
             }
             .alert("Success", isPresented: $viewModel.showSuccessAlert) {
@@ -213,7 +224,7 @@ struct SubnetListView: View {
     }
 }
 
-#Preview {
-    SubnetListView(viewModel: SubnetListViewModel())
-}
+//#Preview {
+//    SubnetListView(viewModel: SubnetListViewModel())
+//}
 

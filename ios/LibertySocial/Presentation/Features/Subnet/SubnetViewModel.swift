@@ -1,6 +1,7 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 @MainActor
 final class SubnetViewModel: ObservableObject {
@@ -13,8 +14,10 @@ final class SubnetViewModel: ObservableObject {
     private let model: SubnetModel
     private let subnetService: SubnetSession
     private var cancellables = Set<AnyCancellable>()
+    var makeAddSubnetMembersView: ((String) -> AnyView)?
+    var onAddSubnetMembers: ((String) -> Void)?
     
-    init(model: SubnetModel = SubnetModel(), subnet: Subnet? = nil, subnetService: SubnetSession = SubnetService.shared) {
+    init(model: SubnetModel, subnet: Subnet?, subnetService: SubnetSession) {
         self.model = model
         self.subnet = subnet
         self.subnetService = subnetService
@@ -56,7 +59,8 @@ final class SubnetViewModel: ObservableObject {
     }
     
     func showAddMembers() {
-        showAddMembersSheet = true
+        guard let subnet = subnet else { return }
+        onAddSubnetMembers?(subnet.id)
     }
     
     func deleteMember(_ member: SubnetMember) async -> (success: Bool, message: String) {

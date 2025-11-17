@@ -21,7 +21,7 @@ struct CreateSubnetModel {
     
     private let TokenProvider: TokenProviding
     
-    init(TokenProvider: TokenProviding = AuthManager.shared) {
+    init(TokenProvider: TokenProviding) {
         self.TokenProvider = TokenProvider
     }
     

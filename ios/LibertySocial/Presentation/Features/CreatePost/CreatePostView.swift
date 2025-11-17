@@ -148,6 +148,6 @@ struct CreatePostView: View {
     }
 }
 
-#Preview {
-    CreatePostView(viewModel: CreatePostViewModel())
-}
+//#Preview {
+//    CreatePostView(viewModel: CreatePostViewModel())
+//}

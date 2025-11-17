@@ -3,12 +3,9 @@ import SwiftUI
 
 struct ConnectionsListView: View {
     @StateObject private var viewModel: ConnectionsListViewModel
-    @ObservedObject private var coordinator: ConnectionsListCoordinator
 
-    init(viewModel: ConnectionsListViewModel,
-         coordinator: ConnectionsListCoordinator) {
+    init(viewModel: ConnectionsListViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
-        self.coordinator = coordinator
     }
 
     var body: some View {
@@ -41,10 +38,13 @@ struct ConnectionsListView: View {
             .navigationTitle("Connections")
             .navigationBarTitleDisplayMode(.inline)
             .task { await viewModel.loadConnections() }
-            .sheet(isPresented: $coordinator.isShowingProfile) {
-                coordinator.makeProfileView()
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
+            .sheet(isPresented: $viewModel.isShowingProfile) {
+                if let userId = viewModel.selectedUserId,
+                   let makeView = viewModel.makeProfileView {
+                    makeView(userId)
+                } else {
+                    EmptyView()
+                }
             }
         }
     }

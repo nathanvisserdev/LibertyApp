@@ -3,49 +3,43 @@ import SwiftUI
 import Combine
 
 @MainActor
-final class ConnectionsListCoordinator: ObservableObject {
-    
-    @Published var isShowingConnections: Bool = false
-    @Published var isShowingProfile: Bool = false
-    
-    private var selectedUserId: String?
+final class ConnectionsListCoordinator {
     
     private var profileCoordinator: ProfileCoordinator?
     
     private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
+    private let networkMenuViewModel: NetworkMenuViewModel
 
     init(authManager: AuthManaging,
-         tokenProvider: TokenProviding) {
+         tokenProvider: TokenProviding,
+         networkMenuViewModel: NetworkMenuViewModel) {
         self.authManager = authManager
         self.tokenProvider = tokenProvider
-    }
-    
-    
-    func showConnections() {
-        isShowingConnections = true
+        self.networkMenuViewModel = networkMenuViewModel
     }
     
     func showProfile(for userId: String) {
-        selectedUserId = userId
         profileCoordinator = ProfileCoordinator(
             userId: userId,
             authManager: authManager,
             tokenProvider: tokenProvider
         )
-        isShowingProfile = true
     }
 
-    func makeView() -> some View {
+    func start() -> some View {
+        let model = ConnectionsListModel(AuthManagerBadName: authManager)
         let viewModel = ConnectionsListViewModel(
+            model: model,
             onUserSelected: { [weak self] userId in
                 self?.showProfile(for: userId)
             }
         )
-        return ConnectionsListView(
-            viewModel: viewModel,
-            coordinator: self
-        )
+        viewModel.makeProfileView = { [weak self] userId in
+            guard let self = self else { return AnyView(EmptyView()) }
+            return AnyView(self.makeProfileView())
+        }
+        return ConnectionsListView(viewModel: viewModel)
     }
     
     func makeProfileView() -> some View {

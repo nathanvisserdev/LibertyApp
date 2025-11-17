@@ -226,6 +226,6 @@ struct NotificationRow: View {
     }
 }
 
-#Preview {
-    NotificationsMenuView(viewModel: NotificationsMenuViewModel())
-}
+//#Preview {
+//    NotificationsMenuView(viewModel: NotificationsMenuViewModel())
+//}

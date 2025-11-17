@@ -12,11 +12,9 @@ import Combine
 @MainActor
 final class SessionStore: ObservableObject {
     @Published private(set) var isAuthenticated = false
-
     private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
     private let notificationManager: NotificationManaging
-
     private var cancellables = Set<AnyCancellable>()
 
     init(

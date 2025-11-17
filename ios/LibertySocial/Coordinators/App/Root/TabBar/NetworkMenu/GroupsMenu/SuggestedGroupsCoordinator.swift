@@ -5,21 +5,26 @@ final class SuggestedGroupsCoordinator {
     
     private let TokenProvider: TokenProviding
     private let AuthManagerBadName: AuthManaging
+    private let groupsListViewModel: GroupsListViewModel
     
-    init(TokenProvider: TokenProviding = AuthManager.shared, AuthManagerBadName: AuthManaging = AuthManager.shared) {
+    init(TokenProvider: TokenProviding,
+         AuthManagerBadName: AuthManaging,
+         groupsListViewModel: GroupsListViewModel) {
         self.TokenProvider = TokenProvider
         self.AuthManagerBadName = AuthManagerBadName
+        self.groupsListViewModel = groupsListViewModel
     }
     
-    func start(onDismiss: @escaping () -> Void, onSelect: @escaping (UserGroup) -> Void) -> some View {
+    func start() -> some View {
         let model = SuggestedGroupsModel(TokenProvider: TokenProvider, AuthManagerBadName: AuthManagerBadName)
         let viewModel = SuggestedGroupsViewModel(model: model)
         
-        viewModel.onDismiss = {
-            onDismiss()
+        viewModel.onDismiss = { [weak self] in
+            self?.groupsListViewModel.hideSuggestedGroupsView()
         }
-        viewModel.onGroupSelected = { group in
-            onSelect(group)
+        viewModel.onGroupSelected = { [weak self] group in
+            self?.groupsListViewModel.hideSuggestedGroupsView()
+            self?.groupsListViewModel.showGroup(group)
         }
         
         return SuggestedGroupsView(viewModel: viewModel)

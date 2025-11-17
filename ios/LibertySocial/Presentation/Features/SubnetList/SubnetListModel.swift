@@ -6,7 +6,7 @@ struct SubnetListModel {
     private let subnetSession: SubnetSession
     private let TokenProvider: TokenProviding
     
-    init(subnetSession: SubnetSession = SubnetService.shared, TokenProvider: TokenProviding = AuthManager.shared) {
+    init(subnetSession: SubnetSession, TokenProvider: TokenProviding) {
         self.subnetSession = subnetSession
         self.TokenProvider = TokenProvider
     }

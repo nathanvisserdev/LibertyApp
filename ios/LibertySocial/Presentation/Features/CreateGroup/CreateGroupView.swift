@@ -166,9 +166,11 @@ struct CreateGroupView: View {
 }
 
 #Preview {
-    let coordinator = CreateGroupCoordinator()
-    let model = CreateGroupModel()
-    let viewModel = CreateGroupViewModel(model: model, coordinator: coordinator)
-    return CreateGroupView(viewModel: viewModel, coordinator: coordinator)
+    let authManager = AuthManager.shared
+    let tokenProvider = AuthManager.shared
+    let groupsListModel = GroupsListModel(TokenProvider: tokenProvider, AuthManagerBadName: authManager)
+    let groupsListViewModel = GroupsListViewModel(model: groupsListModel, AuthManagerBadName: authManager, groupService: GroupService())
+    let coordinator = CreateGroupCoordinator(tokenProvider: tokenProvider, authManager: authManager, groupsListViewModel: groupsListViewModel)
+    coordinator.start()
 }
 

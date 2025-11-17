@@ -1,6 +1,7 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 @MainActor
 final class ConnectionsListViewModel: ObservableObject {
@@ -11,8 +12,12 @@ final class ConnectionsListViewModel: ObservableObject {
     @Published var connections: [Connection] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var isShowingProfile: Bool = false
+    @Published var selectedUserId: String?
     
-    init(model: ConnectionsListModel = ConnectionsListModel(),
+    var makeProfileView: ((String) -> AnyView)?
+    
+    init(model: ConnectionsListModel,
          onUserSelected: @escaping (String) -> Void) {
         self.model = model
         self.onUserSelected = onUserSelected
@@ -20,7 +25,14 @@ final class ConnectionsListViewModel: ObservableObject {
     
     
     func selectUser(userId: String) {
+        selectedUserId = userId
+        isShowingProfile = true
         onUserSelected(userId)
+    }
+    
+    func hideProfile() {
+        isShowingProfile = false
+        selectedUserId = nil
     }
     
     func loadConnections() async {
