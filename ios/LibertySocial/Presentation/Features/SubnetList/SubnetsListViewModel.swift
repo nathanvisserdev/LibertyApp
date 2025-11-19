@@ -4,9 +4,9 @@ import Combine
 import SwiftUI
 
 @MainActor
-final class SubnetListViewModel: ObservableObject {
+final class SubnetsListViewModel: ObservableObject {
     
-    private let model: SubnetListModel
+    private let model: SubnetsListModel
     private let subnetService: SubnetSession
     private var cancellables = Set<AnyCancellable>()
     
@@ -29,7 +29,7 @@ final class SubnetListViewModel: ObservableObject {
     var makeAddSubnetMembersView: ((String) -> AnyView)?
     var onNavigate: ((NextSubnetView, String?) -> Void)?
     
-    init(model: SubnetListModel, subnetService: SubnetSession) {
+    init(model: SubnetsListModel, subnetService: SubnetSession) {
         self.model = model
         self.subnetService = subnetService
         

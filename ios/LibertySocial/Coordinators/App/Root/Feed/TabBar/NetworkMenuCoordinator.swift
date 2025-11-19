@@ -16,22 +16,25 @@ final class NetworkMenuCoordinator {
     private let tokenProvider: TokenProviding
     private let groupService: GroupSession
     private let subnetService: SubnetSession
+    private let groupInviteService: GroupInviteSession
     private let networkMenuView: NetworkMenuView
     private let networkMenuViewModel: NetworkMenuViewModel
     private let connectionsListCoordinator: ConnectionsListCoordinator
     private let groupsListCoordinator: GroupsListCoordinator
-    private let subnetMenuCoordinator: SubnetListCoordinator
+    private let subnetMenuCoordinator: SubnetsListCoordinator
 
     init(authManager: AuthManaging,
          tokenProvider: TokenProviding,
          groupService: GroupSession,
-         subnetService: SubnetSession) {
+         subnetService: SubnetSession,
+         groupInviteService: GroupInviteSession) {
         self.authManager = authManager
         self.tokenProvider = tokenProvider
         self.groupService = groupService
         self.subnetService = subnetService
+        self.groupInviteService = groupInviteService
         
-        let networkMenuModel = NetworkMenuModel()
+        let networkMenuModel = NetworkMenuModel(AuthManagerBadName: authManager)
         let networkMenuViewModel = NetworkMenuViewModel(
             model: networkMenuModel,
             authManager: authManager
@@ -48,10 +51,11 @@ final class NetworkMenuCoordinator {
         self.groupsListCoordinator = GroupsListCoordinator(
             authManager: authManager,
             tokenProvider: tokenProvider,
-            groupService: groupService
+            groupService: groupService,
+            groupInviteService: groupInviteService
         )
         
-        self.subnetMenuCoordinator = SubnetListCoordinator(
+        self.subnetMenuCoordinator = SubnetsListCoordinator(
             authManager: authManager,
             tokenProvider: tokenProvider,
             subnetService: subnetService
@@ -84,7 +88,7 @@ final class NetworkMenuCoordinator {
         case .connections:
             return AnyView(connectionsListCoordinator.start())
         case .groupsList:
-            return AnyView(groupsListCoordinator.start(nextView: .groupsList))
+            return AnyView(groupsListCoordinator.start())
         case .subnetList:
             return AnyView(subnetMenuCoordinator.start(nextView: .subnetList))
         }

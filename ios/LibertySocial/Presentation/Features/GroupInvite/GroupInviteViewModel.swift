@@ -48,11 +48,11 @@ final class GroupInviteViewModel: ObservableObject {
     }
     
     init(
-        model: GroupInviteModel = GroupInviteModel(),
+        model: GroupInviteModel,
         groupId: String,
-        TokenProvider: TokenProviding = AuthManager.shared,
-        inviteService: GroupInviteSession = GroupInviteService.shared,
-        groupService: GroupSession = GroupService.shared
+        TokenProvider: TokenProviding,
+        inviteService: GroupInviteSession,
+        groupService: GroupSession
     ) {
         self.model = model
         self.groupId = groupId

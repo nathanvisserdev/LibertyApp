@@ -1,7 +1,7 @@
 
 import Foundation
 
-struct SubnetListModel {
+struct SubnetsListModel {
     
     private let subnetSession: SubnetSession
     private let TokenProvider: TokenProviding
@@ -34,7 +34,7 @@ struct SubnetListModel {
         
         guard httpResponse.statusCode == 204 else {
             let errorMsg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"] ?? "Failed to delete subnet"
-            throw NSError(domain: "SubnetListModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
+            throw NSError(domain: "SubnetsListModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
         }
     }
     
@@ -61,7 +61,7 @@ struct SubnetListModel {
         
         guard (200...299).contains(httpResponse.statusCode) else {
             let errorMsg = (try? JSONDecoder().decode([String: String].self, from: data))?["error"] ?? "Failed to update subnet ordering"
-            throw NSError(domain: "SubnetListModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
+            throw NSError(domain: "SubnetsListModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
         }
     }
 }

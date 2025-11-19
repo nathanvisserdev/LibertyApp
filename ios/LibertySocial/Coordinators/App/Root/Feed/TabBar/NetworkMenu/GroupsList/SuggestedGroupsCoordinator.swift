@@ -2,17 +2,16 @@
 import SwiftUI
 
 final class SuggestedGroupsCoordinator {
-    
     private let TokenProvider: TokenProviding
     private let AuthManagerBadName: AuthManaging
-    private let groupsListViewModel: GroupsListViewModel
+    
+    var onDismiss: (() -> Void)?
+    var onGroupSelected: ((UserGroup) -> Void)?
     
     init(TokenProvider: TokenProviding,
-         AuthManagerBadName: AuthManaging,
-         groupsListViewModel: GroupsListViewModel) {
+         AuthManagerBadName: AuthManaging) {
         self.TokenProvider = TokenProvider
         self.AuthManagerBadName = AuthManagerBadName
-        self.groupsListViewModel = groupsListViewModel
     }
     
     func start() -> some View {
@@ -20,11 +19,10 @@ final class SuggestedGroupsCoordinator {
         let viewModel = SuggestedGroupsViewModel(model: model)
         
         viewModel.onDismiss = { [weak self] in
-            self?.groupsListViewModel.hideSuggestedGroupsView()
+            self?.onDismiss?()
         }
         viewModel.onGroupSelected = { [weak self] group in
-            self?.groupsListViewModel.hideSuggestedGroupsView()
-            self?.groupsListViewModel.showGroup(group)
+            self?.onGroupSelected?(group)
         }
         
         return SuggestedGroupsView(viewModel: viewModel)

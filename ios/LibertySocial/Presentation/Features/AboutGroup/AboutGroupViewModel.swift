@@ -3,7 +3,7 @@ import Foundation
 import Combine
 
 @MainActor
-final class GroupDetailViewModel: ObservableObject {
+final class AboutGroupViewModel: ObservableObject {
     @Published var groupDetail: GroupDetail?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
@@ -11,9 +11,10 @@ final class GroupDetailViewModel: ObservableObject {
     @Published var joinSuccessMessage: String?
     
     private let groupId: String
-    private let model: GroupDetailModel
+    private let model: AboutGroupModel
     
-    init(groupId: String, model: GroupDetailModel = GroupDetailModel()) {
+    init(groupId: String,
+         model: AboutGroupModel) {
         self.groupId = groupId
         self.model = model
     }

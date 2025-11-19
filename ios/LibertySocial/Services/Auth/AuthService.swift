@@ -37,7 +37,6 @@ struct APIUser: Decodable {
 final class AuthManager: AuthManaging, TokenProviding {
     static let baseURL = AppConfig.baseURL
     static let shared = AuthManager()
-    
     private var cachedUser: APIUser?
     
     private func getToken() throws -> String {

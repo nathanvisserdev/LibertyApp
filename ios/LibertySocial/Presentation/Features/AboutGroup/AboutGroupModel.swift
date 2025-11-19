@@ -35,7 +35,7 @@ struct MemberUser: Codable {
     let lastName: String?
 }
 
-struct GroupDetailModel {
+struct AboutGroupModel {
     
     private let TokenProvider: TokenProviding
     
@@ -67,7 +67,7 @@ struct GroupDetailModel {
             return groupDetail
         } else {
             let errorMsg = (try? JSONDecoder().decode([String: String].self, from: data)["error"]) ?? "Failed to fetch group details"
-            throw NSError(domain: "GroupDetailModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
+            throw NSError(domain: "AboutGroupModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
         }
     }
     
@@ -91,7 +91,7 @@ struct GroupDetailModel {
         
         if !(200...299).contains(httpResponse.statusCode) {
             let errorMsg = (try? JSONDecoder().decode([String: String].self, from: data)["error"]) ?? "Failed to join group"
-            throw NSError(domain: "GroupDetailModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
+            throw NSError(domain: "AboutGroupModel", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])
         }
     }
 }

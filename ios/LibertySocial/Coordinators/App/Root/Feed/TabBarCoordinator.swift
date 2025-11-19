@@ -17,6 +17,7 @@ final class TabBarCoordinator {
     private let feedService: FeedSession
     private let subnetService: SubnetSession
     private let groupService: GroupSession
+    private let groupInviteService: GroupInviteSession
     private let feedCoordinator: FeedCoordinator
     private let searchCoordinator: SearchCoordinator
     private let networkMenuCoordinator: NetworkMenuCoordinator
@@ -30,13 +31,15 @@ final class TabBarCoordinator {
          tokenProvider: TokenProviding,
          feedService: FeedSession,
          subnetService: SubnetSession,
-         groupService: GroupSession) {
+         groupService: GroupSession,
+         groupInviteService: GroupInviteSession) {
         self.feedCoordinator = feedCoordinator
         self.authManager = authManager
         self.tokenProvider = tokenProvider
         self.feedService = feedService
         self.subnetService = subnetService
         self.groupService = groupService
+        self.groupInviteService = groupInviteService
         
         self.notificationsMenuCoordinator = NotificationsMenuCoordinator(
             authManager: authManager,
@@ -47,7 +50,8 @@ final class TabBarCoordinator {
             authManager: authManager,
             tokenProvider: tokenProvider,
             groupService: groupService,
-            subnetService: subnetService
+            subnetService: subnetService,
+            groupInviteService: groupInviteService
         )
         
         self.searchCoordinator = SearchCoordinator(
@@ -75,7 +79,8 @@ final class TabBarCoordinator {
                      feedService: FeedSession,
                      commentService: CommentService,
                      subnetService: SubnetSession,
-                     groupService: GroupSession) {
+                     groupService: GroupSession,
+                     groupInviteService: GroupInviteSession) {
         let feed = FeedCoordinator(
             tokenProvider: tokenProvider,
             authManager: authManager,
@@ -87,7 +92,8 @@ final class TabBarCoordinator {
                   tokenProvider: tokenProvider,
                   feedService: feedService,
                   subnetService: subnetService,
-                  groupService: groupService)
+                  groupService: groupService,
+                  groupInviteService: groupInviteService)
     }
     
     private func wireCallbacks() {
@@ -115,12 +121,12 @@ final class TabBarCoordinator {
             return AnyView(notificationsMenuCoordinator.start())
         case .networkMenu:
             return AnyView(networkMenuCoordinator.start(nextView: .networkMenu))
+        case .createPost:
+            return AnyView(createPostCoordinator.start())
         case .search:
             return AnyView(searchCoordinator.start())
         case .mainMenu(let userId):
             return AnyView(mainMenuCoordinator.start(userId: userId))
-        case .createPost:
-            return AnyView(createPostCoordinator.start())
         case .profile(let userId):
             showProfile(userId: userId)
             if let coordinator = activeProfileCoordinator {
@@ -136,10 +142,10 @@ final class TabBarCoordinator {
         let viewModel = TabBarViewModel(
             model: TabBarModel(AuthManagerBadName: authManager),
             onTabSelected: { _ in },
-            onNotificationsTapped: { },
-            onNetworkMenuTapped: { },
-            onComposeTapped: { },
-            onSearchTapped: { },
+            notificationsMenuTapped: { },
+            networkMenuTapped: { },
+            createPostTapped: { },
+            searchTapped: { },
             onProfileTapped: { _ in }
         )
         

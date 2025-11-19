@@ -1,11 +1,11 @@
 
 import SwiftUI
 
-struct GroupView: View {
+struct AssemblyRoomView: View {
     let group: UserGroup
-    @StateObject private var viewModel: GroupViewModel
+    @StateObject private var viewModel: AssemblyRoomViewModel
     
-    init(group: UserGroup, viewModel: GroupViewModel) {
+    init(group: UserGroup, viewModel: AssemblyRoomViewModel) {
         self.group = group
         _viewModel = StateObject(wrappedValue: viewModel)
     }
@@ -46,5 +46,9 @@ struct GroupView: View {
         displayLabel: "Member",
         joinedAt: Date()
     )
-    return GroupView(group: group, viewModel: GroupViewModel(group: group))
+    let tokenProvider = AuthManager()
+    let authManager = AuthManager()
+    let model = AssemblyRoomModel(TokenProvider: tokenProvider, AuthManagerBadName: authManager)
+    let viewModel = AssemblyRoomViewModel(group: group, model: model)
+    AssemblyRoomView(group: group, viewModel: viewModel)
 }

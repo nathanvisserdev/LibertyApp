@@ -203,7 +203,9 @@ struct SelectRoundTableAdminsView: View {
             }
             .alert("Success", isPresented: $showSuccessAlert) {
                 Button("OK", role: .cancel) {
-                    dismiss()
+                    if let groupId = viewModel.createdGroupId {
+                        viewModel.onCreateGroupSuccess(for: groupId)
+                    }
                 }
             } message: {
                 Text(successMessage)
@@ -241,9 +243,27 @@ struct SelectRoundTableAdminsView: View {
 }
 
 #Preview {
-    let viewModel = CreateGroupViewModel()
-    viewModel.name = "Test Group"
-    viewModel.selectedGroupPrivacy = .publicGroup
+    let authManager = AuthManager.shared
+    let tokenProvider = AuthManager.shared
+    let groupService = GroupService()
+    let groupInviteService = GroupInviteService()
+    let model = CreateGroupModel(TokenProvider: tokenProvider, AuthManagerBadName: authManager)
+    let coordinator = CreateGroupCoordinator(
+        tokenProvider: tokenProvider,
+        authManager: authManager,
+        groupService: groupService,
+        groupInviteService: groupInviteService
+    )
+    let viewModel = CreateGroupViewModel(
+        model: model,
+        groupService: groupService,
+        inviteService: groupInviteService,
+        coordinator: coordinator
+    )
+    Task {
+        viewModel.name = "Test Group"
+        viewModel.selectedGroupPrivacy = .publicGroup
+    }
     
     return SelectRoundTableAdminsView(viewModel: viewModel)
 }

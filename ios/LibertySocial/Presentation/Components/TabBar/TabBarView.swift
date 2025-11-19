@@ -11,26 +11,26 @@ struct TabBarView: View {
     var body: some View {
         HStack {
             Spacer(minLength: 0)
-            Button { viewModel.tapNotifications() } label: {
+            Button { viewModel.onNotificationsMenuTap() } label: {
                 Image(systemName: "bell").font(.system(size: 28, weight: .regular)).foregroundColor(.primary)
             }
             Spacer(minLength: 0)
-            Button { viewModel.tapNetworkMenu() } label: {
+            Button { viewModel.onNetworkMenuTap() } label: {
                 ZStack(alignment: .topTrailing) {
                     Image(systemName: "person.3").font(.system(size: 28, weight: .regular)).foregroundColor(.primary)
                 }
             }
             Spacer(minLength: 0)
-            Button { viewModel.tapCompose() } label: {
+            Button { viewModel.onCreatePostTap() } label: {
                 Image(systemName: "square.and.arrow.up").font(.system(size: 28, weight: .regular)).foregroundColor(.primary)
             }
             .accessibilityLabel("Compose")
             Spacer(minLength: 0)
-            Button { viewModel.tapSearch() } label: {
+            Button { viewModel.onSearchTap() } label: {
                 Image(systemName: "magnifyingglass").font(.system(size: 28, weight: .regular)).foregroundColor(.primary)
             }
             Spacer(minLength: 0)
-            Button { viewModel.tapCurrentUserProfile() } label: {
+            Button { viewModel.onMainMenuTap() } label: {
                 Image(systemName: "person").font(.system(size: 28, weight: .regular)).foregroundColor(.primary)
             }
             Spacer(minLength: 0)

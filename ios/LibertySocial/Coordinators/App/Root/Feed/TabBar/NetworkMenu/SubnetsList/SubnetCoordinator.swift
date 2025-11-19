@@ -6,13 +6,13 @@ final class SubnetCoordinator {
     private let AuthManagerBadName: AuthManaging
     private let subnetService: SubnetSession
     private let subnet: Subnet
-    private let subnetListViewModel: SubnetListViewModel
+    private let subnetListViewModel: SubnetsListViewModel
     
     init(subnet: Subnet,
          TokenProvider: TokenProviding,
          AuthManagerBadName: AuthManaging,
          subnetService: SubnetSession,
-         subnetListViewModel: SubnetListViewModel) {
+         subnetListViewModel: SubnetsListViewModel) {
         self.subnet = subnet
         self.TokenProvider = TokenProvider
         self.AuthManagerBadName = AuthManagerBadName

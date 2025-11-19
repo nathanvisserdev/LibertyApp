@@ -19,13 +19,17 @@ final class GroupsListViewModel: ObservableObject {
     @Published var showGroupView: Bool = false
     @Published var selectedGroup: UserGroup?
     @Published var showSuggestedGroups: Bool = false
+    @Published var showGroupInvite: Bool = false
+    @Published var groupInviteGroupId: String?
     
     var makeCreateGroupView: (() -> AnyView)?
     var makeGroupView: ((UserGroup) -> AnyView)?
     var makeSuggestedGroupsView: (() -> AnyView)?
-    var onNavigate: ((NextGroupView) -> Void)?
     
-    init(model: GroupsListModel, AuthManagerBadName: AuthManaging, groupService: GroupSession) {
+    init(model: GroupsListModel,
+         AuthManagerBadName: AuthManaging,
+         groupService: GroupSession
+    ) {
         self.model = model
         self.AuthManagerBadName = AuthManagerBadName
         self.groupService = groupService

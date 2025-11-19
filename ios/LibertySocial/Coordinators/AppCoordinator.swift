@@ -13,7 +13,8 @@ final class AppCoordinator: ObservableObject {
          feedService: FeedSession,
          commentService: CommentService,
          subnetService: SubnetSession,
-         groupService: GroupSession) {
+         groupService: GroupSession,
+         groupInviteService: GroupInviteSession) {
         self.rootCoordinator = RootCoordinator(
             sessionStore: sessionStore,
             authManager: authManager,
@@ -21,7 +22,8 @@ final class AppCoordinator: ObservableObject {
             feedService: feedService,
             commentService: commentService,
             subnetService: subnetService,
-            groupService: groupService
+            groupService: groupService,
+            groupInviteService: groupInviteService
         )
     }
     

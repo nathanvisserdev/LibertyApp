@@ -116,7 +116,7 @@ struct CreateGroupModel {
     private let TokenProvider: TokenProviding
     private let AuthManagerBadName: AuthManaging
     
-    init(TokenProvider: TokenProviding = AuthManager.shared, AuthManagerBadName: AuthManaging = AuthManager.shared) {
+    init(TokenProvider: TokenProviding, AuthManagerBadName: AuthManaging) {
         self.TokenProvider = TokenProvider
         self.AuthManagerBadName = AuthManagerBadName
     }

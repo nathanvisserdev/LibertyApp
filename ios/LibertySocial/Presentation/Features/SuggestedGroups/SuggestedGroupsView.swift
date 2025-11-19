@@ -89,7 +89,7 @@ struct SuggestedGroupsView: View {
                 await viewModel.fetchJoinableGroups()
             }
             .sheet(item: $selectedGroup) { group in
-                let coordinator = GroupDetailCoordinator(group: group)
+                let coordinator = AboutGroupCoordinator(group: group)
                 coordinator.start()
             }
         }

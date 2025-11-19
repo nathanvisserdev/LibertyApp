@@ -7,10 +7,10 @@ import SwiftUI
 final class TabBarViewModel: ObservableObject {
     private let model: TabBarModel
     private let onTabSelected: ((TabBarItem) -> Void)?
-    private let onNotificationsTapped: () -> Void
-    private let onNetworkMenuTapped: () -> Void
-    private let onComposeTapped: () -> Void
-    private let onSearchTapped: () -> Void
+    private let notificationsMenuTapped: () -> Void
+    private let networkMenuTapped: () -> Void
+    private let createPostTapped: () -> Void
+    private let searchTapped: () -> Void
     private let onProfileTapped: (String) -> Void
     
     var onShowNotificationsMenu: (() -> AnyView)?
@@ -31,17 +31,17 @@ final class TabBarViewModel: ObservableObject {
     
     init(model: TabBarModel,
          onTabSelected: ((TabBarItem) -> Void)? = nil,
-         onNotificationsTapped: @escaping () -> Void,
-         onNetworkMenuTapped: @escaping () -> Void,
-         onComposeTapped: @escaping () -> Void,
-         onSearchTapped: @escaping () -> Void,
+         notificationsMenuTapped: @escaping () -> Void,
+         networkMenuTapped: @escaping () -> Void,
+         createPostTapped: @escaping () -> Void,
+         searchTapped: @escaping () -> Void,
          onProfileTapped: @escaping (String) -> Void) {
         self.model = model
         self.onTabSelected = onTabSelected
-        self.onNotificationsTapped = onNotificationsTapped
-        self.onNetworkMenuTapped = onNetworkMenuTapped
-        self.onComposeTapped = onComposeTapped
-        self.onSearchTapped = onSearchTapped
+        self.notificationsMenuTapped = notificationsMenuTapped
+        self.networkMenuTapped = networkMenuTapped
+        self.createPostTapped = createPostTapped
+        self.searchTapped = searchTapped
         self.onProfileTapped = onProfileTapped
     }
     
@@ -60,43 +60,43 @@ final class TabBarViewModel: ObservableObject {
         }
     }
     
-    func tapCompose() {
-        isShowingCreatePost = true
-        onComposeTapped()
-    }
-    
-    func tapSearch() {
-        onTabSelected?(.search)
-        isShowingSearch = true
-        onSearchTapped()
-    }
-    
-    func tapNotifications() {
+    func onNotificationsMenuTap() {
         onTabSelected?(.notifications)
         isShowingNotifications = true
-        onNotificationsTapped()
+        notificationsMenuTapped()
     }
     
-    func tapNetworkMenu() {
+    func onNetworkMenuTap() {
         onTabSelected?(.networkMenu)
         isShowingNetworkMenu = true
-        onNetworkMenuTapped()
+        networkMenuTapped()
     }
     
-    func tapProfile(userId: String) {
+    func onCreatePostTap() {
+        isShowingCreatePost = true
+        createPostTapped()
+    }
+    
+    func onSearchTap() {
+        onTabSelected?(.search)
+        isShowingSearch = true
+        searchTapped()
+    }
+    
+    func mainMenuTapped(userId: String) {
         onTabSelected?(.profile)
         isShowingProfile = true
         onProfileTapped(userId)
    }
     
-    func tapCurrentUserProfile() {
+    func onMainMenuTap() {
         Task {
             if let userId = currentUserId {
-                tapProfile(userId: userId)
+                mainMenuTapped(userId: userId)
             } else {
                 await fetchCurrentUserInfo()
                 if let userId = currentUserId {
-                    tapProfile(userId: userId)
+                    mainMenuTapped(userId: userId)
                 }
             }
         }

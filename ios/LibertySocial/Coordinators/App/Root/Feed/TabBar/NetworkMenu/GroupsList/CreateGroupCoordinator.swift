@@ -6,36 +6,52 @@ final class CreateGroupCoordinator {
     
     private let tokenProvider: TokenProviding
     private let authManager: AuthManaging
-    private let groupsListViewModel: GroupsListViewModel
-    
-    private var groupInviteCoordinator: GroupInviteCoordinator?
+    private let groupService: GroupSession
+    private let groupInviteService: GroupInviteSession
     
     private var viewModel: CreateGroupViewModel?
     
+    var handlePresentGroupInviteView: ((String) -> Void)?
+    var onFinished: (() -> Void)?
+    var onCancelled: (() -> Void)?
+    
     init(tokenProvider: TokenProviding,
          authManager: AuthManaging,
-         groupsListViewModel: GroupsListViewModel) {
+         groupService: GroupSession,
+         groupInviteService: GroupInviteSession) {
         self.tokenProvider = tokenProvider
         self.authManager = authManager
-        self.groupsListViewModel = groupsListViewModel
+        self.groupService = groupService
+        self.groupInviteService = groupInviteService
     }
     
-    func start() -> some View {
+    func start(groupId: String? = nil) -> some View {
         let model = CreateGroupModel(TokenProvider: tokenProvider, AuthManagerBadName: authManager)
-        let viewModel = CreateGroupViewModel(model: model, coordinator: self)
+        let viewModel = CreateGroupViewModel(
+            model: model,
+            groupService: groupService,
+            inviteService: groupInviteService,
+            coordinator: self
+        )
         self.viewModel = viewModel
         
         viewModel.onFinished = { [weak self] in
-            self?.groupsListViewModel.hideCreateGroupView()
+            self?.onFinished?()
         }
         viewModel.onCancelled = { [weak self] in
-            self?.groupsListViewModel.hideCreateGroupView()
+            self?.onCancelled?()
         }
         viewModel.onRequestAdminSelection = { [weak self] in
             self?.presentAdminSelection()
         }
-        
+        viewModel.createGroupSucceeded = { [weak self] groupId in
+            self?.handleCreateGroupSuccess(for: groupId)
+        }
         return CreateGroupViewWrapper(viewModel: viewModel, coordinator: self)
+    }
+    
+    func handleCreateGroupSuccess(for groupId: String) {
+        handlePresentGroupInviteView?(groupId)
     }
     
     
@@ -53,12 +69,6 @@ final class CreateGroupCoordinator {
             return AnyView(EmptyView())
         }
         return AnyView(SelectRoundTableAdminsView(viewModel: viewModel))
-    }
-    
-    func makeGroupInviteView(for groupId: String) -> some View {
-        let coordinator = GroupInviteCoordinator(groupId: groupId)
-        self.groupInviteCoordinator = coordinator
-        return coordinator.start()
     }
 }
 

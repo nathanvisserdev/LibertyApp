@@ -1,11 +1,11 @@
 
 import SwiftUI
 
-struct SubnetListView: View {
+struct SubnetsListView: View {
     @Environment(\.dismiss) var dismiss
-    @StateObject private var viewModel: SubnetListViewModel
+    @StateObject private var viewModel: SubnetsListViewModel
     
-    init(viewModel: SubnetListViewModel) {
+    init(viewModel: SubnetsListViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     
@@ -225,6 +225,6 @@ struct SubnetListView: View {
 }
 
 //#Preview {
-//    SubnetListView(viewModel: SubnetListViewModel())
+//    SubnetsListView(viewModel: SubnetsListViewModel())
 //}
 

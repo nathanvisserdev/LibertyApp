@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 @main
@@ -51,7 +50,8 @@ struct LibertySocialApp: App {
             feedService: feedService,
             commentService: commentService,
             subnetService: subnetService,
-            groupService: groupService
+            groupService: groupService,
+            groupInviteService: groupInviteService
         )
         defer {
             appDelegate.notificationManager = notificationManager

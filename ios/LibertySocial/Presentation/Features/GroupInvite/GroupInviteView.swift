@@ -203,7 +203,16 @@ struct InviteeRow: View {
 }
 
 #Preview {
-    let model = GroupInviteModel()
-    let viewModel = GroupInviteViewModel(model: model, groupId: "preview-group-id")
-    return GroupInviteView(viewModel: viewModel)
+    let tokenProvider = AuthManager.shared
+    let groupService = GroupService()
+    let groupInviteService = GroupInviteService()
+    let model = GroupInviteModel(TokenProvider: tokenProvider)
+    let viewModel = GroupInviteViewModel(
+        model: model,
+        groupId: "preview-group-id",
+        TokenProvider: tokenProvider,
+        inviteService: groupInviteService,
+        groupService: groupService
+    )
+    GroupInviteView(viewModel: viewModel)
 }

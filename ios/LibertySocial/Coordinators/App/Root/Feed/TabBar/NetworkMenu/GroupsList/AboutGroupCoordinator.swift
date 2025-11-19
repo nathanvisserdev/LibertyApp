@@ -1,7 +1,7 @@
 
 import SwiftUI
 
-final class GroupDetailCoordinator {
+final class AboutGroupCoordinator {
     private let TokenProvider: TokenProviding
     private let AuthManagerBadName: AuthManaging
     private let group: UserGroup
@@ -15,8 +15,8 @@ final class GroupDetailCoordinator {
     }
     
     func start() -> some View {
-        let model = GroupDetailModel(TokenProvider: TokenProvider)
-        let viewModel = GroupDetailViewModel(groupId: group.id, model: model)
-        return GroupDetailView(viewModel: viewModel)
+        let model = AboutGroupModel(TokenProvider: TokenProvider)
+        let viewModel = AboutGroupViewModel(groupId: group.id, model: model)
+        return AboutGroupView(viewModel: viewModel)
     }
 }

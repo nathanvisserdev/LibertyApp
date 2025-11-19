@@ -18,8 +18,8 @@ final class NetworkMenuViewModel: ObservableObject {
     var onNavigate: ((NextNetworkView) -> Void)?
     
     init(
-        model: NetworkMenuModel = NetworkMenuModel(),
-        authManager: AuthManaging = AuthManager.shared
+        model: NetworkMenuModel,
+        authManager: AuthManaging
     ) {
         self.model = model
         self.authManager = authManager

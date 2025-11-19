@@ -8,13 +8,13 @@ enum NextSubnetView {
 }
 
 @MainActor
-final class SubnetListCoordinator {
+final class SubnetsListCoordinator {
     var onFinished: (() -> Void)?
     private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
     private let subnetService: SubnetSession
-    private let subnetListView: SubnetListView
-    private let subnetListViewModel: SubnetListViewModel
+    private let subnetListView: SubnetsListView
+    private let subnetListViewModel: SubnetsListViewModel
     private let createSubnetCoordinator: CreateSubnetCoordinator
     private let addSubnetMembersCoordinator: AddSubnetMembersCoordinator
     private var subnetCoordinator: SubnetCoordinator?
@@ -26,16 +26,16 @@ final class SubnetListCoordinator {
         self.tokenProvider = tokenProvider
         self.subnetService = subnetService
         
-        let subnetListModel = SubnetListModel(
+        let subnetListModel = SubnetsListModel(
             subnetSession: subnetService,
             TokenProvider: tokenProvider
         )
-        let subnetListViewModel = SubnetListViewModel(
+        let subnetListViewModel = SubnetsListViewModel(
             model: subnetListModel,
             subnetService: subnetService
         )
         self.subnetListViewModel = subnetListViewModel
-        self.subnetListView = SubnetListView(viewModel: subnetListViewModel)
+        self.subnetListView = SubnetsListView(viewModel: subnetListViewModel)
         
         self.createSubnetCoordinator = CreateSubnetCoordinator(
             TokenProvider: tokenProvider,

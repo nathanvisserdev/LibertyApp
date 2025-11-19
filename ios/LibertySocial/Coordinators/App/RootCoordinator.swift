@@ -17,7 +17,8 @@ final class RootCoordinator: ObservableObject {
         feedService: FeedSession,
         commentService: CommentService,
         subnetService: SubnetSession,
-        groupService: GroupSession
+        groupService: GroupSession,
+        groupInviteService: GroupInviteSession
     ) {
         self.sessionStore = sessionStore
         self.tabBarCoordinator = TabBarCoordinator(
@@ -26,7 +27,8 @@ final class RootCoordinator: ObservableObject {
             feedService: feedService,
             commentService: commentService,
             subnetService: subnetService,
-            groupService: groupService
+            groupService: groupService,
+            groupInviteService: groupInviteService
         )
         self.loginCoordinator = LoginCoordinator(
             authManager: authManager,

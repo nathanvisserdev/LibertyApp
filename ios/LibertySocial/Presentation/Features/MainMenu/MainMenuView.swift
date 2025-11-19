@@ -12,7 +12,7 @@ struct MainMenuView: View {
     var body: some View {
         NavigationStack {
             List {
-                Button { viewModel.tapProfile() } label: {
+                Button { viewModel.mainMenuTapped() } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "person").font(.title2).foregroundColor(.blue)
                         VStack(alignment: .leading, spacing: 2) {

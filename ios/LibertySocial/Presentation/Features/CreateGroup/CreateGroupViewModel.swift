@@ -31,13 +31,13 @@ final class CreateGroupViewModel: ObservableObject {
     @Published var isSubmitting: Bool = false
     @Published var errorMessage: String?
     
-    @Published var showGroupInvite: Bool = false
     @Published var createdGroupId: String?
     @Published var showAdminSelection: Bool = false
     
     var onFinished: (() -> Void)?
     var onCancelled: (() -> Void)?
     var onRequestAdminSelection: (() -> Void)?
+    var createGroupSucceeded: ((String) -> Void)?
     
     @Published var selectedAdmins: [RoundTableAdmin] = []
     @Published var viceChairId: String?
@@ -51,35 +51,15 @@ final class CreateGroupViewModel: ObservableObject {
     let maxDescriptionCharacters = 250
     
     init(
-        model: CreateGroupModel = CreateGroupModel(),
-        groupService: GroupSession = GroupService.shared,
-        inviteService: GroupInviteSession = GroupInviteService.shared,
-        coordinator: CreateGroupCoordinator? = nil
+        model: CreateGroupModel,
+        groupService: GroupSession,
+        inviteService: GroupInviteSession,
+        coordinator: CreateGroupCoordinator
     ) {
         self.model = model
         self.groupService = groupService
         self.inviteService = inviteService
         self.coordinator = coordinator
-        
-        subscribeToInviteEvents()
-    }
-    
-    
-    private func subscribeToInviteEvents() {
-        inviteService.inviteEvents
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] event in
-                guard let self = self else { return }
-                
-                switch event {
-                case .invitesSentSuccessfully:
-                    self.onFinished?()
-                    
-                case .invitesFailed:
-                    break
-                }
-            }
-            .store(in: &cancellables)
     }
     
     var remainingNameCharacters: Int {
@@ -207,10 +187,6 @@ final class CreateGroupViewModel: ObservableObject {
                 createdGroupId = response.groupId
             }
             
-            groupService.invalidateCache()
-            
-            showGroupInvite = true
-            
             isSubmitting = false
             return true
         } catch let error as NSError {
@@ -233,13 +209,9 @@ final class CreateGroupViewModel: ObservableObject {
         onCancelled?()
     }
     
-    
-    @ViewBuilder
-    func getGroupInviteView(for groupId: String) -> some View {
-        if let coordinator = coordinator {
-            coordinator.makeGroupInviteView(for: groupId)
-        } else {
-            GroupInviteCoordinator(groupId: groupId).start()
-        }
+    func onCreateGroupSuccess(for groupId: String) {
+        groupService.invalidateCache()
+        onFinished?()
+        createGroupSucceeded?(groupId)
     }
 }

@@ -5,12 +5,12 @@ final class AddSubnetMembersCoordinator {
     private let TokenProvider: TokenProviding
     private let AuthManagerBadName: AuthManaging
     private let subnetId: String
-    private let subnetListViewModel: SubnetListViewModel
+    private let subnetListViewModel: SubnetsListViewModel
     
     init(subnetId: String,
          TokenProvider: TokenProviding,
          AuthManagerBadName: AuthManaging,
-         subnetListViewModel: SubnetListViewModel) {
+         subnetListViewModel: SubnetsListViewModel) {
         self.subnetId = subnetId
         self.TokenProvider = TokenProvider
         self.AuthManagerBadName = AuthManagerBadName

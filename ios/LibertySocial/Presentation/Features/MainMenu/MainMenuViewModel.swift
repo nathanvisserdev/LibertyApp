@@ -22,7 +22,7 @@ final class MainMenuViewModel: ObservableObject {
         self.onProfileTapped = onProfileTapped
     }
     
-    func tapProfile() {
+    func mainMenuTapped() {
         isShowingProfile = true
         onProfileTapped(userId)
     }

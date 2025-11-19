@@ -12,7 +12,7 @@ struct InviteeUser: Codable, Identifiable {
 struct GroupInviteModel {
     private let TokenProvider: TokenProviding
     
-    init(TokenProvider: TokenProviding = AuthManager.shared) {
+    init(TokenProvider: TokenProviding) {
         self.TokenProvider = TokenProvider
     }
     

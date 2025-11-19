@@ -30,8 +30,12 @@ struct CreateGroupView: View {
                                 viewModel.selectedGroupPrivacy = privacy
                             }) {
                                 HStack(alignment: .top, spacing: 12) {
-                                    Image(systemName: viewModel.selectedGroupPrivacy == privacy ? "largecircle.fill.circle" : "circle")
-                                        .foregroundColor(viewModel.selectedGroupPrivacy == privacy ? .accentColor : .gray)
+                                    let isSelected = viewModel.selectedGroupPrivacy == privacy
+                                    let iconName = isSelected ? "largecircle.fill.circle" : "circle"
+                                    let iconColor = isSelected ? Color.accentColor : Color.gray
+                                    
+                                    Image(systemName: iconName)
+                                        .foregroundColor(iconColor)
                                         .imageScale(.large)
                                     
                                     VStack(alignment: .leading, spacing: 4) {
@@ -57,7 +61,7 @@ struct CreateGroupView: View {
                 }
                 
                 Section {
-                    Toggle(isOn: Binding(
+                    let groupTypeBinding = Binding<Bool>(
                         get: { viewModel.selectedGroupType == .roundTable },
                         set: { newValue in
                             if newValue && viewModel.selectedGroupPrivacy == .personalGroup {
@@ -66,7 +70,9 @@ struct CreateGroupView: View {
                                 viewModel.selectedGroupType = newValue ? .roundTable : .autocratic
                             }
                         }
-                    )) {
+                    )
+                    
+                    Toggle(isOn: groupTypeBinding) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(viewModel.selectedGroupType == .roundTable ? "Round Table" : "Autocratic")
                                 .font(.body)
@@ -80,7 +86,7 @@ struct CreateGroupView: View {
                 }
                 
                 Section {
-                    Toggle(isOn: Binding(
+                    let joinPolicyBinding = Binding<Bool>(
                         get: { viewModel.requiresApproval },
                         set: { newValue in
                             if !newValue && viewModel.selectedGroupPrivacy == .privateGroup {
@@ -89,7 +95,9 @@ struct CreateGroupView: View {
                                 viewModel.requiresApproval = newValue
                             }
                         }
-                    )) {
+                    )
+                    
+                    Toggle(isOn: joinPolicyBinding) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(viewModel.requiresApproval ? "Requires Approval" : "Open to All")
                                 .font(.body)
@@ -122,7 +130,10 @@ struct CreateGroupView: View {
                             Spacer()
                         }
                         .padding(.vertical, 8)
-                        .background(viewModel.isValid && !viewModel.isSubmitting ? Color.blue : Color.gray)
+                        .background({
+                            let isEnabled = viewModel.isValid && !viewModel.isSubmitting
+                            return isEnabled ? Color.blue : Color.gray
+                        }())
                         .cornerRadius(8)
                     }
                     .disabled(!viewModel.isValid || viewModel.isSubmitting)
@@ -148,13 +159,6 @@ struct CreateGroupView: View {
                 }
             }
             .disabled(viewModel.isSubmitting)
-            .sheet(isPresented: $viewModel.showGroupInvite) {
-                if let groupId = viewModel.createdGroupId {
-                    viewModel.getGroupInviteView(for: groupId)
-                        .presentationDetents([.large])
-                        .presentationDragIndicator(.visible)
-                }
-            }
             .alert("Select public or private for democratic group type.", isPresented: $showPersonalGroupAlert) {
                 Button("OK", role: .cancel) { }
             }
@@ -168,9 +172,16 @@ struct CreateGroupView: View {
 #Preview {
     let authManager = AuthManager.shared
     let tokenProvider = AuthManager.shared
+    let groupService = GroupService()
+    let groupInviteService = GroupInviteService()
     let groupsListModel = GroupsListModel(TokenProvider: tokenProvider, AuthManagerBadName: authManager)
-    let groupsListViewModel = GroupsListViewModel(model: groupsListModel, AuthManagerBadName: authManager, groupService: GroupService())
-    let coordinator = CreateGroupCoordinator(tokenProvider: tokenProvider, authManager: authManager, groupsListViewModel: groupsListViewModel)
+    let groupsListViewModel = GroupsListViewModel(model: groupsListModel, AuthManagerBadName: authManager, groupService: groupService)
+    let coordinator = CreateGroupCoordinator(
+        tokenProvider: tokenProvider,
+        authManager: authManager,
+        groupService: groupService,
+        groupInviteService: groupInviteService
+    )
     coordinator.start()
 }
 

@@ -4,11 +4,11 @@ import SwiftUI
 final class CreateSubnetCoordinator {
     private let TokenProvider: TokenProviding
     private let subnetService: SubnetSession
-    private let subnetListViewModel: SubnetListViewModel
+    private let subnetListViewModel: SubnetsListViewModel
     
     init(TokenProvider: TokenProviding, 
          subnetService: SubnetSession,
-         subnetListViewModel: SubnetListViewModel) {
+         subnetListViewModel: SubnetsListViewModel) {
         self.TokenProvider = TokenProvider
         self.subnetService = subnetService
         self.subnetListViewModel = subnetListViewModel

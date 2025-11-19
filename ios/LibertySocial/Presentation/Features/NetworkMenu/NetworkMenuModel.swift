@@ -27,7 +27,7 @@ struct GroupAdmin: Codable {
 struct NetworkMenuModel {
     private let AuthManagerBadName: AuthManaging
     
-    init(AuthManagerBadName: AuthManaging = AuthManager.shared) {
+    init(AuthManagerBadName: AuthManaging) {
         self.AuthManagerBadName = AuthManagerBadName
     }
 }

@@ -1,11 +1,11 @@
 
 import SwiftUI
 
-struct GroupDetailView: View {
-    @StateObject private var viewModel: GroupDetailViewModel
+struct AboutGroupView: View {
+    @StateObject private var viewModel: AboutGroupViewModel
     @Environment(\.dismiss) var dismiss
     
-    init(viewModel: GroupDetailViewModel) {
+    init(viewModel: AboutGroupViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     
@@ -304,7 +304,7 @@ struct MemberRow: View {
         displayLabel: "Sample Group public assembly room",
         joinedAt: Date()
     )
-    let model = GroupDetailModel()
-    let viewModel = GroupDetailViewModel(groupId: group.id, model: model)
-    return GroupDetailView(viewModel: viewModel)
+    let model = AboutGroupModel()
+    let viewModel = AboutGroupViewModel(groupId: group.id, model: model)
+    return AboutGroupView(viewModel: viewModel)
 }
