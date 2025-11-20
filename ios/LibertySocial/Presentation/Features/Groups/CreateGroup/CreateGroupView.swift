@@ -2,6 +2,7 @@
 import SwiftUI
 
 struct CreateGroupView: View {
+    @Environment(\.dismiss) var dismiss
     @ObservedObject var viewModel: CreateGroupViewModel
     let coordinator: CreateGroupCoordinator
     @State private var showPersonalGroupAlert = false
@@ -115,7 +116,7 @@ struct CreateGroupView: View {
                 Section {
                     Button(action: {
                         if viewModel.selectedGroupType == .roundTable {
-                            viewModel.onRequestAdminSelection?()
+                            viewModel.onSelectBoardMembersTap()
                         } else {
                             Task {
                                 await viewModel.submit()
@@ -159,6 +160,12 @@ struct CreateGroupView: View {
                 }
             }
             .disabled(viewModel.isSubmitting)
+            .sheet(isPresented: $viewModel.showAdminSelection) {
+                SelectRoundTableAdminsView(viewModel: viewModel)
+            }
+            .onReceive(viewModel.groupService.groupsDidChange) { _ in
+                dismiss()
+            }
             .alert("Select public or private for democratic group type.", isPresented: $showPersonalGroupAlert) {
                 Button("OK", role: .cancel) { }
             }

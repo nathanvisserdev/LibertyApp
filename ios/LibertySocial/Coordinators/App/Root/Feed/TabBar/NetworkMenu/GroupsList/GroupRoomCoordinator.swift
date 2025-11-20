@@ -1,7 +1,7 @@
 
 import SwiftUI
 
-final class AssemblyRoomCoordinator {
+final class GroupRoomCoordinator {
     
     private let TokenProvider: TokenProviding
     private let AuthManagerBadName: AuthManaging
@@ -18,12 +18,12 @@ final class AssemblyRoomCoordinator {
     }
     
     func start() -> some View {
-        let model = AssemblyRoomModel(TokenProvider: TokenProvider, AuthManagerBadName: AuthManagerBadName)
-        let viewModel = AssemblyRoomViewModel(group: group, model: model)
+        let model = GroupRoomModel(TokenProvider: TokenProvider, AuthManagerBadName: AuthManagerBadName)
+        let viewModel = GroupRoomViewModel(group: group, model: model)
         
         viewModel.onClose = { [weak self] in
             self?.onClose?()
         }
-        return AssemblyRoomView(group: group, viewModel: viewModel)
+        return GroupRoomView(group: group, viewModel: viewModel)
     }
 }

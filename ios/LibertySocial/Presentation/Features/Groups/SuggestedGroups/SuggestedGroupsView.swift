@@ -4,7 +4,6 @@ import SwiftUI
 struct SuggestedGroupsView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel: SuggestedGroupsViewModel
-    @State private var selectedGroup: UserGroup?
     
     init(viewModel: SuggestedGroupsViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -66,7 +65,7 @@ struct SuggestedGroupsView: View {
                     List {
                         ForEach(viewModel.joinableGroups) { group in
                             Button {
-                                viewModel.selectGroup(group)
+                                viewModel.onGroupTap(groupId: group.id)
                             } label: {
                                 GroupRow(group: group)
                             }
@@ -78,19 +77,8 @@ struct SuggestedGroupsView: View {
             }
             .navigationTitle("Suggested groups")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        viewModel.dismiss()
-                    }
-                }
-            }
             .task {
                 await viewModel.fetchJoinableGroups()
-            }
-            .sheet(item: $selectedGroup) { group in
-                let coordinator = AboutGroupCoordinator(group: group)
-                coordinator.start()
             }
         }
     }

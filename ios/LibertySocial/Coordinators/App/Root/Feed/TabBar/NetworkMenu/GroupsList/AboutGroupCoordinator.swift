@@ -2,21 +2,18 @@
 import SwiftUI
 
 final class AboutGroupCoordinator {
-    private let TokenProvider: TokenProviding
-    private let AuthManagerBadName: AuthManaging
-    private let group: UserGroup
+    private let groupId: String
+    private let groupService: GroupSession
     
-    init(group: UserGroup,
-         TokenProvider: TokenProviding = AuthManager.shared,
-         AuthManagerBadName: AuthManaging = AuthManager.shared) {
-        self.group = group
-        self.TokenProvider = TokenProvider
-        self.AuthManagerBadName = AuthManagerBadName
+    init(groupId: String,
+         groupService: GroupSession) {
+        self.groupId = groupId
+        self.groupService = groupService
     }
     
     func start() -> some View {
-        let model = AboutGroupModel(TokenProvider: TokenProvider)
-        let viewModel = AboutGroupViewModel(groupId: group.id, model: model)
+        let model = AboutGroupModel(groupService: groupService)
+        let viewModel = AboutGroupViewModel(groupId: groupId, model: model)
         return AboutGroupView(viewModel: viewModel)
     }
 }

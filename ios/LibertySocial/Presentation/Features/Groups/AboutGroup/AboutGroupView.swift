@@ -98,16 +98,20 @@ struct AboutGroupView: View {
                                             .font(.title)
                                             .fontWeight(.bold)
                                         
-                                        Text(groupDetail.displayLabel)
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
+                                        HStack(spacing: 4) {
+                                            Image(systemName: groupDetail.groupType == "PUBLIC" ? "globe" : "lock.fill")
+                                                .font(.caption)
+                                            Text(groupDetail.groupType.capitalized)
+                                                .font(.caption)
+                                            Text("•")
+                                                .font(.caption)
+                                            Text(groupDetail.groupPrivacy.capitalized)
+                                                .font(.caption)
+                                        }
+                                        .foregroundColor(.secondary)
                                     }
                                     
                                     Spacer()
-                                    
-                                    Image(systemName: groupDetail.groupType == "PUBLIC" ? "globe" : "lock.fill")
-                                        .font(.title2)
-                                        .foregroundColor(groupDetail.groupType == "PUBLIC" ? .blue : .orange)
                                 }
                                 
                                 if let description = groupDetail.description, !description.isEmpty {
@@ -118,24 +122,13 @@ struct AboutGroupView: View {
                                 
                                 Divider()
                                 
-                                HStack(spacing: 30) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Members")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                        Text("\(groupDetail.memberCount)")
-                                            .font(.title3)
-                                            .fontWeight(.semibold)
-                                    }
-                                    
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Created")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                        Text(formatDate(groupDetail.createdAt))
-                                            .font(.caption)
-                                            .fontWeight(.medium)
-                                    }
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Members")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    Text("\(groupDetail.memberCount)")
+                                        .font(.title3)
+                                        .fontWeight(.semibold)
                                 }
                                 
                                 Divider()
@@ -158,9 +151,13 @@ struct AboutGroupView: View {
                                                 Text(firstName)
                                                     .font(.body)
                                                     .fontWeight(.medium)
+                                            } else {
+                                                Text("Group Admin")
+                                                    .font(.body)
+                                                    .fontWeight(.medium)
                                             }
                                             
-                                            Text("@\(groupDetail.admin.username)")
+                                            Text("Admin")
                                                 .font(.caption)
                                                 .foregroundColor(.secondary)
                                         }
@@ -202,7 +199,7 @@ struct AboutGroupView: View {
                                         ForEach(groupDetail.members) { member in
                                             MemberRow(member: member)
                                             
-                                            if member.id != groupDetail.members.last?.id {
+                                            if member.groupMembershipId != groupDetail.members.last?.groupMembershipId {
                                                 Divider()
                                                     .padding(.leading, 60)
                                             }
@@ -233,12 +230,6 @@ struct AboutGroupView: View {
             await viewModel.fetchGroupDetail()
         }
     }
-    
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: date)
-    }
 }
 
 struct MemberRow: View {
@@ -259,15 +250,22 @@ struct MemberRow: View {
                     Text(firstName)
                         .font(.body)
                         .fontWeight(.medium)
-                } else {
-                    Text(member.user.username)
+                } else if let username = member.user.username {
+                    Text(username)
                         .font(.body)
                         .fontWeight(.medium)
+                } else {
+                    Text("Member")
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
                 }
                 
-                Text("@\(member.user.username)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                if let username = member.user.username {
+                    Text("@\(username)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             
             Spacer()
@@ -304,7 +302,9 @@ struct MemberRow: View {
         displayLabel: "Sample Group public assembly room",
         joinedAt: Date()
     )
-    let model = AboutGroupModel()
+    let tokenProvider = AuthManager()
+    let groupService = GroupService(TokenProvider: tokenProvider)
+    let model = AboutGroupModel(groupService: groupService)
     let viewModel = AboutGroupViewModel(groupId: group.id, model: model)
-    return AboutGroupView(viewModel: viewModel)
+    AboutGroupView(viewModel: viewModel)
 }

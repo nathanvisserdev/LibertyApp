@@ -1,20 +1,18 @@
 
 import SwiftUI
+import Combine
 
 @MainActor
 final class CreateGroupCoordinator {
-    
-    private let tokenProvider: TokenProviding
     private let authManager: AuthManaging
+    private let tokenProvider: TokenProviding
     private let groupService: GroupSession
     private let groupInviteService: GroupInviteSession
+    private var childViewModels: [CreateGroupViewModel] = []
     
-    private var viewModel: CreateGroupViewModel?
-    
-    var handlePresentGroupInviteView: ((String) -> Void)?
-    var onFinished: (() -> Void)?
+    var onFinish: ((String) -> Void)?
     var onCancelled: (() -> Void)?
-    
+
     init(tokenProvider: TokenProviding,
          authManager: AuthManaging,
          groupService: GroupSession,
@@ -25,7 +23,19 @@ final class CreateGroupCoordinator {
         self.groupInviteService = groupInviteService
     }
     
-    func start(groupId: String? = nil) -> some View {
+    func start(nextView: Bool = false) -> some View {
+        if nextView {
+            return startAdminSelectionView()
+        } else {
+            return startCreateGroupView()
+        }
+    }
+    
+    func handleSelectBoardMembersTap() {
+//        start(nextView: true)
+    }
+    
+    func startCreateGroupView() -> AnyView {
         let model = CreateGroupModel(TokenProvider: tokenProvider, AuthManagerBadName: authManager)
         let viewModel = CreateGroupViewModel(
             model: model,
@@ -33,54 +43,25 @@ final class CreateGroupCoordinator {
             inviteService: groupInviteService,
             coordinator: self
         )
-        self.viewModel = viewModel
-        
-        viewModel.onFinished = { [weak self] in
-            self?.onFinished?()
-        }
         viewModel.onCancelled = { [weak self] in
             self?.onCancelled?()
         }
-        viewModel.onRequestAdminSelection = { [weak self] in
-            self?.presentAdminSelection()
-        }
         viewModel.createGroupSucceeded = { [weak self] groupId in
-            self?.handleCreateGroupSuccess(for: groupId)
+            self?.onFinish?(groupId)
         }
-        return CreateGroupViewWrapper(viewModel: viewModel, coordinator: self)
+        viewModel.selectBoardMembersTapped = { [weak self] in
+            self?.handleSelectBoardMembersTap()
+        }
+        childViewModels.append(viewModel)
+        return AnyView(CreateGroupView(viewModel: viewModel, coordinator: self))
     }
     
-    func handleCreateGroupSuccess(for groupId: String) {
-        handlePresentGroupInviteView?(groupId)
-    }
-    
-    
-    func presentAdminSelection() {
-        viewModel?.showAdminSelection = true
-    }
-    
-    func dismissAdminSelection() {
-        viewModel?.showAdminSelection = false
-    }
-    
-    
-    func makeAdminSelectionView() -> some View {
-        guard let viewModel = viewModel else {
+    func startAdminSelectionView() -> AnyView {
+        guard let viewModel = childViewModels.first else {
             return AnyView(EmptyView())
         }
-        return AnyView(SelectRoundTableAdminsView(viewModel: viewModel))
-    }
-}
 
-
-private struct CreateGroupViewWrapper: View {
-    @ObservedObject var viewModel: CreateGroupViewModel
-    let coordinator: CreateGroupCoordinator
-    
-    var body: some View {
-        CreateGroupView(viewModel: viewModel, coordinator: coordinator)
-            .sheet(isPresented: $viewModel.showAdminSelection) {
-                coordinator.makeAdminSelectionView()
-            }
+        let adminSelectionView = SelectRoundTableAdminsView(viewModel: viewModel)
+        return AnyView(adminSelectionView)
     }
 }

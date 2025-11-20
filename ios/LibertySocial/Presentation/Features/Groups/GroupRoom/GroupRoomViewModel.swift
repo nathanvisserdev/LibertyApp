@@ -3,15 +3,15 @@ import Foundation
 import Combine
 
 @MainActor
-final class AssemblyRoomViewModel: ObservableObject {
+final class GroupRoomViewModel: ObservableObject {
     
-    private let model: AssemblyRoomModel
+    private let model: GroupRoomModel
     
     @Published var group: UserGroup
     
     var onClose: (() -> Void)?
     
-    init(group: UserGroup, model: AssemblyRoomModel) {
+    init(group: UserGroup, model: GroupRoomModel) {
         self.group = group
         self.model = model
     }

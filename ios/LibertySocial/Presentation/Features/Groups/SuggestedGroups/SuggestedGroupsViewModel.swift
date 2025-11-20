@@ -11,8 +11,7 @@ final class SuggestedGroupsViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
-    var onDismiss: (() -> Void)?
-    var onGroupSelected: ((UserGroup) -> Void)?
+    var onGroupTapped: ((String) -> Void)?
     
     init(model: SuggestedGroupsModel = SuggestedGroupsModel()) {
         self.model = model
@@ -34,12 +33,7 @@ final class SuggestedGroupsViewModel: ObservableObject {
         isLoading = false
     }
     
-    
-    func dismiss() {
-        onDismiss?()
-    }
-    
-    func selectGroup(_ group: UserGroup) {
-        onGroupSelected?(group)
+    func onGroupTap(groupId: String) {
+        onGroupTapped?(groupId)
     }
 }

@@ -7,7 +7,7 @@ import Combine
 final class CreateGroupViewModel: ObservableObject {
     
     private let model: CreateGroupModel
-    private let groupService: GroupSession
+    let groupService: GroupSession
     private let inviteService: GroupInviteSession
     private weak var coordinator: CreateGroupCoordinator?
     
@@ -36,8 +36,8 @@ final class CreateGroupViewModel: ObservableObject {
     
     var onFinished: (() -> Void)?
     var onCancelled: (() -> Void)?
-    var onRequestAdminSelection: (() -> Void)?
     var createGroupSucceeded: ((String) -> Void)?
+    var selectBoardMembersTapped: (() -> Void)?
     
     @Published var selectedAdmins: [RoundTableAdmin] = []
     @Published var viceChairId: String?
@@ -207,6 +207,11 @@ final class CreateGroupViewModel: ObservableObject {
     
     func cancel() {
         onCancelled?()
+    }
+    
+    func onSelectBoardMembersTap() {
+        showAdminSelection = true
+        selectBoardMembersTapped?()
     }
     
     func onCreateGroupSuccess(for groupId: String) {

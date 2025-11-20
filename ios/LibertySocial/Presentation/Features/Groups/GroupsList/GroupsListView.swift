@@ -127,29 +127,46 @@ struct GroupsListView: View {
             .task {
                 await viewModel.fetchUserGroups()
             }
-            .sheet(isPresented: $viewModel.showCreateGroup) {
-                if let makeView = viewModel.makeCreateGroupView {
-                    makeView()
+            .sheet(isPresented: $viewModel.shouldPresentCreateGroupView) {
+                if let presentView = viewModel.presentCreateGroupView {
+                    presentView()
                 } else {
                     EmptyView()
                 }
             }
-            .sheet(isPresented: $viewModel.showSuggestedGroups) {
-                if let makeView = viewModel.makeSuggestedGroupsView {
-                    makeView()
+            .sheet(isPresented: $viewModel.shouldPresentSuggestedGroupsView) {
+                if let presentView = viewModel.presentSuggestedGroupsView {
+                    presentView()
                 } else {
                     EmptyView()
                 }
             }
-            .sheet(item: $viewModel.selectedGroup) { group in
-                if let makeView = viewModel.makeGroupView {
-                    makeView(group)
+            .sheet(item: $viewModel.shouldPresentGroupView) { group in
+                if let presentView = viewModel.presentGroupView {
+                    presentView(group)
+                } else {
+                    EmptyView()
+                }
+            }
+            .sheet(isPresented: $viewModel.shouldPresentGroupInviteView) {
+                if let groupId = viewModel.groupInviteGroupId,
+                   let presentView = viewModel.presentGroupInviteView {
+                    presentView(groupId)
+                } else {
+                    EmptyView()
+                }
+            }
+            .sheet(isPresented: $viewModel.shouldPresentAboutGroupView) {
+                if let groupId = viewModel.aboutGroupId,
+                   let presentView = viewModel.presentAboutGroupView {
+                    presentView(groupId)
                 } else {
                     EmptyView()
                 }
             }
         }
     }
+    
 }//#Preview {
 //    let coordinator = GroupsListCoordinator(
 //        authManager: AuthManager.shared,

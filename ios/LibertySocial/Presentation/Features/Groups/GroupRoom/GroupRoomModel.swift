@@ -1,7 +1,7 @@
 
 import Foundation
 
-struct AssemblyRoomModel {
+struct GroupRoomModel {
     private let TokenProvider: TokenProviding
     private let AuthManagerBadName: AuthManaging
     

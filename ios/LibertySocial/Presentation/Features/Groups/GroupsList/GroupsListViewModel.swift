@@ -14,17 +14,20 @@ final class GroupsListViewModel: ObservableObject {
     @Published var userGroups: [UserGroup] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-    
-    @Published var showCreateGroup: Bool = false
+    @Published var shouldPresentCreateGroupView: Bool = false
     @Published var showGroupView: Bool = false
-    @Published var selectedGroup: UserGroup?
-    @Published var showSuggestedGroups: Bool = false
-    @Published var showGroupInvite: Bool = false
+    @Published var shouldPresentGroupView: UserGroup?
+    @Published var shouldPresentSuggestedGroupsView: Bool = false
+    @Published var shouldPresentGroupInviteView: Bool = false
+    @Published var shouldPresentAboutGroupView: Bool = false
     @Published var groupInviteGroupId: String?
+    @Published var aboutGroupId: String?
     
-    var makeCreateGroupView: (() -> AnyView)?
-    var makeGroupView: ((UserGroup) -> AnyView)?
-    var makeSuggestedGroupsView: (() -> AnyView)?
+    var presentCreateGroupView: (() -> AnyView)?
+    var presentGroupView: ((UserGroup) -> AnyView)?
+    var presentSuggestedGroupsView: (() -> AnyView)?
+    var presentGroupInviteView: ((String) -> AnyView)?
+    var presentAboutGroupView: ((String) -> AnyView)?
     
     init(model: GroupsListModel,
          AuthManagerBadName: AuthManaging,
@@ -60,28 +63,38 @@ final class GroupsListViewModel: ObservableObject {
     }
     
     func showCreateGroupView() {
-        showCreateGroup = true
+        shouldPresentCreateGroupView = true
     }
     
     func hideCreateGroupView() {
-        showCreateGroup = false
+        shouldPresentCreateGroupView = false
     }
     
     func showSuggestedGroupsView() {
-        showSuggestedGroups = true
+        shouldPresentSuggestedGroupsView = true
     }
     
     func hideSuggestedGroupsView() {
-        showSuggestedGroups = false
+        shouldPresentSuggestedGroupsView = false
     }
     
     func showGroup(_ group: UserGroup) {
-        selectedGroup = group
+        shouldPresentGroupView = group
         showGroupView = true
     }
     
     func hideGroup() {
-        selectedGroup = nil
+        shouldPresentGroupView = nil
         showGroupView = false
+    }
+    
+    func signalToPresentGroupInviteView(groupId: String) {
+        groupInviteGroupId = groupId
+        shouldPresentGroupInviteView = true
+    }
+    
+    func publishGroupTapped(groupId: String) {
+        aboutGroupId = groupId
+        shouldPresentAboutGroupView = true
     }
 }
