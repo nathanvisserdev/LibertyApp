@@ -5,7 +5,6 @@ import Combine
 
 @MainActor
 final class GroupsListViewModel: ObservableObject {
-    
     private let model: GroupsListModel
     private let AuthManagerBadName: AuthManaging
     private let groupService: GroupSession
@@ -16,18 +15,20 @@ final class GroupsListViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var shouldPresentCreateGroupView: Bool = false
     @Published var showGroupView: Bool = false
-    @Published var shouldPresentGroupView: UserGroup?
+    @Published var shouldPresentGroupView: Bool = false
     @Published var shouldPresentSuggestedGroupsView: Bool = false
     @Published var shouldPresentGroupInviteView: Bool = false
     @Published var shouldPresentAboutGroupView: Bool = false
-    @Published var groupInviteGroupId: String?
-    @Published var aboutGroupId: String?
+    @Published var groupId: String?
     
     var presentCreateGroupView: (() -> AnyView)?
-    var presentGroupView: ((UserGroup) -> AnyView)?
     var presentSuggestedGroupsView: (() -> AnyView)?
     var presentGroupInviteView: ((String) -> AnyView)?
+    var presentGroupView: ((String) -> AnyView)?
     var presentAboutGroupView: ((String) -> AnyView)?
+    var onSuggestedGroupsViewFinish: (() -> Void)?
+    var handleCreateGroupDismissed: (() -> Void)?
+    var handleGroupsListViewDismiss: (() -> Void)?
     
     init(model: GroupsListModel,
          AuthManagerBadName: AuthManaging,
@@ -78,23 +79,35 @@ final class GroupsListViewModel: ObservableObject {
         shouldPresentSuggestedGroupsView = false
     }
     
-    func showGroup(_ group: UserGroup) {
-        shouldPresentGroupView = group
-        showGroupView = true
+    func onGroupTap(groupId: String) {
+        self.groupId = groupId
+        shouldPresentGroupView = true
     }
     
-    func hideGroup() {
-        shouldPresentGroupView = nil
-        showGroupView = false
+    func hideGroupRoomView() {
+        self.groupId = nil
+        shouldPresentGroupView = false
     }
     
-    func signalToPresentGroupInviteView(groupId: String) {
-        groupInviteGroupId = groupId
+    func showGroupInviteView(groupId: String) {
+        self.groupId = groupId
         shouldPresentGroupInviteView = true
     }
     
-    func publishGroupTapped(groupId: String) {
-        aboutGroupId = groupId
+    func showAboutGroupView(groupId: String) {
+        self.groupId = groupId
         shouldPresentAboutGroupView = true
+    }
+    
+    func onSuggestedGroupsViewDismissed() {
+        onSuggestedGroupsViewFinish?()
+    }
+    
+    func onCreateGroupDismissed() {
+        handleCreateGroupDismissed?()
+    }
+    
+    func onGroupsListViewDismiss() {
+        handleGroupsListViewDismiss?()
     }
 }

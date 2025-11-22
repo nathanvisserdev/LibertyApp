@@ -2,28 +2,35 @@
 import SwiftUI
 
 final class GroupRoomCoordinator {
-    
     private let TokenProvider: TokenProviding
     private let AuthManagerBadName: AuthManaging
-    private let group: UserGroup
+    private let groupService: GroupSession
+    private let groupId: String
+    var onFinish: (() -> Void)?
     
-    var onClose: (() -> Void)?
-    
-    init(group: UserGroup,
+    init(groupId: String,
          TokenProvider: TokenProviding,
-         AuthManagerBadName: AuthManaging) {
-        self.group = group
+         AuthManagerBadName: AuthManaging,
+         groupService: GroupSession) {
+        self.groupId = groupId
         self.TokenProvider = TokenProvider
         self.AuthManagerBadName = AuthManagerBadName
+        self.groupService = groupService
     }
     
     func start() -> some View {
-        let model = GroupRoomModel(TokenProvider: TokenProvider, AuthManagerBadName: AuthManagerBadName)
-        let viewModel = GroupRoomViewModel(group: group, model: model)
-        
-        viewModel.onClose = { [weak self] in
-            self?.onClose?()
+        let model = GroupRoomModel(
+            TokenProvider: TokenProvider,
+            AuthManagerBadName: AuthManagerBadName,
+            groupService: groupService
+        )
+        let viewModel = GroupRoomViewModel(
+            groupId: groupId,
+            model: model
+        )
+        viewModel.handleDoneTap = { [weak self] in
+            self?.onFinish?()
         }
-        return GroupRoomView(group: group, viewModel: viewModel)
+        return GroupRoomView(viewModel: viewModel)
     }
 }

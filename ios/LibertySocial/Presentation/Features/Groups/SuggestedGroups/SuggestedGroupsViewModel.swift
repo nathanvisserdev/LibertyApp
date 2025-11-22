@@ -4,16 +4,14 @@ import Combine
 
 @MainActor
 final class SuggestedGroupsViewModel: ObservableObject {
-    
     private let model: SuggestedGroupsModel
-    
     @Published var joinableGroups: [UserGroup] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
-    var onGroupTapped: ((String) -> Void)?
+    var handleGroupTap: ((String) -> Void)?
     
-    init(model: SuggestedGroupsModel = SuggestedGroupsModel()) {
+    init(model: SuggestedGroupsModel) {
         self.model = model
     }
     
@@ -34,6 +32,6 @@ final class SuggestedGroupsViewModel: ObservableObject {
     }
     
     func onGroupTap(groupId: String) {
-        onGroupTapped?(groupId)
+        handleGroupTap?(groupId)
     }
 }

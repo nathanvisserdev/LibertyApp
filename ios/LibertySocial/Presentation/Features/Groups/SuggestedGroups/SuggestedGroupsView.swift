@@ -135,6 +135,6 @@ struct GroupRow: View {
     }
 }
 
-#Preview {
-    SuggestedGroupsView(viewModel: SuggestedGroupsViewModel())
-}
+//#Preview {
+//    SuggestedGroupsView(viewModel: SuggestedGroupsViewModel())
+//}

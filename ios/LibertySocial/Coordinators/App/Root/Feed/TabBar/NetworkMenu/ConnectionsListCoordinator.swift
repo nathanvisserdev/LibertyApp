@@ -4,16 +4,15 @@ import Combine
 
 @MainActor
 final class ConnectionsListCoordinator {
-    
     private var profileCoordinator: ProfileCoordinator?
-    
     private let authManager: AuthManaging
     private let tokenProvider: TokenProviding
     private let networkMenuViewModel: NetworkMenuViewModel
 
     init(authManager: AuthManaging,
          tokenProvider: TokenProviding,
-         networkMenuViewModel: NetworkMenuViewModel) {
+         networkMenuViewModel: NetworkMenuViewModel
+    ) {
         self.authManager = authManager
         self.tokenProvider = tokenProvider
         self.networkMenuViewModel = networkMenuViewModel

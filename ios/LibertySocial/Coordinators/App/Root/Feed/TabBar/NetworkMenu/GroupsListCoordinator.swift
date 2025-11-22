@@ -4,7 +4,7 @@ import Combine
 
 enum NextGroupView {
     case groupsList
-    case group(UserGroup)
+    case group(String)
     case createGroup
     case suggestedGroups
     case groupInvite(String)
@@ -17,24 +17,23 @@ final class GroupsListCoordinator {
     private let tokenProvider: TokenProviding
     private let groupService: GroupSession
     private let groupInviteService: GroupInviteSession
-    private weak var currentViewModel: GroupsListViewModel?
+    private var currentViewModel: [GroupsListViewModel] = []
     private var childCoordinators: [Any] = []
 
     init(authManager: AuthManaging,
          tokenProvider: TokenProviding,
          groupService: GroupSession,
-         groupInviteService: GroupInviteSession) {
+         groupInviteService: GroupInviteSession
+    ) {
         self.authManager = authManager
         self.tokenProvider = tokenProvider
         self.groupService = groupService
         self.groupInviteService = groupInviteService
     }
-
-    func presentViewFromChild(nextView: NextGroupView, groupId: String) {
-        _ = start(nextView: nextView, groupId: groupId)
-    }
     
-    func start(nextView: NextGroupView = .groupsList, groupId: String? = nil) -> some View {
+    func start(nextView: NextGroupView = .groupsList,
+               groupId: String? = nil) -> some View
+    {
         switch nextView {
         case .groupsList:
             return startGroupsListView()
@@ -42,8 +41,8 @@ final class GroupsListCoordinator {
             return startCreateGroupCoordinator()
         case .suggestedGroups:
             return startSuggestedGroupsCoordinator()
-        case .group(let group):
-            return startGroupRoomCoordinator(group: group)
+        case .group(let groupId):
+            return startGroupRoomCoordinator(groupId: groupId)
         case .groupInvite(let groupId):
             return startGroupInviteCoordinator(groupId: groupId)
         case .aboutGroup(let groupId):
@@ -61,92 +60,106 @@ final class GroupsListCoordinator {
             AuthManagerBadName: authManager,
             groupService: groupService
         )
-        currentViewModel = viewModel
+        if currentViewModel.count > 0 {
+            currentViewModel.removeAll()
+        }
+        currentViewModel.append(viewModel)
         viewModel.presentCreateGroupView = { [weak self] in
             guard let self = self else { return AnyView(EmptyView()) }
             return AnyView(self.start(nextView: .createGroup))
-        }
-        viewModel.presentGroupView = { [weak self] group in
-            guard let self = self else { return AnyView(EmptyView()) }
-            return AnyView(self.start(nextView: .group(group)))
         }
         viewModel.presentSuggestedGroupsView = { [weak self] in
             guard let self = self else { return AnyView(EmptyView()) }
             return AnyView(self.start(nextView: .suggestedGroups))
         }
-        viewModel.presentGroupInviteView = { [weak self] groupId in
+        viewModel.presentGroupView = { [weak self] groupId in
             guard let self = self else { return AnyView(EmptyView()) }
-            return AnyView(self.start(nextView: .groupInvite(groupId)))
+            return AnyView(self.start(nextView: .group(groupId)))
         }
         viewModel.presentAboutGroupView = { [weak self] groupId in
             guard let self = self else { return AnyView(EmptyView()) }
             return AnyView(self.start(nextView: .aboutGroup(groupId)))
         }
+        viewModel.presentGroupInviteView = { [weak self] groupId in
+            guard let self = self else { return AnyView(EmptyView()) }
+            return AnyView(self.start(nextView: .groupInvite(groupId)))
+        }
+        viewModel.onSuggestedGroupsViewFinish = { [weak self] in
+            self?.removeSuggestedGroupsCoordinator()
+        }
+        viewModel.handleGroupsListViewDismiss = { [weak self] in
+            guard let self = self else { return }
+            self.onFinish()
+        }
         let groupsListView = GroupsListView(viewModel: viewModel)
         return AnyView(groupsListView)
     }
     
+    func removeSuggestedGroupsCoordinator() {
+        childCoordinators.removeAll { coordinator in
+            coordinator is SuggestedGroupsCoordinator
+        }
+    }
+    
+    func onFinish() {
+        childCoordinators.removeAll()
+        currentViewModel.removeAll()
+    }
+    
     func startCreateGroupCoordinator() -> AnyView {
-        let createGroupCoordinator = CreateGroupCoordinator(
+        let coordinator = CreateGroupCoordinator(
             tokenProvider: tokenProvider,
             authManager: authManager,
             groupService: groupService,
             groupInviteService: groupInviteService
         )
-        createGroupCoordinator.onFinish = { [weak self] (groupId: String) in
-            guard let self = self else { return }
-            self.dismissCreateGroupView()
-            self.currentViewModel?.signalToPresentGroupInviteView(groupId: groupId)
+        coordinator.onFinish = { [weak self] groupId in
+            self?.currentViewModel.first?.showGroupInviteView(groupId: groupId)
         }
-        return AnyView(createGroupCoordinator.start())
-    }
-    
-    func dismissCreateGroupView() {
-        currentViewModel?.hideCreateGroupView()
-    }
-    
-    func dismissSuggestedGroupsView() {
-        currentViewModel?.hideSuggestedGroupsView()
+        return AnyView(coordinator.start())
     }
     
     func startSuggestedGroupsCoordinator() -> AnyView {
-        let model = GroupsListModel(
-            TokenProvider: tokenProvider,
-            AuthManagerBadName: authManager
-        )
-        let viewModel = GroupsListViewModel(
-            model: model,
-            AuthManagerBadName: authManager,
-            groupService: groupService
-        )
         let coordinator = SuggestedGroupsCoordinator(
             TokenProvider: tokenProvider,
             AuthManagerBadName: authManager
         )
-        coordinator.handleGroupTapped = { [weak self] (groupId: String) in
+        coordinator.onFinish = { [weak self] in
             guard let self = self else { return }
-            self.dismissSuggestedGroupsView()
-            self.currentViewModel?.publishGroupTapped(groupId: groupId)
+            self.currentViewModel.first?.hideSuggestedGroupsView()
+        }
+        coordinator.DisplayAboutGroupView = { [weak self] groupId in
+            guard let self = self else { return }
+            self.currentViewModel.first?.showAboutGroupView(groupId: groupId)
         }
         childCoordinators.append(coordinator)
         return AnyView(coordinator.start())
     }
     
-    func startGroupRoomCoordinator(group: UserGroup) -> AnyView {
-        let model = GroupRoomModel(
+    func startGroupRoomCoordinator(groupId: String) -> AnyView {
+        let coordinator = GroupRoomCoordinator(
+            groupId: groupId,
             TokenProvider: tokenProvider,
             AuthManagerBadName: authManager,
+            groupService: groupService
         )
-        let viewModel = GroupRoomViewModel(group: group, model: model)
-        let assemblyRoomCoordinator = GroupRoomCoordinator(
-            group: group,
-            TokenProvider: tokenProvider,
-            AuthManagerBadName: authManager
-        )
-        return AnyView(assemblyRoomCoordinator.start())
+        coordinator.onFinish = { [weak self] in
+            guard let self = self else { return }
+            self.currentViewModel.first?.hideGroupRoomView()
+            self.removeGroupRoomCoordinator()
+        }
+        childCoordinators.append(coordinator)
+        return AnyView(coordinator.start())
+    }
+    
+    func removeGroupRoomCoordinator() {
+        childCoordinators.removeAll { coordinator in
+            coordinator is GroupRoomCoordinator
+        }
     }
     
     func startGroupInviteCoordinator(groupId: String) -> AnyView {
+        // Add dismissal onFinish
         let coordinator = GroupInviteCoordinator(
             groupId: groupId,
             tokenProvider: tokenProvider,

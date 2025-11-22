@@ -1,4 +1,3 @@
-
 import SwiftUI
 import Combine
 
@@ -32,7 +31,7 @@ final class CreateGroupCoordinator {
     }
     
     func handleSelectBoardMembersTap() {
-//        start(nextView: true)
+        start(nextView: true)
     }
     
     func startCreateGroupView() -> AnyView {
@@ -46,7 +45,7 @@ final class CreateGroupCoordinator {
         viewModel.onCancelled = { [weak self] in
             self?.onCancelled?()
         }
-        viewModel.createGroupSucceeded = { [weak self] groupId in
+        viewModel.handleCreateGroupSuccess = { [weak self] groupId in
             self?.onFinish?(groupId)
         }
         viewModel.selectBoardMembersTapped = { [weak self] in
@@ -60,7 +59,6 @@ final class CreateGroupCoordinator {
         guard let viewModel = childViewModels.first else {
             return AnyView(EmptyView())
         }
-
         let adminSelectionView = SelectRoundTableAdminsView(viewModel: viewModel)
         return AnyView(adminSelectionView)
     }

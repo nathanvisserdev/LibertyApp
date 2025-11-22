@@ -3,7 +3,6 @@ import SwiftUI
 
 struct GroupsListView: View {
     @StateObject private var viewModel: GroupsListViewModel
-    
     init(viewModel: GroupsListViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
@@ -80,7 +79,7 @@ struct GroupsListView: View {
                     } else {
                         ForEach(viewModel.userGroups) { group in
                             Button {
-                                viewModel.showGroup(group)
+                                viewModel.onGroupTap(groupId: group.id)
                             } label: {
                                 HStack(spacing: 12) {
                                     Image(systemName: group.groupType == "PUBLIC" ? "globe" : "lock.fill")
@@ -127,29 +126,35 @@ struct GroupsListView: View {
             .task {
                 await viewModel.fetchUserGroups()
             }
-            .sheet(isPresented: $viewModel.shouldPresentCreateGroupView) {
+            .onDisappear { viewModel.onGroupsListViewDismiss() }
+            .sheet(isPresented: $viewModel.shouldPresentCreateGroupView,
+                   onDismiss: { viewModel.onCreateGroupDismissed()
+            }) {
                 if let presentView = viewModel.presentCreateGroupView {
                     presentView()
                 } else {
                     EmptyView()
                 }
             }
-            .sheet(isPresented: $viewModel.shouldPresentSuggestedGroupsView) {
+            .sheet(isPresented: $viewModel.shouldPresentSuggestedGroupsView,
+                   onDismiss: { viewModel.onSuggestedGroupsViewDismissed()
+            }) {
                 if let presentView = viewModel.presentSuggestedGroupsView {
                     presentView()
                 } else {
                     EmptyView()
                 }
             }
-            .sheet(item: $viewModel.shouldPresentGroupView) { group in
-                if let presentView = viewModel.presentGroupView {
-                    presentView(group)
+            .sheet(isPresented: $viewModel.shouldPresentGroupView) {
+                if let groupId = viewModel.groupId,
+                   let presentView = viewModel.presentGroupView {
+                    presentView(groupId)
                 } else {
                     EmptyView()
                 }
             }
             .sheet(isPresented: $viewModel.shouldPresentGroupInviteView) {
-                if let groupId = viewModel.groupInviteGroupId,
+                if let groupId = viewModel.groupId,
                    let presentView = viewModel.presentGroupInviteView {
                     presentView(groupId)
                 } else {
@@ -157,7 +162,7 @@ struct GroupsListView: View {
                 }
             }
             .sheet(isPresented: $viewModel.shouldPresentAboutGroupView) {
-                if let groupId = viewModel.aboutGroupId,
+                if let groupId = viewModel.groupId,
                    let presentView = viewModel.presentAboutGroupView {
                     presentView(groupId)
                 } else {
@@ -166,8 +171,9 @@ struct GroupsListView: View {
             }
         }
     }
-    
-}//#Preview {
+}
+
+//#Preview {
 //    let coordinator = GroupsListCoordinator(
 //        authManager: AuthManager.shared,
 //        tokenProvider: AuthManager.shared

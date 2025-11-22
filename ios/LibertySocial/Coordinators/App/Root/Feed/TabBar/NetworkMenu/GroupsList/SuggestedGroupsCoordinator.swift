@@ -1,10 +1,12 @@
 
 import SwiftUI
 
+@MainActor
 final class SuggestedGroupsCoordinator {
     private let TokenProvider: TokenProviding
     private let AuthManagerBadName: AuthManaging
-    var handleGroupTapped: ((String) -> Void)?
+    var DisplayAboutGroupView: ((String) -> Void)?
+    var onFinish: (() -> Void)?
     
     init(TokenProvider: TokenProviding,
          AuthManagerBadName: AuthManaging) {
@@ -13,13 +15,15 @@ final class SuggestedGroupsCoordinator {
     }
     
     func start() -> some View {
-        let model = SuggestedGroupsModel(TokenProvider: TokenProvider, AuthManagerBadName: AuthManagerBadName)
+        let model = SuggestedGroupsModel(
+            TokenProvider: TokenProvider,
+            AuthManagerBadName: AuthManagerBadName
+        )
         let viewModel = SuggestedGroupsViewModel(model: model)
-        
-        viewModel.onGroupTapped = { [weak self] group in
-            self?.handleGroupTapped?(group)
+        viewModel.handleGroupTap = { [weak self] groupId in
+            self?.onFinish?()
+            self?.DisplayAboutGroupView?(groupId)
         }
-        
         return SuggestedGroupsView(viewModel: viewModel)
     }
 }

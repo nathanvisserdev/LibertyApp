@@ -36,7 +36,7 @@ final class CreateGroupViewModel: ObservableObject {
     
     var onFinished: (() -> Void)?
     var onCancelled: (() -> Void)?
-    var createGroupSucceeded: ((String) -> Void)?
+    var handleCreateGroupSuccess: ((String) -> Void)?
     var selectBoardMembersTapped: (() -> Void)?
     
     @Published var selectedAdmins: [RoundTableAdmin] = []
@@ -217,6 +217,6 @@ final class CreateGroupViewModel: ObservableObject {
     func onCreateGroupSuccess(for groupId: String) {
         groupService.invalidateCache()
         onFinished?()
-        createGroupSucceeded?(groupId)
+        handleCreateGroupSuccess?(groupId)
     }
 }
