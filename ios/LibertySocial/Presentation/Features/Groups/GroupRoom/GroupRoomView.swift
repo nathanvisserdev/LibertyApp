@@ -36,9 +36,12 @@ struct GroupRoomView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
-                        viewModel.onDoneTap()
+                        viewModel.onDoneTap?()
                     }
                 }
+            }
+            .onDisappear {
+                viewModel.onFinish?()
             }
         }
     }

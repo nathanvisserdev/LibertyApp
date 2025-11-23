@@ -36,7 +36,7 @@ struct GroupInviteView: View {
                 }
             }
             .alert("Success", isPresented: $viewModel.showSuccessAlert) {
-                Button("OK", role: .cancel) { }
+                Button("OK", role: .cancel) { viewModel.onSuccess?() }
             } message: {
                 Text(viewModel.alertMessage)
             }
@@ -48,6 +48,9 @@ struct GroupInviteView: View {
             .task {
                 await viewModel.loadUserPrivacyStatus()
                 await viewModel.fetchInvitees()
+            }
+            .onDisappear {
+                viewModel.handleDisappear?()
             }
         }
     }

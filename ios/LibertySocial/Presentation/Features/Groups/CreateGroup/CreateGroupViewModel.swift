@@ -5,12 +5,10 @@ import Combine
 
 @MainActor
 final class CreateGroupViewModel: ObservableObject {
-    
     private let model: CreateGroupModel
     let groupService: GroupSession
     private let inviteService: GroupInviteSession
     private weak var coordinator: CreateGroupCoordinator?
-    
     private var cancellables = Set<AnyCancellable>()
     
     @Published var name: String = ""
@@ -30,20 +28,18 @@ final class CreateGroupViewModel: ObservableObject {
     @Published var requiresApproval: Bool = true
     @Published var isSubmitting: Bool = false
     @Published var errorMessage: String?
-    
     @Published var createdGroupId: String?
-    @Published var showAdminSelection: Bool = false
+    @Published var shouldPresentAdminSelectionView: Bool = false
     
-    var onFinished: (() -> Void)?
     var onCancelled: (() -> Void)?
-    var handleCreateGroupSuccess: ((String) -> Void)?
-    var selectBoardMembersTapped: (() -> Void)?
+    var onCreateGroupSuccess: ((String) -> Void)?
+    var presentAdminSelectionView: (() -> AnyView)?
+    var handleDisappear: (() -> Void)?
     
     @Published var selectedAdmins: [RoundTableAdmin] = []
     @Published var viceChairId: String?
     @Published var enableElections: Bool = false
     @Published var selectedElectionCycle: ElectionCycle = .oneYear
-    
     @Published var connections: [Connection] = []
     @Published var isLoadingConnections: Bool = false
     
@@ -82,7 +78,6 @@ final class CreateGroupViewModel: ObservableObject {
         selectedAdmins.count <= 4 && 
         viceChairId != nil
     }
-    
     
     func fetchConnections() async {
         isLoadingConnections = true
@@ -143,20 +138,17 @@ final class CreateGroupViewModel: ObservableObject {
                     isSubmitting = false
                     return false
                 }
-                
                 guard let viceChairId = viceChairId else {
                     errorMessage = "Please select a vice president"
                     isSubmitting = false
                     return false
                 }
-                
                 let admins = selectedAdmins.map { admin in
                     [
                         "userId": admin.userId,
                         "isModerator": admin.isModerator
                     ] as [String: Any]
                 }
-                
                 let request = CreateRoundTableGroupRequest(
                     name: name.trimmingCharacters(in: .whitespacesAndNewlines),
                     description: description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : description.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -166,16 +158,13 @@ final class CreateGroupViewModel: ObservableObject {
                     admins: admins,
                     electionCycle: enableElections ? selectedElectionCycle.rawValue : nil
                 )
-                
                 let response = try await model.createRoundTableGroup(request: request)
-                
                 createdGroupId = response.groupId
             } else {
                 guard isValid else {
                     isSubmitting = false
                     return false
                 }
-                
                 let response = try await model.createGroup(
                     name: name.trimmingCharacters(in: .whitespacesAndNewlines),
                     description: description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : description.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -183,7 +172,6 @@ final class CreateGroupViewModel: ObservableObject {
                     groupPrivacy: selectedGroupPrivacy.rawValue,
                     isHidden: isHidden
                 )
-                
                 createdGroupId = response.groupId
             }
             
@@ -204,19 +192,11 @@ final class CreateGroupViewModel: ObservableObject {
         }
     }
     
-    
     func cancel() {
         onCancelled?()
     }
-    
-    func onSelectBoardMembersTap() {
-        showAdminSelection = true
-        selectBoardMembersTapped?()
-    }
-    
-    func onCreateGroupSuccess(for groupId: String) {
-        groupService.invalidateCache()
-        onFinished?()
-        handleCreateGroupSuccess?(groupId)
+        
+    func showAdminSelectionView() {
+        shouldPresentAdminSelectionView = true
     }
 }

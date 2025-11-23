@@ -5,7 +5,9 @@ import SwiftUI
 final class SuggestedGroupsCoordinator {
     private let TokenProvider: TokenProviding
     private let AuthManagerBadName: AuthManaging
-    var DisplayAboutGroupView: ((String) -> Void)?
+    private var viewModel: [SuggestedGroupsViewModel] = []
+    var presentNextView: ((String) -> Void)?
+    var dismissView: (() -> Void)?
     var onFinish: (() -> Void)?
     
     init(TokenProvider: TokenProviding,
@@ -21,9 +23,21 @@ final class SuggestedGroupsCoordinator {
         )
         let viewModel = SuggestedGroupsViewModel(model: model)
         viewModel.handleGroupTap = { [weak self] groupId in
-            self?.onFinish?()
-            self?.DisplayAboutGroupView?(groupId)
+            guard let self = self else { return }
+            await MainActor.run {
+                self.presentNextView?(groupId)
+            }
         }
+        viewModel.dismissView = { [weak self] in
+            guard let self = self else { return }
+            self.dismissView?()
+        }
+        viewModel.handleDisappear = { [weak self] in
+            guard let self = self else { return }
+            self.viewModel.removeAll()
+            self.onFinish?()
+        }
+        self.viewModel.append(viewModel)
         return SuggestedGroupsView(viewModel: viewModel)
     }
 }

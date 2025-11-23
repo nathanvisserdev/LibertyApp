@@ -12,6 +12,8 @@ final class AboutGroupViewModel: ObservableObject {
     
     private let groupId: String
     private let model: AboutGroupModel
+    var handleDoneTap: (() -> Void)?
+    var handleDisappear: (() -> Void)?
     
     init(groupId: String,
          model: AboutGroupModel) {
@@ -48,7 +50,6 @@ final class AboutGroupViewModel: ObservableObject {
             errorMessage = error.localizedDescription
             print("Error joining group: \(error)")
         }
-        
         isJoining = false
     }
 }

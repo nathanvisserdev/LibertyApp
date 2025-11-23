@@ -6,6 +6,9 @@ final class GroupInviteCoordinator {
     private let tokenProvider: TokenProviding
     private let groupService: GroupSession
     private let groupInviteService: GroupInviteSession
+    private var viewModel: [GroupInviteViewModel] = []
+    var dismissView: (() -> Void)?
+    var onFinish: (() -> Void)?
     
     init(groupId: String,
          tokenProvider: TokenProviding,
@@ -17,8 +20,10 @@ final class GroupInviteCoordinator {
         self.groupInviteService = groupInviteService
     }
     
-    func start() -> some View {
-        let model = GroupInviteModel(TokenProvider: tokenProvider)
+    func start() -> AnyView {
+        let model = GroupInviteModel(
+            TokenProvider: tokenProvider
+        )
         let viewModel = GroupInviteViewModel(
             model: model,
             groupId: groupId,
@@ -26,6 +31,16 @@ final class GroupInviteCoordinator {
             inviteService: groupInviteService,
             groupService: groupService
         )
-        return GroupInviteView(viewModel: viewModel)
+        viewModel.onSuccess = { [weak self] in
+            guard let self = self else { return }
+            dismissView?()
+        }
+        viewModel.handleDisappear = { [weak self] in
+            guard let self = self else { return }
+            self.viewModel.removeAll()
+            onFinish?()
+        }
+        self.viewModel.append(viewModel)
+        return AnyView(GroupInviteView(viewModel: viewModel))
     }
 }

@@ -126,19 +126,17 @@ struct GroupsListView: View {
             .task {
                 await viewModel.fetchUserGroups()
             }
-            .onDisappear { viewModel.onGroupsListViewDismiss() }
-            .sheet(isPresented: $viewModel.shouldPresentCreateGroupView,
-                   onDismiss: { viewModel.onCreateGroupDismissed()
-            }) {
+            .onDisappear { viewModel.handleDisappear() }
+            .sheet(isPresented: $viewModel.shouldPresentCreateGroupView
+            ) {
                 if let presentView = viewModel.presentCreateGroupView {
                     presentView()
                 } else {
                     EmptyView()
                 }
             }
-            .sheet(isPresented: $viewModel.shouldPresentSuggestedGroupsView,
-                   onDismiss: { viewModel.onSuggestedGroupsViewDismissed()
-            }) {
+            .sheet(isPresented: $viewModel.shouldPresentSuggestedGroupsView
+            ) {
                 if let presentView = viewModel.presentSuggestedGroupsView {
                     presentView()
                 } else {

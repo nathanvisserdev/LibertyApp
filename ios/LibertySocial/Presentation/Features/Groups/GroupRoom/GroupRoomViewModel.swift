@@ -6,12 +6,12 @@ import Combine
 final class GroupRoomViewModel: ObservableObject {
     private let model: GroupRoomModel
     private let groupId: String
-    
     @Published var group: UserGroup?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
-    var handleDoneTap: (() -> Void)?
+    var onDoneTap: (() -> Void)?
+    var onFinish: (() -> Void)?
     init(groupId: String, model: GroupRoomModel) {
         self.groupId = groupId
         self.model = model
@@ -31,9 +31,5 @@ final class GroupRoomViewModel: ObservableObject {
             print("Error fetching group: \(error)")
         }
         isLoading = false
-    }
-    
-    func onDoneTap() {
-        handleDoneTap?()
     }
 }

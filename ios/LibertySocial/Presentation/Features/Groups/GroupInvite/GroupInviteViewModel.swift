@@ -4,14 +4,15 @@ import Combine
 
 @MainActor
 final class GroupInviteViewModel: ObservableObject {
-    
     private let model: GroupInviteModel
     private let groupId: String
     private let TokenProvider: TokenProviding
     private let inviteService: GroupInviteSession
     private let groupService: GroupSession
-    
     private var cancellables = Set<AnyCancellable>()
+    let didFinishSuccessfully = PassthroughSubject<Void, Never>()
+    var handleDisappear: (() -> Void)?
+    var onSuccess: (() -> Void)?
     
     @Published var invitees: [InviteeUser] = []
     @Published var selectedUserIds: Set<String> = []
@@ -19,13 +20,9 @@ final class GroupInviteViewModel: ObservableObject {
     @Published var isSendingInvites: Bool = false
     @Published var errorMessage: String?
     @Published var isPrivate: Bool = false
-    
     @Published var showSuccessAlert: Bool = false
     @Published var showErrorAlert: Bool = false
     @Published var alertMessage: String = ""
-    
-    let didFinishSuccessfully = PassthroughSubject<Void, Never>()
-    
     @Published var filterType: FilterType = .connections
     @Published var includeAdditional: Bool = false // For followers or strangers
     
@@ -63,7 +60,6 @@ final class GroupInviteViewModel: ObservableObject {
         subscribeToInviteEvents()
     }
     
-    
     private func subscribeToInviteEvents() {
         inviteService.inviteEvents
             .sink { [weak self] event in
@@ -74,11 +70,7 @@ final class GroupInviteViewModel: ObservableObject {
                     self.isSendingInvites = false
                     self.alertMessage = count == 1 ? "Sent 1 invite" : "Sent \(count) invites"
                     self.showSuccessAlert = true
-                    
-                    self.groupService.invalidateCache()
-                    
                     self.didFinishSuccessfully.send()
-                    
                 case .invitesFailed(let error):
                     self.isSendingInvites = false
                     self.alertMessage = error.localizedDescription
@@ -96,7 +88,6 @@ final class GroupInviteViewModel: ObservableObject {
         !selectedUserIds.isEmpty && !isSendingInvites
     }
     
-    
     func loadUserPrivacyStatus() async {
         do {
             isPrivate = try await TokenProvider.getCurrentUserIsPrivate()
@@ -109,10 +100,8 @@ final class GroupInviteViewModel: ObservableObject {
     func fetchInvitees() async {
         isLoading = true
         errorMessage = nil
-        
         do {
             var includeTypes: [String] = ["connections"]
-            
             if includeAdditional {
                 if isPrivate {
                     includeTypes.append("strangers")
@@ -120,15 +109,12 @@ final class GroupInviteViewModel: ObservableObject {
                     includeTypes.append("followers")
                 }
             }
-            
             let include = includeTypes.joined(separator: ",")
-            
             invitees = try await model.fetchInvitees(groupId: groupId, include: include, exclude: nil)
         } catch {
             errorMessage = error.localizedDescription
             print("Error fetching invitees: \(error)")
         }
-        
         isLoading = false
     }
     
@@ -172,9 +158,7 @@ final class GroupInviteViewModel: ObservableObject {
     
     func sendInvites() async {
         guard !selectedUserIds.isEmpty else { return }
-        
         isSendingInvites = true
-        
         do {
             let userIdsArray = Array(selectedUserIds)
             try await inviteService.sendInvites(groupId: groupId, userIds: userIdsArray)

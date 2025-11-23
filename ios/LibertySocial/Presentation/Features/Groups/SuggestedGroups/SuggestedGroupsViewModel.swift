@@ -8,8 +8,9 @@ final class SuggestedGroupsViewModel: ObservableObject {
     @Published var joinableGroups: [UserGroup] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-    
-    var handleGroupTap: ((String) -> Void)?
+    var handleGroupTap: ((String) async -> Void)?
+    var dismissView: (() -> Void)?
+    var handleDisappear: (() -> Void)?
     
     init(model: SuggestedGroupsModel) {
         self.model = model
@@ -21,7 +22,6 @@ final class SuggestedGroupsViewModel: ObservableObject {
         
         do {
             let userId = try await model.fetchCurrentUserId()
-            
             joinableGroups = try await model.fetchJoinableGroups(userId: userId)
         } catch {
             errorMessage = error.localizedDescription
@@ -31,7 +31,8 @@ final class SuggestedGroupsViewModel: ObservableObject {
         isLoading = false
     }
     
-    func onGroupTap(groupId: String) {
-        handleGroupTap?(groupId)
+    func onGroupTap(groupId: String) async {
+        await handleGroupTap?(groupId)
+        dismissView?()
     }
 }

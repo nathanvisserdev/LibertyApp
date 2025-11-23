@@ -6,6 +6,8 @@ final class GroupRoomCoordinator {
     private let AuthManagerBadName: AuthManaging
     private let groupService: GroupSession
     private let groupId: String
+    private var viewModel: [GroupRoomViewModel] = []
+    var dismissView: (() -> Void)?
     var onFinish: (() -> Void)?
     
     init(groupId: String,
@@ -19,6 +21,10 @@ final class GroupRoomCoordinator {
     }
     
     func start() -> some View {
+        return startGroupRoomView()
+    }
+    
+    func startGroupRoomView() -> AnyView {
         let model = GroupRoomModel(
             TokenProvider: TokenProvider,
             AuthManagerBadName: AuthManagerBadName,
@@ -28,9 +34,17 @@ final class GroupRoomCoordinator {
             groupId: groupId,
             model: model
         )
-        viewModel.handleDoneTap = { [weak self] in
-            self?.onFinish?()
+        viewModel.onDoneTap = { [weak self] in
+            guard let self = self else { return }
+            self.dismissView?()
         }
-        return GroupRoomView(viewModel: viewModel)
+        viewModel.onFinish = { [weak self] in
+            guard let self = self else { return }
+            self.viewModel.removeAll()
+            self.onFinish?()
+        }
+        self.viewModel.append(viewModel)
+        let view = GroupRoomView(viewModel: viewModel)
+        return AnyView(view)
     }
 }

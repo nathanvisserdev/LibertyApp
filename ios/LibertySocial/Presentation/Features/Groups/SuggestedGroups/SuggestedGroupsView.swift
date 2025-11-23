@@ -65,7 +65,9 @@ struct SuggestedGroupsView: View {
                     List {
                         ForEach(viewModel.joinableGroups) { group in
                             Button {
-                                viewModel.onGroupTap(groupId: group.id)
+                                Task {
+                                    await viewModel.onGroupTap(groupId: group.id)
+                                }
                             } label: {
                                 GroupRow(group: group)
                             }
@@ -80,6 +82,7 @@ struct SuggestedGroupsView: View {
             .task {
                 await viewModel.fetchJoinableGroups()
             }
+            .onDisappear { viewModel.handleDisappear?() }
         }
     }
 }

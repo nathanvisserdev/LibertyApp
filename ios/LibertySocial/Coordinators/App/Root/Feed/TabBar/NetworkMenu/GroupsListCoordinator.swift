@@ -63,45 +63,36 @@ final class GroupsListCoordinator {
         if currentViewModel.count > 0 {
             currentViewModel.removeAll()
         }
-        currentViewModel.append(viewModel)
         viewModel.presentCreateGroupView = { [weak self] in
-            guard let self = self else { return AnyView(EmptyView()) }
+            guard let self else { return AnyView(EmptyView()) }
             return AnyView(self.start(nextView: .createGroup))
         }
         viewModel.presentSuggestedGroupsView = { [weak self] in
-            guard let self = self else { return AnyView(EmptyView()) }
+            guard let self else { return AnyView(EmptyView()) }
             return AnyView(self.start(nextView: .suggestedGroups))
         }
         viewModel.presentGroupView = { [weak self] groupId in
-            guard let self = self else { return AnyView(EmptyView()) }
+            guard let self else { return AnyView(EmptyView()) }
             return AnyView(self.start(nextView: .group(groupId)))
         }
         viewModel.presentAboutGroupView = { [weak self] groupId in
-            guard let self = self else { return AnyView(EmptyView()) }
+            guard let self else { return AnyView(EmptyView()) }
             return AnyView(self.start(nextView: .aboutGroup(groupId)))
         }
         viewModel.presentGroupInviteView = { [weak self] groupId in
-            guard let self = self else { return AnyView(EmptyView()) }
+            guard let self else { return AnyView(EmptyView()) }
             return AnyView(self.start(nextView: .groupInvite(groupId)))
         }
-        viewModel.onSuggestedGroupsViewFinish = { [weak self] in
-            self?.removeSuggestedGroupsCoordinator()
+        viewModel.onFinish = { [weak self] in
+            guard let self else { return }
+            self.handleCleanup()
         }
-        viewModel.handleGroupsListViewDismiss = { [weak self] in
-            guard let self = self else { return }
-            self.onFinish()
-        }
+        currentViewModel.append(viewModel)
         let groupsListView = GroupsListView(viewModel: viewModel)
         return AnyView(groupsListView)
     }
     
-    func removeSuggestedGroupsCoordinator() {
-        childCoordinators.removeAll { coordinator in
-            coordinator is SuggestedGroupsCoordinator
-        }
-    }
-    
-    func onFinish() {
+    func handleCleanup() {
         childCoordinators.removeAll()
         currentViewModel.removeAll()
     }
@@ -113,9 +104,21 @@ final class GroupsListCoordinator {
             groupService: groupService,
             groupInviteService: groupInviteService
         )
-        coordinator.onFinish = { [weak self] groupId in
-            self?.currentViewModel.first?.showGroupInviteView(groupId: groupId)
+        coordinator.presentNextView = { [weak self] groupId in
+            guard let self else { return }
+            self.currentViewModel.first?.showGroupInviteView(groupId: groupId)
         }
+        coordinator.dismissView = { [weak self] in
+            guard let self else { return }
+            self.currentViewModel.first?.hideCreateGroupView()
+        }
+        coordinator.onFinish = { [weak self] in
+            guard let self else { return }
+            self.childCoordinators.removeAll { coordinator in
+                coordinator is CreateGroupCoordinator
+            }
+        }
+        childCoordinators.append(coordinator)
         return AnyView(coordinator.start())
     }
     
@@ -124,13 +127,19 @@ final class GroupsListCoordinator {
             TokenProvider: tokenProvider,
             AuthManagerBadName: authManager
         )
-        coordinator.onFinish = { [weak self] in
-            guard let self = self else { return }
+        coordinator.presentNextView = { [weak self] groupId in
+            guard let self else { return }
+            self.currentViewModel.first?.showAboutGroupView(groupId: groupId)
+        }
+        coordinator.dismissView = { [weak self] in
+            guard let self else { return }
             self.currentViewModel.first?.hideSuggestedGroupsView()
         }
-        coordinator.DisplayAboutGroupView = { [weak self] groupId in
-            guard let self = self else { return }
-            self.currentViewModel.first?.showAboutGroupView(groupId: groupId)
+        coordinator.onFinish = { [weak self] in
+            guard let self else { return }
+            self.childCoordinators.removeAll { coordinator in
+                coordinator is SuggestedGroupsCoordinator
+            }
         }
         childCoordinators.append(coordinator)
         return AnyView(coordinator.start())
@@ -143,29 +152,38 @@ final class GroupsListCoordinator {
             AuthManagerBadName: authManager,
             groupService: groupService
         )
-        coordinator.onFinish = { [weak self] in
-            guard let self = self else { return }
+        coordinator.dismissView = { [weak self] in
+            guard let self else { return }
             self.currentViewModel.first?.hideGroupRoomView()
-            self.removeGroupRoomCoordinator()
+        }
+        coordinator.onFinish = { [weak self] in
+            guard let self else { return }
+            childCoordinators.removeAll() { coordinator in
+                coordinator is GroupRoomCoordinator
+            }
         }
         childCoordinators.append(coordinator)
         return AnyView(coordinator.start())
     }
     
-    func removeGroupRoomCoordinator() {
-        childCoordinators.removeAll { coordinator in
-            coordinator is GroupRoomCoordinator
-        }
-    }
-    
     func startGroupInviteCoordinator(groupId: String) -> AnyView {
-        // Add dismissal onFinish
         let coordinator = GroupInviteCoordinator(
             groupId: groupId,
             tokenProvider: tokenProvider,
             groupService: groupService,
             groupInviteService: groupInviteService
         )
+        coordinator.dismissView = { [weak self] in
+            guard let self else { return }
+            self.currentViewModel.first?.hideGroupInviteView()
+        }
+        coordinator.onFinish = { [weak self] in
+            guard let self else { return }
+            childCoordinators.removeAll() { coordinator in
+                coordinator is GroupInviteCoordinator
+            }
+        }
+        childCoordinators.append(coordinator)
         return AnyView(coordinator.start())
     }
     
@@ -174,6 +192,17 @@ final class GroupsListCoordinator {
             groupId: groupId,
             groupService: groupService
         )
+        coordinator.dismissView = { [weak self] in
+            guard let self else { return }
+            self.currentViewModel.first?.hideAboutGroupView()
+        }
+        coordinator.onFinish = { [weak self] in
+            guard let self else { return }
+            childCoordinators.removeAll() { coordinator in
+                coordinator is AboutGroupCoordinator
+            }
+        }
+        childCoordinators.append(coordinator)
         return AnyView(coordinator.start())
     }
 }

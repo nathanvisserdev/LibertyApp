@@ -3,7 +3,6 @@ import SwiftUI
 
 struct AboutGroupView: View {
     @StateObject private var viewModel: AboutGroupViewModel
-    @Environment(\.dismiss) var dismiss
     
     init(viewModel: AboutGroupViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -221,7 +220,7 @@ struct AboutGroupView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
-                        dismiss()
+                        viewModel.handleDoneTap?()
                     }
                 }
             }
@@ -229,6 +228,7 @@ struct AboutGroupView: View {
         .task {
             await viewModel.fetchGroupDetail()
         }
+        .onDisappear { viewModel.handleDisappear?() }
     }
 }
 

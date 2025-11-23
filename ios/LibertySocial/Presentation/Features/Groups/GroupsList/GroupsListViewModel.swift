@@ -26,9 +26,7 @@ final class GroupsListViewModel: ObservableObject {
     var presentGroupInviteView: ((String) -> AnyView)?
     var presentGroupView: ((String) -> AnyView)?
     var presentAboutGroupView: ((String) -> AnyView)?
-    var onSuggestedGroupsViewFinish: (() -> Void)?
-    var handleCreateGroupDismissed: (() -> Void)?
-    var handleGroupsListViewDismiss: (() -> Void)?
+    var onFinish: (() -> Void)?
     
     init(model: GroupsListModel,
          AuthManagerBadName: AuthManaging,
@@ -94,20 +92,22 @@ final class GroupsListViewModel: ObservableObject {
         shouldPresentGroupInviteView = true
     }
     
+    func hideGroupInviteView() {
+        self.groupId = groupId
+        shouldPresentGroupInviteView = false
+    }
+    
     func showAboutGroupView(groupId: String) {
         self.groupId = groupId
         shouldPresentAboutGroupView = true
     }
     
-    func onSuggestedGroupsViewDismissed() {
-        onSuggestedGroupsViewFinish?()
+    func hideAboutGroupView() {
+        self.groupId = nil
+        shouldPresentAboutGroupView = false
     }
     
-    func onCreateGroupDismissed() {
-        handleCreateGroupDismissed?()
-    }
-    
-    func onGroupsListViewDismiss() {
-        handleGroupsListViewDismiss?()
+    func handleDisappear() {
+        onFinish?()
     }
 }
